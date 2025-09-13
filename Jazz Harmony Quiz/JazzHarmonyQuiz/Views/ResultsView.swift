@@ -1,0 +1,475 @@
+import SwiftUI
+
+struct ResultsView: View {
+    @EnvironmentObject var quizGame: QuizGame
+    @State private var showingReview = false
+    @State private var selectedQuestionIndex = 0
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 30) {
+                    if let result = quizGame.currentResult {
+                        // Header
+                        VStack(spacing: 10) {
+                            Text("Quiz Complete! - Results View")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                            
+                            Text("Great job on completing the chord drill")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        // Score Card
+                        VStack(spacing: 20) {
+                            Text("\(result.score)%")
+                                .font(.system(size: 60, weight: .bold, design: .rounded))
+                                .foregroundColor(scoreColor(result.score))
+                            
+                            Text("\(result.correctAnswers) out of \(result.totalQuestions) correct")
+                                .font(.title2)
+                                .fontWeight(.medium)
+                            
+                            HStack(spacing: 30) {
+                                VStack {
+                                    Text("\(formatTime(result.totalTime))")
+                                        .font(.title3)
+                                        .fontWeight(.bold)
+                                    Text("Total Time")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                VStack {
+                                    Text("\(formatTime(result.averageTimePerQuestion))")
+                                        .font(.title3)
+                                        .fontWeight(.bold)
+                                    Text("Avg per Question")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(16)
+                        
+                        // Performance Indicators
+                        VStack(alignment: .leading, spacing: 15) {
+                            Text("Performance Breakdown")
+                                .font(.headline)
+                            
+                            PerformanceBar(
+                                label: "Accuracy",
+                                value: result.accuracy,
+                                color: .blue
+                            )
+                            
+                            PerformanceBar(
+                                label: "Speed",
+                                value: speedScore(result.averageTimePerQuestion),
+                                color: .green
+                            )
+                            
+                            PerformanceBar(
+                                label: "Overall",
+                                value: overallScore(result),
+                                color: .purple
+                            )
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // Action Buttons
+                        VStack(spacing: 15) {
+                            Button(action: { 
+                                print("Review button tapped")
+                                showingReview = true 
+                            }) {
+                                HStack {
+                                    Image(systemName: "list.bullet")
+                                    Text("Review Wrong Answers")
+                                }
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.orange)
+                                .cornerRadius(12)
+                            }
+                            
+                            Button(action: {
+                                // Debug: Check if button is being tapped
+                                print("New Quiz button tapped")
+                                // Reset quiz state and go back to quiz setup
+                                quizGame.resetQuizState()
+                            }) {
+                                HStack {
+                                    Image(systemName: "arrow.clockwise")
+                                    Text("New Quiz")
+                                }
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .cornerRadius(12)
+                            }
+                            
+                            NavigationLink(destination: LeaderboardView().environmentObject(quizGame)) {
+                                HStack {
+                                    Image(systemName: "trophy")
+                                    Text("View Leaderboard")
+                                }
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.purple)
+                                .cornerRadius(12)
+                            }
+                        }
+                        
+                        // Encouragement Message
+                        Text(encouragementMessage(result.score))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    } else {
+                        // No result available - redirect to main view
+                        VStack(spacing: 30) {
+                            Text("No Quiz Results - Results View")
+                                .font(.title)
+                                .fontWeight(.bold)
+                            
+                            Text("Complete a quiz to see your results here.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                            
+                            Button(action: {
+                                // Reset quiz state and go back to quiz setup
+                                quizGame.resetQuizState()
+                            }) {
+                                Text("Start New Quiz")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.blue)
+                                    .cornerRadius(12)
+                            }
+                        }
+                        .padding()
+                    }
+                }
+                .padding()
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        // Reset quiz state and go back to quiz setup
+                        quizGame.resetQuizState()
+                    }) {
+                        Text("New Quiz")
+                    }
+                }
+            }
+        .fullScreenCover(isPresented: $showingReview) {
+            NavigationView {
+                ReviewView(selectedQuestionIndex: $selectedQuestionIndex)
+                    .environmentObject(quizGame)
+            }
+        }
+        .onAppear {
+            // Debug: Check if the view is properly appearing
+            print("ResultsView appeared")
+        }
+        .onDisappear {
+            // Debug: Check if the view is disappearing
+            print("ResultsView disappeared")
+        }
+    }
+    
+    private func scoreColor(_ score: Int) -> Color {
+        switch score {
+        case 90...100:
+            return .green
+        case 70..<90:
+            return .orange
+        default:
+            return .red
+        }
+    }
+    
+    private func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    private func speedScore(_ averageTime: TimeInterval) -> Double {
+        // Score based on speed (faster = higher score)
+        let maxTime: TimeInterval = 30.0 // 30 seconds per question
+        return max(0, min(1, (maxTime - averageTime) / maxTime))
+    }
+    
+    private func overallScore(_ result: QuizResult) -> Double {
+        let accuracyWeight = 0.7
+        let speedWeight = 0.3
+        return result.accuracy * accuracyWeight + speedScore(result.averageTimePerQuestion) * speedWeight
+    }
+    
+    private func encouragementMessage(_ score: Int) -> String {
+        switch score {
+        case 90...100:
+            return "Outstanding! You're a jazz harmony master! 🎵"
+        case 80..<90:
+            return "Excellent work! You're really getting the hang of this! 🎶"
+        case 70..<80:
+            return "Good job! Keep practicing to improve even more! 🎹"
+        case 60..<70:
+            return "Not bad! A bit more practice and you'll be great! 🎼"
+        default:
+            return "Keep practicing! Every jazz musician started somewhere! 🎺"
+        }
+    }
+}
+
+struct PerformanceBar: View {
+    let label: String
+    let value: Double
+    let color: Color
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Text(label)
+                    .font(.subheadline)
+                Spacer()
+                Text("\(Int(value * 100))%")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            }
+            
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(height: 8)
+                        .cornerRadius(4)
+                    
+                    Rectangle()
+                        .fill(color)
+                        .frame(width: geometry.size.width * value, height: 8)
+                        .cornerRadius(4)
+                }
+            }
+            .frame(height: 8)
+        }
+    }
+}
+
+struct ReviewView: View {
+    @EnvironmentObject var quizGame: QuizGame
+    @Binding var selectedQuestionIndex: Int
+    @Environment(\.presentationMode) var presentationMode
+    
+    var body: some View {
+        VStack {
+                if let result = quizGame.currentResult {
+                    let wrongQuestions = result.questions.enumerated().compactMap { index, question in
+                        result.isCorrect[question.id.uuidString] == false ? (index, question) : nil
+                    }
+                    
+                    if wrongQuestions.isEmpty {
+                        VStack(spacing: 20) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 60))
+                                .foregroundColor(.green)
+                            
+                            Text("Perfect Score!")
+                                .font(.title)
+                                .fontWeight(.bold)
+                            
+                            Text("You got all questions correct! No review needed.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding()
+                    } else {
+                        TabView(selection: $selectedQuestionIndex) {
+                            ForEach(0..<wrongQuestions.count, id: \.self) { index in
+                                let (originalIndex, question) = wrongQuestions[index]
+                                QuestionReviewCard(
+                                    question: question,
+                                    originalIndex: originalIndex,
+                                    userAnswer: result.userAnswers[question.id.uuidString] ?? [],
+                                    correctAnswer: question.correctAnswer,
+                                    isCorrect: result.isCorrect[question.id.uuidString] ?? false
+                                )
+                                .tag(index)
+                            }
+                        }
+                        .tabViewStyle(PageTabViewStyle())
+                        .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+                    }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(content: {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Done") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+                
+                if let result = quizGame.currentResult,
+                   !result.questions.enumerated().compactMap({ index, question in
+                       result.isCorrect[question.id.uuidString] == false ? (index, question) : nil
+                   }).isEmpty {
+                    ToolbarItem(placement: .principal) {
+                        Text("Review: \(selectedQuestionIndex + 1) of \(wrongQuestionsCount)")
+                            .font(.headline)
+                    }
+                }
+            })
+    }
+    
+    private var wrongQuestionsCount: Int {
+        guard let result = quizGame.currentResult else { return 0 }
+        return result.questions.enumerated().compactMap { index, question in
+            result.isCorrect[question.id.uuidString] == false ? (index, question) : nil
+        }.count
+    }
+}
+
+struct QuestionReviewCard: View {
+    let question: QuizQuestion
+    let originalIndex: Int
+    let userAnswer: [Note]
+    let correctAnswer: [Note]
+    let isCorrect: Bool
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                // Question Header
+                VStack(spacing: 10) {
+                    Text("Question \(originalIndex + 1)")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Text("Chord: \(question.chord.displayName)")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(8)
+                    
+                    Text(questionPrompt)
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
+                }
+                
+                // Answer Comparison
+                VStack(spacing: 15) {
+                    // User's Answer
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("Your Answer:")
+                                .font(.headline)
+                            Spacer()
+                            Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .foregroundColor(isCorrect ? .green : .red)
+                        }
+                        
+                        if userAnswer.isEmpty {
+                            Text("No answer provided")
+                                .foregroundColor(.secondary)
+                                .italic()
+                        } else {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 10) {
+                                ForEach(userAnswer, id: \.midiNumber) { note in
+                                    Text(note.name)
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(width: 50, height: 50)
+                                        .background(isCorrect ? Color.green : Color.red)
+                                        .cornerRadius(8)
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    
+                    // Correct Answer
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Correct Answer:")
+                            .font(.headline)
+                        
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 10) {
+                            ForEach(correctAnswer, id: \.midiNumber) { note in
+                                Text(note.name)
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .frame(width: 50, height: 50)
+                                    .background(Color.green)
+                                    .cornerRadius(8)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                }
+                
+                // Chord Information
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Chord Information:")
+                        .font(.headline)
+                    
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Full Name: \(question.chord.fullName)")
+                        Text("Difficulty: \(question.chord.chordType.difficulty.rawValue)")
+                        Text("Chord Tones: \(question.chord.chordTones.map { $0.name }.joined(separator: ", "))")
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                
+                Spacer()
+            }
+            .padding()
+        }
+    }
+    
+    private var questionPrompt: String {
+        switch question.questionType {
+        case .singleTone:
+            if let targetTone = question.targetTone {
+                return "Find the \(targetTone.name) of the chord"
+            }
+            return "Select the chord tone"
+        case .allTones:
+            return "Select all chord tones"
+        case .chordSpelling:
+            return "Spell the entire chord"
+        }
+    }
+}
+
+// MARK: - Preview
+#Preview {
+    ResultsView()
+        .environmentObject(QuizGame())
+}
