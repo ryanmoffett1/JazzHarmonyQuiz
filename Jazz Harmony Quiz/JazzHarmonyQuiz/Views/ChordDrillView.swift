@@ -30,7 +30,13 @@ struct ChordDrillView: View {
             } else if quizGame.isQuizActive {
                 ActiveQuizView(selectedNotes: $selectedNotes, showingFeedback: $showingFeedback, showingQuizSetup: $showingQuizSetup)
             } else if quizGame.isQuizCompleted {
-                ResultsView()
+                ResultsView(onNewQuiz: {
+                    // Reset quiz and show setup
+                    quizGame.resetQuizState()
+                    showingQuizSetup = true
+                    selectedNotes = []
+                    showingFeedback = false
+                })
             } else {
                 // Show loading or start quiz immediately
                 VStack {
@@ -79,13 +85,19 @@ struct ChordDrillView: View {
             // When quiz is no longer completed, go back to setup
             if !isCompleted {
                 showingQuizSetup = true
+                selectedNotes = []
+                showingFeedback = false
             }
         }
     }
     
     private func startQuiz() {
+        // Clear all previous state
+        selectedNotes = []
+        showingFeedback = false
         showingQuizSetup = false
-        showingFeedback = false  // Reset feedback state
+        
+        // Start the new quiz
         quizGame.startNewQuiz(
             numberOfQuestions: numberOfQuestions,
             difficulty: selectedDifficulty,
@@ -95,8 +107,9 @@ struct ChordDrillView: View {
     
     private func quitQuiz() {
         showingQuizSetup = true
-        quizGame.isQuizActive = false
+        quizGame.resetQuizState()
         selectedNotes = []
+        showingFeedback = false
     }
 }
 
@@ -236,10 +249,11 @@ struct ActiveQuizView: View {
                 PianoKeyboard(
                     selectedNotes: $selectedNotes,
                     octaveRange: 4...4,
-                    showNoteNames: true,
+                    showNoteNames: false,
                     allowMultipleSelection: question.questionType != .singleTone
                 )
-                .padding()
+                .padding(.horizontal)
+                .frame(height: 140)
                 
                 // Selected Notes Display
                 if !selectedNotes.isEmpty {
@@ -248,13 +262,15 @@ struct ActiveQuizView: View {
                             .font(.headline)
                             .foregroundColor(.secondary)
                         
-                        HStack(spacing: 8) {
-                            ForEach(Array(selectedNotes), id: \.midiNumber) { note in
+                        // Use FlowLayout for wrapping with dynamic sizing
+                        FlowLayout(spacing: 8) {
+                            ForEach(Array(selectedNotes.sorted(by: { $0.midiNumber < $1.midiNumber })), id: \.midiNumber) { note in
                                 Text(note.name)
-                                    .font(.title2)
-                                    .fontWeight(.bold)
+                                    .font(selectedNotes.count > 5 ? .body : .title3)
+                                    .fontWeight(.semibold)
                                     .foregroundColor(.white)
-                                    .frame(width: 40, height: 40)
+                                    .padding(.horizontal, selectedNotes.count > 5 ? 12 : 16)
+                                    .padding(.vertical, selectedNotes.count > 5 ? 8 : 10)
                                     .background(Color.blue)
                                     .cornerRadius(8)
                             }
@@ -324,35 +340,40 @@ struct ActiveQuizView: View {
         currentQuestionForFeedback = question
         correctAnswerForFeedback = correctAnswer
         
-        // Check if this is the last question
+        // Check if this is the last question BEFORE submitting
         isLastQuestion = quizGame.currentQuestionIndex == quizGame.totalQuestions - 1
         
         // Check if answer is correct
         isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
         
-        // Submit the answer
-        quizGame.submitAnswer(userAnswer)
-        
-        // Show feedback
+        // Show feedback FIRST (especially important for last question)
         showingFeedback = true
+        
+        // Submit the answer (this will advance to next question or finish quiz)
+        // But we'll handle the actual submission in continueToNextQuestion()
     }
     
     private func isAnswerCorrect(userAnswer: [Note], question: QuizQuestion) -> Bool {
         let correctAnswer = question.correctAnswer
         
+        // Helper function to normalize MIDI number to pitch class (0-11)
+        func pitchClass(_ midiNumber: Int) -> Int {
+            return ((midiNumber - 60) % 12 + 12) % 12
+        }
+        
         // For single tone questions, check if the user selected the correct note
         if question.questionType == .singleTone {
             guard userAnswer.count == 1, correctAnswer.count == 1 else { return false }
-            // Compare MIDI numbers to handle enharmonic equivalents
-            return userAnswer[0].midiNumber == correctAnswer[0].midiNumber
+            // Compare pitch classes to handle different octaves
+            return pitchClass(userAnswer[0].midiNumber) == pitchClass(correctAnswer[0].midiNumber)
         }
         
         // For all tones and chord spelling, check if all correct notes are selected
-        // and no incorrect notes are selected
-        let userNotes = Set(userAnswer.map { $0.midiNumber })
-        let correctNotes = Set(correctAnswer.map { $0.midiNumber })
+        // and no incorrect notes are selected (comparing pitch classes)
+        let userPitchClasses = Set(userAnswer.map { pitchClass($0.midiNumber) })
+        let correctPitchClasses = Set(correctAnswer.map { pitchClass($0.midiNumber) })
         
-        return userNotes == correctNotes
+        return userPitchClasses == correctPitchClasses
     }
     
     private func clearSelection() {
@@ -360,16 +381,77 @@ struct ActiveQuizView: View {
     }
     
     private func continueToNextQuestion() {
+        // Submit the answer to QuizGame now (after showing feedback)
+        if let question = currentQuestionForFeedback {
+            let userAnswer = Array(selectedNotes)
+            quizGame.submitAnswer(userAnswer)
+        }
+        
         selectedNotes.removeAll()
         
         if isLastQuestion {
-            // This was the last question, show results
+            // This was the last question, results will be shown automatically
+            // The quiz is now completed (handled by quizGame.submitAnswer above)
             showingQuizSetup = false
         } else if quizGame.isQuizActive {
-            // Quiz continues
+            // Quiz continues with next question
         } else {
             // Quiz completed, results will be shown
             showingQuizSetup = false
+        }
+    }
+}
+
+// MARK: - FlowLayout Helper
+// A custom layout that wraps content to the next line when it doesn't fit
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+    
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = FlowLayoutResult(
+            in: proposal.replacingUnspecifiedDimensions().width,
+            subviews: subviews,
+            spacing: spacing
+        )
+        return result.size
+    }
+    
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = FlowLayoutResult(
+            in: bounds.width,
+            subviews: subviews,
+            spacing: spacing
+        )
+        for (index, subview) in subviews.enumerated() {
+            subview.place(at: CGPoint(x: bounds.minX + result.positions[index].x, y: bounds.minY + result.positions[index].y), proposal: .unspecified)
+        }
+    }
+    
+    struct FlowLayoutResult {
+        var size: CGSize = .zero
+        var positions: [CGPoint] = []
+        
+        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
+            var currentX: CGFloat = 0
+            var currentY: CGFloat = 0
+            var lineHeight: CGFloat = 0
+            
+            for subview in subviews {
+                let size = subview.sizeThatFits(.unspecified)
+                
+                if currentX + size.width > maxWidth && currentX > 0 {
+                    // Move to next line
+                    currentX = 0
+                    currentY += lineHeight + spacing
+                    lineHeight = 0
+                }
+                
+                positions.append(CGPoint(x: currentX, y: currentY))
+                lineHeight = max(lineHeight, size.height)
+                currentX += size.width + spacing
+            }
+            
+            self.size = CGSize(width: maxWidth, height: currentY + lineHeight)
         }
     }
 }

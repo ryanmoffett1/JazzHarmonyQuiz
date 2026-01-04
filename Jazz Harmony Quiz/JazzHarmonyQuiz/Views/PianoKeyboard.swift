@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftUI
 import Foundation
 
 struct PianoKeyboard: View {
@@ -7,6 +8,12 @@ struct PianoKeyboard: View {
     let octaveRange: ClosedRange<Int>
     let showNoteNames: Bool
     let allowMultipleSelection: Bool
+    
+    // Constants for key dimensions
+    private let whiteKeyWidth: CGFloat = 30
+    private let whiteKeyHeight: CGFloat = 120
+    private let blackKeyWidth: CGFloat = 20
+    private let blackKeyHeight: CGFloat = 75
     
     init(selectedNotes: Binding<Set<Note>>, 
          octaveRange: ClosedRange<Int> = 4...4, 
@@ -19,67 +26,113 @@ struct PianoKeyboard: View {
     }
     
     var body: some View {
-        ZStack {
-            // Vector-based piano keyboard
-            PianoKeyboardShape()
-                .fill(Color.white)
-                .overlay(
-                    PianoKeyboardShape()
-                        .stroke(Color.black, lineWidth: 1)
-                )
+        GeometryReader { geometry in
+            let availableWidth = geometry.size.width
+            let calculatedWhiteKeyWidth = availableWidth / CGFloat(whiteKeys.count)
+            let calculatedBlackKeyWidth = calculatedWhiteKeyWidth * 0.65
             
-            // Black keys overlay
-            PianoBlackKeysShape()
-                .fill(Color.black)
-                .overlay(
-                    PianoBlackKeysShape()
-                        .stroke(Color.black, lineWidth: 1)
-                )
-            
-            // Interactive key areas
-            ForEach(allKeys, id: \.midiNumber) { note in
-                KeyArea(note: note, 
-                       isPressed: pressedKeys.contains(note),
-                       isSelected: selectedNotes.contains(note),
-                       showNoteName: showNoteNames) {
-                    handleKeyPress(note)
+            ZStack(alignment: .topLeading) {
+                // White keys background
+                HStack(spacing: 0) {
+                    ForEach(Array(whiteKeys.enumerated()), id: \.element.midiNumber) { index, note in
+                        WhiteKeyView(
+                            note: note,
+                            isPressed: pressedKeys.contains(note),
+                            isSelected: selectedNotes.contains(note),
+                            width: calculatedWhiteKeyWidth,
+                            height: whiteKeyHeight,
+                            showNoteName: showNoteNames
+                        ) {
+                            handleKeyPress(note)
+                        }
+                    }
+                }
+                
+                // Black keys overlay - positioned absolutely based on white key positions
+                ForEach(Array(whiteKeys.enumerated()), id: \.element.midiNumber) { index, whiteKey in
+                    if let blackKey = blackKeyAfter(whiteKey: whiteKey) {
+                        BlackKeyView(
+                            note: blackKey,
+                            isPressed: pressedKeys.contains(blackKey),
+                            isSelected: selectedNotes.contains(blackKey),
+                            width: calculatedBlackKeyWidth,
+                            height: blackKeyHeight,
+                            showNoteName: showNoteNames
+                        ) {
+                            handleKeyPress(blackKey)
+                        }
+                        .offset(x: CGFloat(index + 1) * calculatedWhiteKeyWidth - (calculatedBlackKeyWidth / 2), y: 0)
+                    }
                 }
             }
+            .frame(width: availableWidth, height: whiteKeyHeight)
         }
-        .frame(width: 350, height: 120)
+        .frame(height: whiteKeyHeight)
         .background(Color.gray.opacity(0.1))
         .cornerRadius(8)
     }
     
-    private var allKeys: [Note] {
+    // Generate white keys for A to E (1.5 octaves)
+    private var whiteKeys: [Note] {
         var keys: [Note] = []
         
-        for octave in octaveRange {
-            // White keys: C, D, E, F, G, A, B
-            let whiteKeyNames = ["C", "D", "E", "F", "G", "A", "B"]
-            for noteName in whiteKeyNames {
-                if let baseNote = Note.allNotes.first(where: { $0.name == noteName }) {
-                    let midiNumber = baseNote.midiNumber + (octave - 4) * 12
-                    let octaveNote = Note(name: noteName, midiNumber: midiNumber, isSharp: baseNote.isSharp)
-                    keys.append(octaveNote)
-                }
-            }
-            
-            // Black keys: C#, D#, F#, G#, A#
-            let blackKeyEnharmonics = [
-                ("C#", "Db"), ("D#", "Eb"), ("F#", "Gb"), ("G#", "Ab"), ("A#", "Bb")
-            ]
-            for (sharpName, flatName) in blackKeyEnharmonics {
-                if let sharpNote = Note.allNotes.first(where: { $0.name == sharpName }) {
-                    let midiNumber = sharpNote.midiNumber + (octave - 4) * 12
-                    let displayName = "\(sharpName)/\(flatName)"
-                    let octaveNote = Note(name: displayName, midiNumber: midiNumber, isSharp: true)
-                    keys.append(octaveNote)
-                }
+        // Starting MIDI numbers: A4=69, B4=71, C5=72, D5=74, E5=76
+        // We want: A, B, C, D, E, F, G, A, B, C, D, E
+        // That's: A4, B4, C5, D5, E5, F5, G5, A5, B5, C6, D6, E6
+        
+        let whiteKeyMidiNumbers = [
+            69, // A4
+            71, // B4
+            72, // C5
+            74, // D5
+            76, // E5
+            77, // F5
+            79, // G5
+            81, // A5
+            83, // B5
+            84, // C6
+            86, // D6
+            88  // E6
+        ]
+        
+        for midiNumber in whiteKeyMidiNumbers {
+            // Find the note name from the base MIDI number
+            let baseMidiNumber = ((midiNumber - 60) % 12) + 60
+            if let baseNote = Note.allNotes.first(where: { $0.midiNumber == baseMidiNumber && !$0.isSharp }) {
+                let note = Note(name: baseNote.name, midiNumber: midiNumber, isSharp: false)
+                keys.append(note)
             }
         }
         
-        return keys.sorted { $0.midiNumber < $1.midiNumber }
+        return keys
+    }
+    
+    // Get the black key that appears after a given white key, if any
+    private func blackKeyAfter(whiteKey: Note) -> Note? {
+        let noteName = whiteKey.name
+        
+        // No black keys after E and B
+        if noteName == "E" || noteName == "B" {
+            return nil
+        }
+        
+        // Calculate the black key MIDI number (one semitone above the white key)
+        let blackKeyMidiNumber = whiteKey.midiNumber + 1
+        
+        // Create the black key note
+        let baseMidiNumber = ((blackKeyMidiNumber - 60) % 12) + 60
+        
+        // Find the sharp version of the note
+        if let baseNote = Note.allNotes.first(where: { $0.midiNumber == baseMidiNumber && $0.isSharp }) {
+            // Also find the flat version for display
+            if let flatNote = Note.allNotes.first(where: { $0.midiNumber == baseMidiNumber && !$0.isSharp && $0.name.contains("b") }) {
+                let displayName = "\(baseNote.name)/\(flatNote.name)"
+                return Note(name: displayName, midiNumber: blackKeyMidiNumber, isSharp: true)
+            }
+            return Note(name: baseNote.name, midiNumber: blackKeyMidiNumber, isSharp: true)
+        }
+        
+        return nil
     }
     
     private func handleKeyPress(_ note: Note) {
@@ -103,85 +156,45 @@ struct PianoKeyboard: View {
     }
 }
 
-// MARK: - Piano Keyboard Shape
-struct PianoKeyboardShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let keyWidth = rect.width / 7 // 7 white keys
-        let keyHeight = rect.height
-        
-        // Draw 7 white keys
-        for i in 0..<7 {
-            let x = CGFloat(i) * keyWidth
-            let keyRect = CGRect(x: x, y: 0, width: keyWidth, height: keyHeight)
-            path.addRect(keyRect)
-        }
-        
-        return path
-    }
-}
-
-// MARK: - Piano Black Keys Shape
-struct PianoBlackKeysShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let whiteKeyWidth = rect.width / 7
-        let blackKeyWidth = whiteKeyWidth * 0.6
-        let blackKeyHeight = rect.height * 0.6
-        
-        // Black key positions relative to white keys
-        let blackKeyPositions: [CGFloat] = [
-            0.75,  // C# (between C and D)
-            1.75,  // D# (between D and E)
-            // Skip E-F gap
-            3.75,  // F# (between F and G)
-            4.75,  // G# (between G and A)
-            5.75   // A# (between A and B)
-        ]
-        
-        for position in blackKeyPositions {
-            let x = position * whiteKeyWidth - blackKeyWidth / 2
-            let y = 0
-            let keyRect = CGRect(x: x, y: CGFloat(y), width: blackKeyWidth, height: blackKeyHeight)
-            path.addRoundedRect(in: keyRect, cornerSize: CGSize(width: 4, height: 4))
-        }
-        
-        return path
-    }
-}
-
-// MARK: - Interactive Key Area
-struct KeyArea: View {
+// MARK: - White Key View
+struct WhiteKeyView: View {
     let note: Note
     let isPressed: Bool
     let isSelected: Bool
+    let width: CGFloat
+    let height: CGFloat
     let showNoteName: Bool
     let onPress: () -> Void
     
     var body: some View {
         Button(action: onPress) {
             ZStack {
-                // Invisible hit area
                 Rectangle()
-                    .fill(Color.clear)
-                    .frame(width: keyWidth, height: keyHeight)
-                    .position(keyPosition)
+                    .fill(keyColor)
+                    .frame(width: width, height: height)
+                    .overlay(
+                        Rectangle()
+                            .stroke(Color.black, lineWidth: 1)
+                    )
                 
-                // Note name overlay
-                if showNoteName {
-                    Text(note.name)
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .foregroundColor(note.isSharp ? .white : .black)
-                        .position(noteNamePosition)
-                }
-                
-                // Selection indicator
-                if isSelected {
-                    Circle()
-                        .fill(Color.blue.opacity(0.7))
-                        .frame(width: 20, height: 20)
-                        .position(selectionIndicatorPosition)
+                VStack {
+                    Spacer()
+                    
+                    // Selection indicator at bottom
+                    if isSelected {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: min(width * 0.6, 16), height: min(width * 0.6, 16))
+                            .padding(.bottom, 8)
+                    }
+                    
+                    // Note name at bottom
+                    if showNoteName {
+                        Text(note.name)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.black.opacity(0.6))
+                            .padding(.bottom, 4)
+                    }
                 }
             }
         }
@@ -190,65 +203,86 @@ struct KeyArea: View {
         .animation(.easeInOut(duration: 0.1), value: isPressed)
     }
     
-    private var keyWidth: CGFloat {
-        note.isSharp ? 30 : 50
-    }
-    
-    private var keyHeight: CGFloat {
-        note.isSharp ? 72 : 120
-    }
-    
-    private var keyPosition: CGPoint {
-        let whiteKeyWidth: CGFloat = 50
-        let blackKeyWidth: CGFloat = 30
-        
-        if note.isSharp {
-            // Black key positioning
-            let blackKeyPositions: [String: CGFloat] = [
-                "C#": 0.75,
-                "D#": 1.75,
-                "F#": 3.75,
-                "G#": 4.75,
-                "A#": 5.75
-            ]
-            
-            let sharpName = note.name.components(separatedBy: "/").first ?? ""
-            let position = blackKeyPositions[sharpName] ?? 0
-            let x = position * whiteKeyWidth
-            let y: CGFloat = 36 // Half of black key height
-            
-            return CGPoint(x: x, y: y)
+    private var keyColor: Color {
+        if isSelected {
+            return .blue.opacity(0.2)
+        } else if isPressed {
+            return .gray.opacity(0.3)
         } else {
-            // White key positioning
-            let whiteKeyPositions: [String: Int] = [
-                "C": 0, "D": 1, "E": 2, "F": 3, "G": 4, "A": 5, "B": 6
-            ]
-            
-            let position = whiteKeyPositions[note.name] ?? 0
-            let x = CGFloat(position) * whiteKeyWidth + whiteKeyWidth / 2
-            let y: CGFloat = 60 // Half of white key height
-            
-            return CGPoint(x: x, y: y)
+            return .white
         }
     }
+}
+
+// MARK: - Black Key View
+struct BlackKeyView: View {
+    let note: Note
+    let isPressed: Bool
+    let isSelected: Bool
+    let width: CGFloat
+    let height: CGFloat
+    let showNoteName: Bool
+    let onPress: () -> Void
     
-    private var noteNamePosition: CGPoint {
-        let pos = keyPosition
-        return CGPoint(x: pos.x, y: pos.y + 20)
+    var body: some View {
+        Button(action: onPress) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(keyColor)
+                    .frame(width: width, height: height)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(Color.black.opacity(0.3), lineWidth: 1)
+                    )
+                    .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 2)
+                
+                VStack {
+                    Spacer()
+                    
+                    // Selection indicator at bottom
+                    if isSelected {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: min(width * 0.6, 12), height: min(width * 0.6, 12))
+                            .padding(.bottom, 6)
+                    }
+                    
+                    // Note name at bottom
+                    if showNoteName {
+                        Text(note.name)
+                            .font(.system(size: 8, weight: .medium))
+                            .foregroundColor(.white.opacity(0.8))
+                            .padding(.bottom, 4)
+                    }
+                }
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .animation(.easeInOut(duration: 0.1), value: isPressed)
     }
     
-    private var selectionIndicatorPosition: CGPoint {
-        let pos = keyPosition
-        return CGPoint(x: pos.x, y: pos.y - 30)
+    private var keyColor: Color {
+        if isSelected {
+            return .blue.opacity(0.8)
+        } else if isPressed {
+            return .gray.opacity(0.7)
+        } else {
+            return .black
+        }
     }
 }
 
 // MARK: - Preview
 #Preview {
-    VStack {
+    VStack(spacing: 20) {
         Text("Piano Keyboard")
             .font(.headline)
             .padding()
+        
+        Text("1.5 Octaves: A to E")
+            .font(.subheadline)
+            .foregroundColor(.secondary)
         
         PianoKeyboard(
             selectedNotes: .constant(Set<Note>()),

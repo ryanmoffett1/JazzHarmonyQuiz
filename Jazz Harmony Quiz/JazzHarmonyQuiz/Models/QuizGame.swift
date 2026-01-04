@@ -132,19 +132,24 @@ class QuizGame: ObservableObject {
     private func isAnswerCorrect(userAnswer: [Note], question: QuizQuestion) -> Bool {
         let correctAnswer = question.correctAnswer
         
+        // Helper function to normalize MIDI number to pitch class (0-11)
+        func pitchClass(_ midiNumber: Int) -> Int {
+            return ((midiNumber - 60) % 12 + 12) % 12
+        }
+        
         // For single tone questions, check if the user selected the correct note
         if question.questionType == .singleTone {
             guard userAnswer.count == 1, correctAnswer.count == 1 else { return false }
-            // Compare MIDI numbers to handle enharmonic equivalents
-            return userAnswer[0].midiNumber == correctAnswer[0].midiNumber
+            // Compare pitch classes to handle different octaves
+            return pitchClass(userAnswer[0].midiNumber) == pitchClass(correctAnswer[0].midiNumber)
         }
         
         // For all tones and chord spelling, check if all correct notes are selected
-        // and no incorrect notes are selected
-        let userNotes = Set(userAnswer.map { $0.midiNumber })
-        let correctNotes = Set(correctAnswer.map { $0.midiNumber })
+        // and no incorrect notes are selected (comparing pitch classes)
+        let userPitchClasses = Set(userAnswer.map { pitchClass($0.midiNumber) })
+        let correctPitchClasses = Set(correctAnswer.map { pitchClass($0.midiNumber) })
         
-        return userNotes == correctNotes
+        return userPitchClasses == correctPitchClasses
     }
     
     // MARK: - Leaderboard Management

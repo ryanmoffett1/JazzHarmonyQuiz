@@ -7,6 +7,16 @@ struct Note: Identifiable, Hashable, Codable {
     let midiNumber: Int
     let isSharp: Bool
     
+    // Custom hash implementation based on MIDI number only
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(midiNumber)
+    }
+    
+    // Custom equality based on MIDI number only
+    static func == (lhs: Note, rhs: Note) -> Bool {
+        return lhs.midiNumber == rhs.midiNumber
+    }
+    
     static let allNotes: [Note] = [
         Note(name: "C", midiNumber: 60, isSharp: false),
         Note(name: "C#", midiNumber: 61, isSharp: true),

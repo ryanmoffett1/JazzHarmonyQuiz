@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LeaderboardView: View {
     @EnvironmentObject var quizGame: QuizGame
+    @Environment(\.dismiss) private var dismiss
     @State private var selectedSortOption: SortOption = .score
     @State private var showingClearConfirmation = false
     

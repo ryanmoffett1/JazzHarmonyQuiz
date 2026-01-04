@@ -4,15 +4,16 @@ struct ResultsView: View {
     @EnvironmentObject var quizGame: QuizGame
     @State private var showingReview = false
     @State private var selectedQuestionIndex = 0
+    var onNewQuiz: (() -> Void)? = nil // Add callback for new quiz
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 30) {
-                    if let result = quizGame.currentResult {
-                        // Header
-                        VStack(spacing: 10) {
-                            Text("Quiz Complete! - Results View")
-                                .font(.largeTitle)
+            VStack(spacing: 20) { // Reduced from 30 to 20
+                if let result = quizGame.currentResult {
+                        // Header - Made more compact
+                        VStack(spacing: 8) { // Reduced from 10 to 8
+                            Text("Quiz Complete!")
+                                .font(.title) // Reduced from largeTitle
                                 .fontWeight(.bold)
                             
                             Text("Great job on completing the chord drill")
@@ -20,14 +21,14 @@ struct ResultsView: View {
                                 .foregroundColor(.secondary)
                         }
                         
-                        // Score Card
-                        VStack(spacing: 20) {
+                        // Score Card - Made more compact
+                        VStack(spacing: 15) { // Reduced from 20 to 15
                             Text("\(result.score)%")
-                                .font(.system(size: 60, weight: .bold, design: .rounded))
+                                .font(.system(size: 50, weight: .bold, design: .rounded)) // Reduced from 60 to 50
                                 .foregroundColor(scoreColor(result.score))
                             
                             Text("\(result.correctAnswers) out of \(result.totalQuestions) correct")
-                                .font(.title2)
+                                .font(.headline) // Reduced from title2
                                 .fontWeight(.medium)
                             
                             HStack(spacing: 30) {
@@ -50,13 +51,14 @@ struct ResultsView: View {
                                 }
                             }
                         }
-                        .padding()
+                        .padding(.vertical, 15) // Reduced vertical padding
+                        .padding(.horizontal)
                         .background(Color(.systemGray6))
                         .cornerRadius(16)
                         
-                        // Performance Indicators
-                        VStack(alignment: .leading, spacing: 15) {
-                            Text("Performance Breakdown")
+                        // Performance Indicators - Made more compact
+                        VStack(alignment: .leading, spacing: 10) { // Reduced from 15 to 10
+                            Text("Performance")
                                 .font(.headline)
                             
                             PerformanceBar(
@@ -81,8 +83,8 @@ struct ResultsView: View {
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
                         
-                        // Action Buttons
-                        VStack(spacing: 15) {
+                        // Action Buttons - Reduced spacing and padding
+                        VStack(spacing: 10) { // Reduced from 15 to 10
                             Button(action: { 
                                 print("Review button tapped")
                                 showingReview = true 
@@ -94,7 +96,7 @@ struct ResultsView: View {
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .padding()
+                                .padding(.vertical, 12) // Reduced from default padding
                                 .background(Color.orange)
                                 .cornerRadius(12)
                             }
@@ -102,8 +104,8 @@ struct ResultsView: View {
                             Button(action: {
                                 // Debug: Check if button is being tapped
                                 print("New Quiz button tapped")
-                                // Reset quiz state and go back to quiz setup
-                                quizGame.resetQuizState()
+                                // Call the callback instead of directly resetting
+                                onNewQuiz?()
                             }) {
                                 HStack {
                                     Image(systemName: "arrow.clockwise")
@@ -112,7 +114,7 @@ struct ResultsView: View {
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .padding()
+                                .padding(.vertical, 12) // Reduced from default padding
                                 .background(Color.blue)
                                 .cornerRadius(12)
                             }
@@ -125,7 +127,7 @@ struct ResultsView: View {
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .padding()
+                                .padding(.vertical, 12) // Reduced from default padding
                                 .background(Color.purple)
                                 .cornerRadius(12)
                             }
@@ -133,10 +135,11 @@ struct ResultsView: View {
                         
                         // Encouragement Message
                         Text(encouragementMessage(result.score))
-                            .font(.subheadline)
+                            .font(.caption) // Reduced from subheadline
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
+                            .padding(.top, 8) // Reduced padding
                     } else {
                         // No result available - redirect to main view
                         VStack(spacing: 30) {
@@ -150,8 +153,8 @@ struct ResultsView: View {
                                 .multilineTextAlignment(.center)
                             
                             Button(action: {
-                                // Reset quiz state and go back to quiz setup
-                                quizGame.resetQuizState()
+                                // Call the callback instead of directly resetting
+                                onNewQuiz?()
                             }) {
                                 Text("Start New Quiz")
                                     .font(.headline)
@@ -164,20 +167,22 @@ struct ResultsView: View {
                         }
                         .padding()
                     }
-                }
-                .padding()
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        // Reset quiz state and go back to quiz setup
-                        quizGame.resetQuizState()
-                    }) {
-                        Text("New Quiz")
-                    }
+            .padding(.horizontal)
+            .padding(.top, 20)
+            .padding(.bottom, 60) // Ensure buttons are visible above safe area
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    // Call the callback instead of directly resetting
+                    onNewQuiz?()
+                }) {
+                    Text("New Quiz")
                 }
             }
+        }
         .fullScreenCover(isPresented: $showingReview) {
             NavigationView {
                 ReviewView(selectedQuestionIndex: $selectedQuestionIndex)
