@@ -139,7 +139,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone.allTones[7]  // 9th
                 ],
                 difficulty: .intermediate
@@ -152,7 +152,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone(degree: 3, name: "b3", semitonesFromRoot: 3, isAltered: true), // b3
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone.allTones[7]  // 9th
                 ],
                 difficulty: .intermediate
@@ -166,7 +166,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone(degree: 2, name: "b9", semitonesFromRoot: 1, isAltered: true) // b9
                 ],
                 difficulty: .advanced
@@ -179,7 +179,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone(degree: 2, name: "#9", semitonesFromRoot: 3, isAltered: true) // #9
                 ],
                 difficulty: .advanced
@@ -192,7 +192,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone(degree: 5, name: "b5", semitonesFromRoot: 6, isAltered: true), // b5
-                    ChordTone.allTones[6]  // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true)  // b7
                 ],
                 difficulty: .advanced
             ),
@@ -204,7 +204,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone(degree: 5, name: "#5", semitonesFromRoot: 8, isAltered: true), // #5
-                    ChordTone.allTones[6]  // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true)  // b7
                 ],
                 difficulty: .advanced
             ),
@@ -216,7 +216,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone(degree: 2, name: "b9", semitonesFromRoot: 1, isAltered: true), // b9
                     ChordTone(degree: 2, name: "#9", semitonesFromRoot: 3, isAltered: true)  // #9
                 ],
@@ -230,7 +230,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone(degree: 5, name: "b5", semitonesFromRoot: 6, isAltered: true), // b5
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone(degree: 2, name: "b9", semitonesFromRoot: 1, isAltered: true)  // b9
                 ],
                 difficulty: .advanced
@@ -243,7 +243,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone(degree: 5, name: "#5", semitonesFromRoot: 8, isAltered: true), // #5
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone(degree: 2, name: "#9", semitonesFromRoot: 3, isAltered: true)  // #9
                 ],
                 difficulty: .advanced
@@ -257,7 +257,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone(degree: 5, name: "b5", semitonesFromRoot: 6, isAltered: true), // b5
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone(degree: 2, name: "b9", semitonesFromRoot: 1, isAltered: true), // b9
                     ChordTone(degree: 2, name: "#9", semitonesFromRoot: 3, isAltered: true)  // #9
                 ],
@@ -271,7 +271,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone(degree: 5, name: "#5", semitonesFromRoot: 8, isAltered: true), // #5
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone(degree: 2, name: "b9", semitonesFromRoot: 1, isAltered: true), // b9
                     ChordTone(degree: 2, name: "#9", semitonesFromRoot: 3, isAltered: true)  // #9
                 ],
@@ -299,7 +299,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone.allTones[7], // 9th
                     ChordTone.allTones[8]  // 11th
                 ],
@@ -313,7 +313,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone(degree: 3, name: "b3", semitonesFromRoot: 3, isAltered: true), // b3
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone.allTones[7], // 9th
                     ChordTone.allTones[8]  // 11th
                 ],
@@ -341,7 +341,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone.allTones[7], // 9th
                     ChordTone.allTones[9]  // 13th
                 ],
@@ -355,7 +355,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone(degree: 3, name: "b3", semitonesFromRoot: 3, isAltered: true), // b3
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone.allTones[7], // 9th
                     ChordTone.allTones[9]  // 13th
                 ],
@@ -369,7 +369,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone(degree: 6, name: "b13", semitonesFromRoot: 8, isAltered: true) // b13
                 ],
                 difficulty: .expert
@@ -382,7 +382,7 @@ class JazzChordDatabase: ObservableObject {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone.allTones[4], // 5th
-                    ChordTone.allTones[6], // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
                     ChordTone(degree: 6, name: "#13", semitonesFromRoot: 10, isAltered: true) // #13
                 ],
                 difficulty: .expert
@@ -399,7 +399,7 @@ class JazzChordDatabase: ObservableObject {
         
         // Use common chord roots that include both sharps and flats
         let commonChordRoots = [
-            "C", "C#", "Db", "D", "D#", "Eb", "E", "F", 
+            "C", "C#", "Db", "D", "D#", "Eb", "E", "F",
             "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B"
         ]
         
@@ -420,7 +420,7 @@ class JazzChordDatabase: ObservableObject {
         
         // Use common chord roots that include both sharps and flats
         let commonChordRoots = [
-            "C", "C#", "Db", "D", "D#", "Eb", "E", "F", 
+            "C", "C#", "Db", "D", "D#", "Eb", "E", "F",
             "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B"
         ]
         

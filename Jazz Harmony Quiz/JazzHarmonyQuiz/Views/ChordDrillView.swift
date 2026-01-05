@@ -16,8 +16,8 @@ struct ChordDrillView: View {
         case results
     }
     
-    init(numberOfQuestions: Int = 10, 
-         selectedDifficulty: ChordType.ChordDifficulty = .beginner, 
+    init(numberOfQuestions: Int = 10,
+         selectedDifficulty: ChordType.ChordDifficulty = .beginner,
          selectedQuestionTypes: Set<QuestionType> = [.singleTone, .allTones]) {
         self._numberOfQuestions = State(initialValue: numberOfQuestions)
         self._selectedDifficulty = State(initialValue: selectedDifficulty)
@@ -315,10 +315,9 @@ struct ActiveQuizView: View {
             }
         } message: {
             if isCorrect {
-                Text("Correct! 🎉")
+                Text("Correct! 🎉\n\nYou answered:\n\(formatAnswerWithLabels(Array(selectedNotes)))")
             } else {
-                let correctNoteNames = correctAnswerForFeedback.map { $0.name }.joined(separator: ", ")
-                Text("Incorrect. The correct answer was: \(correctNoteNames)")
+                Text("Incorrect.\n\nYou answered:\n\(formatAnswerWithLabels(Array(selectedNotes)))\n\nCorrect answer:\n\(formatAnswerWithLabels(correctAnswerForFeedback))")
             }
         }
     }
@@ -395,6 +394,54 @@ struct ActiveQuizView: View {
         
         // The viewState will automatically update to .results when isQuizCompleted changes
         // via the onChange handler in ChordDrillView
+    }
+    
+    private func formatAnswerWithLabels(_ notes: [Note]) -> String {
+        guard let question = currentQuestionForFeedback else {
+            return notes.map { $0.name }.joined(separator: ", ")
+        }
+        
+        // Determine tonality preference based on the chord root
+        let preferSharps = question.chord.root.isSharp || ["B", "E", "A", "D", "G"].contains(question.chord.root.name)
+        
+        let sortedNotes = notes.sorted { $0.midiNumber < $1.midiNumber }
+        return sortedNotes.map { note in
+            // Convert note to match the chord's tonality
+            let displayNote = Note.noteFromMidi(note.midiNumber, preferSharps: preferSharps) ?? note
+            let label = getChordToneLabel(for: note, in: question)
+            return "\(displayNote.name) (\(label))"
+        }.joined(separator: ", ")
+    }
+    
+    private func getChordToneLabel(for note: Note, in question: QuizQuestion) -> String {
+        // Calculate pitch class relative to root
+        let rootPitchClass = ((question.chord.root.midiNumber - 60) % 12 + 12) % 12
+        let notePitchClass = ((note.midiNumber - 60) % 12 + 12) % 12
+        let interval = (notePitchClass - rootPitchClass + 12) % 12
+        
+        // Try to match the interval to a chord tone from the chord type
+        for chordTone in question.chord.chordType.chordTones {
+            if chordTone.semitonesFromRoot == interval {
+                return chordTone.name
+            }
+        }
+        
+        // Fallback: generic interval labels
+        switch interval {
+        case 0: return "Root"
+        case 1: return "b9"
+        case 2: return "9"
+        case 3: return "b3/#9"
+        case 4: return "3"
+        case 5: return "4"
+        case 6: return "b5"
+        case 7: return "5"
+        case 8: return "#5/b13"
+        case 9: return "6/13"
+        case 10: return "b7"
+        case 11: return "7"
+        default: return "?"
+        }
     }
 }
 

@@ -85,9 +85,9 @@ struct ResultsView: View {
                         
                         // Action Buttons - Reduced spacing and padding
                         VStack(spacing: 10) { // Reduced from 15 to 10
-                            Button(action: { 
+                            Button(action: {
                                 print("Review button tapped")
-                                showingReview = true 
+                                showingReview = true
                             }) {
                                 HStack {
                                     Image(systemName: "list.bullet")
@@ -398,14 +398,22 @@ struct QuestionReviewCard: View {
                                 .foregroundColor(.secondary)
                                 .italic()
                         } else {
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 10) {
-                                ForEach(userAnswer, id: \.midiNumber) { note in
-                                    Text(note.name)
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .frame(width: 50, height: 50)
-                                        .background(isCorrect ? Color.green : Color.red)
-                                        .cornerRadius(8)
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 10) {
+                                ForEach(userAnswer.sorted(by: { $0.midiNumber < $1.midiNumber }), id: \.midiNumber) { note in
+                                    let displayNote = convertToChordTonality(note)
+                                    VStack(spacing: 4) {
+                                        Text(displayNote.name)
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                            .frame(height: 40)
+                                        Text(getChordToneLabel(for: note))
+                                            .font(.caption2)
+                                            .foregroundColor(.white.opacity(0.9))
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(isUserNoteCorrect(note) ? Color.green : Color.red)
+                                    .cornerRadius(8)
                                 }
                             }
                         }
@@ -419,14 +427,21 @@ struct QuestionReviewCard: View {
                         Text("Correct Answer:")
                             .font(.headline)
                         
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 10) {
-                            ForEach(correctAnswer, id: \.midiNumber) { note in
-                                Text(note.name)
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .frame(width: 50, height: 50)
-                                    .background(Color.green)
-                                    .cornerRadius(8)
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 10) {
+                            ForEach(Array(correctAnswer.sorted(by: { $0.midiNumber < $1.midiNumber }).enumerated()), id: \.element.midiNumber) { index, note in
+                                VStack(spacing: 4) {
+                                    Text(note.name)
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(height: 40)
+                                    Text(getChordToneLabel(for: note, isCorrectAnswer: true, index: index))
+                                        .font(.caption2)
+                                        .foregroundColor(.white.opacity(0.9))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                                .background(Color.green)
+                                .cornerRadius(8)
                             }
                         }
                     }
@@ -443,7 +458,7 @@ struct QuestionReviewCard: View {
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Full Name: \(question.chord.fullName)")
                         Text("Difficulty: \(question.chord.chordType.difficulty.rawValue)")
-                        Text("Chord Tones: \(question.chord.chordTones.map { $0.name }.joined(separator: ", "))")
+                        Text("Chord Tones: \(formatChordTonesWithLabels())")
                     }
                     .font(.subheadline)
                     .foregroundColor(.secondary)
@@ -470,6 +485,63 @@ struct QuestionReviewCard: View {
         case .chordSpelling:
             return "Spell the entire chord"
         }
+    }
+    
+    // Convert note to match the chord's tonality
+    private func convertToChordTonality(_ note: Note) -> Note {
+        let preferSharps = question.chord.root.isSharp || ["B", "E", "A", "D", "G"].contains(question.chord.root.name)
+        return Note.noteFromMidi(note.midiNumber, preferSharps: preferSharps) ?? note
+    }
+    
+    // Helper to determine if a user's note is correct
+    private func isUserNoteCorrect(_ note: Note) -> Bool {
+        let userPitchClass = ((note.midiNumber - 60) % 12 + 12) % 12
+        return correctAnswer.contains { correctNote in
+            let correctPitchClass = ((correctNote.midiNumber - 60) % 12 + 12) % 12
+            return userPitchClass == correctPitchClass
+        }
+    }
+    
+    // Helper to get the chord tone label for a note
+    private func getChordToneLabel(for note: Note, isCorrectAnswer: Bool = false, index: Int = 0) -> String {
+        // Calculate pitch class relative to root
+        let rootPitchClass = ((question.chord.root.midiNumber - 60) % 12 + 12) % 12
+        let notePitchClass = ((note.midiNumber - 60) % 12 + 12) % 12
+        let interval = (notePitchClass - rootPitchClass + 12) % 12
+        
+        // Try to match the interval to a chord tone from the chord type
+        for chordTone in question.chord.chordType.chordTones {
+            if chordTone.semitonesFromRoot == interval {
+                return chordTone.name
+            }
+        }
+        
+        // Fallback: generic interval labels
+        switch interval {
+        case 0: return "Root"
+        case 1: return "b9"
+        case 2: return "9"
+        case 3: return "b3/#9"
+        case 4: return "3"
+        case 5: return "4"
+        case 6: return "b5"
+        case 7: return "5"
+        case 8: return "#5/b13"
+        case 9: return "6/13"
+        case 10: return "b7"
+        case 11: return "7"
+        default: return "?"
+        }
+    }
+    
+    private func formatChordTonesWithLabels() -> String {
+        return question.chord.chordType.chordTones.enumerated().map { index, chordTone in
+            if index < question.chord.chordTones.count {
+                let note = question.chord.chordTones[index]
+                return "\(note.name) (\(chordTone.name))"
+            }
+            return ""
+        }.filter { !$0.isEmpty }.joined(separator: ", ")
     }
 }
 

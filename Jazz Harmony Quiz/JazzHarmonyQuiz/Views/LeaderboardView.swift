@@ -41,6 +41,9 @@ struct LeaderboardView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding()
+                    .onChange(of: selectedSortOption) { newOption in
+                        sortLeaderboard(by: newOption)
+                    }
                     
                     // Leaderboard List
                     List(sortedResults, id: \.id) { result in
@@ -54,6 +57,12 @@ struct LeaderboardView: View {
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
             quizGame.loadLeaderboardFromUserDefaults()
+            // Ensure the leaderboard is shown sorted according to the currently selected option
+            sortLeaderboard(by: selectedSortOption)
+        }
+        .onChange(of: quizGame.leaderboard) { _ in
+            // If the underlying leaderboard changes elsewhere, keep it sorted according to the selected option
+            sortLeaderboard(by: selectedSortOption)
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -75,24 +84,29 @@ struct LeaderboardView: View {
         }
     }
     
+    // Now read directly from the model's leaderboard which we explicitly sort when the option changes
     private var sortedResults: [QuizResult] {
-        switch selectedSortOption {
+        return quizGame.leaderboard
+    }
+    
+    private func sortLeaderboard(by option: SortOption) {
+        switch option {
         case .score:
-            return quizGame.leaderboard.sorted { first, second in
+            quizGame.leaderboard.sort { first, second in
                 if first.score != second.score {
                     return first.score > second.score
                 }
                 return first.totalTime < second.totalTime
             }
         case .time:
-            return quizGame.leaderboard.sorted { first, second in
+            quizGame.leaderboard.sort { first, second in
                 if first.totalTime != second.totalTime {
                     return first.totalTime < second.totalTime
                 }
                 return first.score > second.score
             }
         case .recent:
-            return quizGame.leaderboard.sorted { first, second in
+            quizGame.leaderboard.sort { first, second in
                 return first.date > second.date
             }
         }
@@ -105,6 +119,8 @@ struct LeaderboardView: View {
 }
 
 struct EmptyLeaderboardView: View {
+    @Environment(\.dismiss) private var dismiss
+    
     var body: some View {
         VStack(spacing: 30) {
             Image(systemName: "trophy")
@@ -120,7 +136,9 @@ struct EmptyLeaderboardView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            NavigationLink(destination: ChordDrillView()) {
+            Button(action: {
+                dismiss()
+            }) {
                 HStack {
                     Image(systemName: "play.fill")
                     Text("Start Quiz")

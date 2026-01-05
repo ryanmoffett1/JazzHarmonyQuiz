@@ -37,12 +37,26 @@ struct Note: Identifiable, Hashable, Codable {
         Note(name: "B", midiNumber: 71, isSharp: false)
     ]
     
-    static func noteFromMidi(_ midiNumber: Int) -> Note? {
+    static func noteFromMidi(_ midiNumber: Int, preferSharps: Bool = true) -> Note? {
         // Handle octave wrapping - map to the base octave (60-71)
         let baseMidiNumber = ((midiNumber - 60) % 12) + 60
-        return allNotes.first { $0.midiNumber == baseMidiNumber }
+        
+        // For black keys (enharmonic notes), choose based on tonality preference
+        let candidates = allNotes.filter { $0.midiNumber == baseMidiNumber }
+        
+        if candidates.count == 1 {
+            return candidates.first
+        } else if candidates.count > 1 {
+            // Multiple enharmonic options - choose based on preference
+            if preferSharps {
+                return candidates.first { $0.isSharp } ?? candidates.first
+            } else {
+                return candidates.first { !$0.isSharp } ?? candidates.first
+            }
+        }
+        
+        return nil
     }
-    
 }
 
 struct ChordTone: Identifiable, Hashable, Codable {
@@ -119,11 +133,16 @@ struct Chord: Identifiable, Hashable, Codable {
         self.root = root
         self.chordType = chordType
         
+        // Determine tonality preference based on root note
+        // Sharp roots (C#, D#, F#, G#, A#) and sharp-friendly keys (B, E, A, D, G) prefer sharps
+        // Flat roots (Db, Eb, Gb, Ab, Bb) and flat-friendly keys (F, C) prefer flats
+        let preferSharps = root.isSharp || ["B", "E", "A", "D", "G"].contains(root.name)
+        
         // Calculate chord tones based on root and chord type
         var tones: [Note] = []
         for chordTone in chordType.chordTones {
             let midiNumber = root.midiNumber + chordTone.semitonesFromRoot
-            if let note = Note.noteFromMidi(midiNumber) {
+            if let note = Note.noteFromMidi(midiNumber, preferSharps: preferSharps) {
                 tones.append(note)
             }
         }
@@ -131,14 +150,15 @@ struct Chord: Identifiable, Hashable, Codable {
     }
     
     func getChordTone(by degree: Int, isAltered: Bool = false) -> Note? {
-        let targetTone = ChordTone.allTones.first { 
-            $0.degree == degree && $0.isAltered == isAltered 
+        let targetTone = ChordTone.allTones.first {
+            $0.degree == degree && $0.isAltered == isAltered
         }
         
         guard let tone = targetTone else { return nil }
         
+        let preferSharps = root.isSharp || ["B", "E", "A", "D", "G"].contains(root.name)
         let midiNumber = root.midiNumber + tone.semitonesFromRoot
-        return Note.noteFromMidi(midiNumber)
+        return Note.noteFromMidi(midiNumber, preferSharps: preferSharps)
     }
     
     func getChordTone(by name: String) -> Note? {
@@ -146,8 +166,9 @@ struct Chord: Identifiable, Hashable, Codable {
         
         guard let tone = targetTone else { return nil }
         
+        let preferSharps = root.isSharp || ["B", "E", "A", "D", "G"].contains(root.name)
         let midiNumber = root.midiNumber + tone.semitonesFromRoot
-        return Note.noteFromMidi(midiNumber)
+        return Note.noteFromMidi(midiNumber, preferSharps: preferSharps)
     }
 }
 
