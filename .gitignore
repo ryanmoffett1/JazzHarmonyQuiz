@@ -63,10 +63,6 @@ fastlane/README.md
 
 # Visual Studio Code
 .vscode/
-.vscode/settings.json
-.vscode/tasks.json
-.vscode/launch.json
-.vscode/extensions.json
 *.code-workspace
 .history/
 
@@ -85,7 +81,6 @@ out/
 # Vim
 *.swp
 *.swo
-*~
 
 # Emacs
 *~
@@ -109,5 +104,4 @@ coverage/
 *.profdata
 
 # Testing
-*.moved-aside
 *.xcresult
