@@ -3,12 +3,18 @@ import SwiftUI
 struct ChordDrillView: View {
     @EnvironmentObject var quizGame: QuizGame
     @State private var selectedNotes: Set<Note> = []
-    @State private var showingQuizSetup = true
+    @State private var viewState: ViewState = .setup
     @State private var numberOfQuestions: Int
     @State private var selectedDifficulty: ChordType.ChordDifficulty
     @State private var selectedQuestionTypes: Set<QuestionType>
     @State private var showingResults = false
     @State private var showingFeedback = false
+    
+    enum ViewState {
+        case setup
+        case active
+        case results
+    }
     
     init(numberOfQuestions: Int = 10, 
          selectedDifficulty: ChordType.ChordDifficulty = .beginner, 
@@ -19,31 +25,27 @@ struct ChordDrillView: View {
     }
     
     var body: some View {
-        ZStack {
-            if showingQuizSetup {
+        let _ = print("🔍 ChordDrillView body evaluating: viewState=\(viewState), isQuizActive=\(quizGame.isQuizActive), isQuizCompleted=\(quizGame.isQuizCompleted)")
+        
+        return ZStack {
+            switch viewState {
+            case .setup:
                 QuizSetupView(
                     numberOfQuestions: $numberOfQuestions,
                     selectedDifficulty: $selectedDifficulty,
                     selectedQuestionTypes: $selectedQuestionTypes,
                     onStartQuiz: startQuiz
                 )
-            } else if quizGame.isQuizActive {
-                ActiveQuizView(selectedNotes: $selectedNotes, showingFeedback: $showingFeedback, showingQuizSetup: $showingQuizSetup)
-            } else if quizGame.isQuizCompleted {
+            case .active:
+                ActiveQuizView(selectedNotes: $selectedNotes, showingFeedback: $showingFeedback, viewState: $viewState)
+            case .results:
                 ResultsView(onNewQuiz: {
                     // Reset quiz and show setup
                     quizGame.resetQuizState()
-                    showingQuizSetup = true
+                    viewState = .setup
                     selectedNotes = []
                     showingFeedback = false
                 })
-            } else {
-                // Show loading or start quiz immediately
-                VStack {
-                    Text("Starting Quiz...")
-                        .font(.title)
-                    ProgressView()
-                }
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -65,28 +67,11 @@ struct ChordDrillView: View {
                 }
             }
         }
-        .onAppear {
-            // Reset quiz state when view appears
-            quizGame.resetQuizState()
-        }
+        // Removed .onChange handlers that were causing state confusion
         .onChange(of: quizGame.isQuizCompleted) { isCompleted in
-            // When quiz is completed, show results (but only if not showing feedback)
-            if isCompleted && !showingFeedback {
-                showingQuizSetup = false
-            }
-        }
-        .onChange(of: quizGame.isQuizActive) { isActive in
-            // When quiz becomes inactive and not completed, go back to setup
-            if !isActive && !quizGame.isQuizCompleted {
-                showingQuizSetup = true
-            }
-        }
-        .onChange(of: quizGame.isQuizCompleted) { isCompleted in
-            // When quiz is no longer completed, go back to setup
-            if !isCompleted {
-                showingQuizSetup = true
-                selectedNotes = []
-                showingFeedback = false
+            // When quiz completes, switch to results view
+            if isCompleted {
+                viewState = .results
             }
         }
     }
@@ -95,7 +80,7 @@ struct ChordDrillView: View {
         // Clear all previous state
         selectedNotes = []
         showingFeedback = false
-        showingQuizSetup = false
+        viewState = .active
         
         // Start the new quiz
         quizGame.startNewQuiz(
@@ -106,7 +91,7 @@ struct ChordDrillView: View {
     }
     
     private func quitQuiz() {
-        showingQuizSetup = true
+        viewState = .setup
         quizGame.resetQuizState()
         selectedNotes = []
         showingFeedback = false
@@ -114,6 +99,7 @@ struct ChordDrillView: View {
 }
 
 struct QuizSetupView: View {
+    @EnvironmentObject var quizGame: QuizGame
     @Binding var numberOfQuestions: Int
     @Binding var selectedDifficulty: ChordType.ChordDifficulty
     @Binding var selectedQuestionTypes: Set<QuestionType>
@@ -204,6 +190,24 @@ struct QuizSetupView: View {
                 }
                 .disabled(selectedQuestionTypes.isEmpty)
                 
+                // Leaderboard Button
+                NavigationLink(destination: LeaderboardView().environmentObject(quizGame)) {
+                    HStack {
+                        Image(systemName: "trophy.fill")
+                        Text("View Leaderboard")
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.orange)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.orange, lineWidth: 1.5)
+                    )
+                }
+                
                 Spacer()
             }
             .padding()
@@ -215,7 +219,7 @@ struct ActiveQuizView: View {
     @EnvironmentObject var quizGame: QuizGame
     @Binding var selectedNotes: Set<Note>
     @Binding var showingFeedback: Bool
-    @Binding var showingQuizSetup: Bool
+    @Binding var viewState: ChordDrillView.ViewState
     @State private var isCorrect = false
     @State private var currentQuestionForFeedback: QuizQuestion?
     @State private var correctAnswerForFeedback: [Note] = []
@@ -389,16 +393,8 @@ struct ActiveQuizView: View {
         
         selectedNotes.removeAll()
         
-        if isLastQuestion {
-            // This was the last question, results will be shown automatically
-            // The quiz is now completed (handled by quizGame.submitAnswer above)
-            showingQuizSetup = false
-        } else if quizGame.isQuizActive {
-            // Quiz continues with next question
-        } else {
-            // Quiz completed, results will be shown
-            showingQuizSetup = false
-        }
+        // The viewState will automatically update to .results when isQuizCompleted changes
+        // via the onChange handler in ChordDrillView
     }
 }
 
