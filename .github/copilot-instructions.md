@@ -4,6 +4,16 @@ This file provides context-specific instructions for GitHub Copilot when working
 
 ---
 
+## Git Workflow
+
+**IMPORTANT:** This is a git-tracked project. After completing significant work:
+1. Stage changes with `git add -A`
+2. Commit with descriptive messages summarizing the changes
+3. Use conventional commit style when appropriate (feat:, fix:, refactor:, etc.)
+4. Commit frequently - at least after each feature or bug fix is complete
+
+---
+
 ## Project Overview
 
 Jazz Harmony Quiz is a SwiftUI-based iOS educational app for learning jazz chord theory. Users answer questions about chord tones by selecting notes on an interactive piano keyboard.
