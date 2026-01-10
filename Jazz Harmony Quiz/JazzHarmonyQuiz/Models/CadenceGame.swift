@@ -295,8 +295,8 @@ class CadenceGame: ObservableObject {
         // Reset quiz state on app launch
         resetQuizState()
     }
-
+    
     deinit {
-        stopTimer()
+        timer?.invalidate()
     }
 }

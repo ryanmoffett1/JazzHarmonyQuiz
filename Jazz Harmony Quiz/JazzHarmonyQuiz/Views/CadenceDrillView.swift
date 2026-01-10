@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CadenceDrillView: View {
-    @StateObject private var cadenceGame = CadenceGame()
+    @EnvironmentObject var cadenceGame: CadenceGame
     @EnvironmentObject var settings: SettingsManager
     @State private var viewState: ViewState = .setup
     @State private var numberOfQuestions: Int = 10
@@ -22,16 +22,13 @@ struct CadenceDrillView: View {
                     selectedCadenceType: $selectedCadenceType,
                     onStartQuiz: startQuiz
                 )
-                .environmentObject(cadenceGame)
             case .active:
                 ActiveCadenceQuizView(viewState: $viewState)
-                    .environmentObject(cadenceGame)
             case .results:
                 CadenceResultsView(onNewQuiz: {
                     cadenceGame.resetQuizState()
                     viewState = .setup
                 })
-                .environmentObject(cadenceGame)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -53,19 +50,21 @@ struct CadenceDrillView: View {
                 }
             }
         }
-        .onChange(of: cadenceGame.isQuizCompleted) { isCompleted in
-            if isCompleted {
+        .onChange(of: cadenceGame.isQuizCompleted) { oldValue, newValue in
+            if newValue && !oldValue {
                 viewState = .results
             }
         }
     }
 
     private func startQuiz() {
-        viewState = .active
+        // Generate questions FIRST, before changing view state
         cadenceGame.startNewQuiz(
             numberOfQuestions: numberOfQuestions,
             cadenceType: selectedCadenceType
         )
+        // Only switch to active view AFTER questions are ready
+        viewState = .active
     }
 
     private func quitQuiz() {
@@ -76,7 +75,6 @@ struct CadenceDrillView: View {
 
 // MARK: - Cadence Setup View
 struct CadenceSetupView: View {
-    @EnvironmentObject var cadenceGame: CadenceGame
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     @State private var showingSettings = false
@@ -149,7 +147,7 @@ struct CadenceSetupView: View {
                 }
 
                 // Leaderboard Button
-                NavigationLink(destination: CadenceLeaderboardView().environmentObject(cadenceGame)) {
+                NavigationLink(destination: CadenceLeaderboardView()) {
                     HStack {
                         Image(systemName: "trophy.fill")
                         Text("View Cadence Leaderboard")
@@ -213,31 +211,34 @@ struct ActiveCadenceQuizView: View {
     var body: some View {
         VStack(spacing: 20) {
             if let question = cadenceGame.currentQuestion {
-                // Cadence Display
-                VStack(spacing: 15) {
-                    Text("Key: \(question.cadence.key.name) \(question.cadence.cadenceType.rawValue)")
-                        .font(settings.chordDisplayFont(size: 24, weight: .bold))
-                        .foregroundColor(settings.primaryText(for: colorScheme))
-                        .padding()
-                        .background(settings.chordDisplayBackground(for: colorScheme))
-                        .cornerRadius(8)
+                // Safety check - ensure we have all 3 chords
+                if question.cadence.chords.count >= 3 && question.correctAnswers.count >= 3 {
+                    // Cadence Display
+                    VStack(spacing: 15) {
+                        Text("Key: \(question.cadence.key.name) \(question.cadence.cadenceType.rawValue)")
+                            .font(settings.chordDisplayFont(size: 24, weight: .bold))
+                            .foregroundColor(settings.primaryText(for: colorScheme))
+                            .padding()
+                            .background(settings.chordDisplayBackground(for: colorScheme))
+                            .cornerRadius(8)
 
-                    // Display all 3 chords
-                    HStack(spacing: 20) {
-                        ForEach(0..<3, id: \.self) { index in
-                            chordDisplayCard(
-                                chord: question.cadence.chords[index],
-                                index: index,
-                                isActive: index == currentChordIndex,
-                                isCompleted: !chordSpellings[index].isEmpty && index < currentChordIndex
-                            )
+                        // Display all 3 chords
+                        HStack(spacing: 20) {
+                            ForEach(0..<3, id: \.self) { index in
+                                chordDisplayCard(
+                                    chord: question.cadence.chords[index],
+                                    index: index,
+                                    isActive: index == currentChordIndex,
+                                    isCompleted: !chordSpellings[index].isEmpty && index < currentChordIndex
+                                )
+                            }
                         }
-                    }
-                    .padding(.horizontal)
+                        .padding(.horizontal)
 
-                    Text("Spell Chord \(currentChordIndex + 1): \(question.cadence.chords[currentChordIndex].displayName)")
-                        .font(.headline)
-                        .foregroundColor(settings.primaryAccent(for: colorScheme))
+                        Text("Spell Chord \(currentChordIndex + 1): \(question.cadence.chords[currentChordIndex].displayName)")
+                            .font(.headline)
+                            .foregroundColor(settings.primaryAccent(for: colorScheme))
+                    }
                 }
 
                 // Piano Keyboard
@@ -399,10 +400,18 @@ struct ActiveCadenceQuizView: View {
 
     private func formatFeedback() -> String {
         guard let question = cadenceGame.currentQuestion else { return "" }
+        
+        // Safety check - ensure correctAnswerForFeedback has been populated
+        guard correctAnswerForFeedback.count >= 3 else { return "" }
 
         var feedback = ""
 
         for i in 0..<3 {
+            // Safety check for chord access
+            guard i < question.cadence.chords.count,
+                  i < chordSpellings.count,
+                  i < correctAnswerForFeedback.count else { continue }
+            
             let chordName = question.cadence.chords[i].displayName
             let userNotes = chordSpellings[i].map { $0.name }.joined(separator: ", ")
             let correctNotes = correctAnswerForFeedback[i].map { $0.name }.joined(separator: ", ")
@@ -494,7 +503,7 @@ struct CadenceResultsView: View {
                     // Action Buttons
                     VStack(spacing: 15) {
                         if result.correctAnswers < result.totalQuestions {
-                            NavigationLink(destination: CadenceReviewView().environmentObject(cadenceGame)) {
+                            NavigationLink(destination: CadenceReviewView()) {
                                 HStack {
                                     Image(systemName: "exclamationmark.triangle")
                                     Text("Review Wrong Answers")
@@ -521,7 +530,7 @@ struct CadenceResultsView: View {
                             .cornerRadius(12)
                         }
 
-                        NavigationLink(destination: CadenceLeaderboardView().environmentObject(cadenceGame)) {
+                        NavigationLink(destination: CadenceLeaderboardView()) {
                             HStack {
                                 Image(systemName: "trophy")
                                 Text("View Leaderboard")
@@ -631,58 +640,5 @@ struct CadenceReviewView: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
-    }
-}
-
-// MARK: - FlowLayout
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = FlowLayoutResult(
-            in: proposal.replacingUnspecifiedDimensions().width,
-            subviews: subviews,
-            spacing: spacing
-        )
-        return result.size
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let result = FlowLayoutResult(
-            in: bounds.width,
-            subviews: subviews,
-            spacing: spacing
-        )
-        for (index, subview) in subviews.enumerated() {
-            subview.place(at: CGPoint(x: bounds.minX + result.positions[index].x, y: bounds.minY + result.positions[index].y), proposal: .unspecified)
-        }
-    }
-
-    struct FlowLayoutResult {
-        var size: CGSize = .zero
-        var positions: [CGPoint] = []
-
-        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
-            var currentX: CGFloat = 0
-            var currentY: CGFloat = 0
-            var lineHeight: CGFloat = 0
-
-            for subview in subviews {
-                let size = subview.sizeThatFits(.unspecified)
-
-                if currentX + size.width > maxWidth && currentX > 0 {
-                    // Move to next line
-                    currentX = 0
-                    currentY += lineHeight + spacing
-                    lineHeight = 0
-                }
-
-                positions.append(CGPoint(x: currentX, y: currentY))
-                lineHeight = max(lineHeight, size.height)
-                currentX += size.width + spacing
-            }
-
-            self.size = CGSize(width: maxWidth, height: currentY + lineHeight)
-        }
     }
 }

@@ -25,7 +25,9 @@ struct ChordDrillView: View {
     }
     
     var body: some View {
-        ZStack {
+        let _ = print("🔍 ChordDrillView body evaluating: viewState=\(viewState), isQuizActive=\(quizGame.isQuizActive), isQuizCompleted=\(quizGame.isQuizCompleted)")
+        
+        return ZStack {
             switch viewState {
             case .setup:
                 QuizSetupView(
@@ -48,16 +50,14 @@ struct ChordDrillView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                if quizGame.isQuizActive {
+            if quizGame.isQuizActive {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Quit") {
                         quitQuiz()
                     }
                 }
-            }
-            
-            ToolbarItem(placement: .principal) {
-                if quizGame.isQuizActive {
+                
+                ToolbarItem(placement: .principal) {
                     VStack {
                         Text("Question \(quizGame.currentQuestionNumber) of \(quizGame.totalQuestions)")
                             .font(.headline)

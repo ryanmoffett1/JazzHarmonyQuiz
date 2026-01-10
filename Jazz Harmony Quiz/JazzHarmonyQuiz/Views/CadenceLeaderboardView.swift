@@ -262,6 +262,6 @@ struct CadenceLeaderboardRowView: View {
     NavigationView {
         CadenceLeaderboardView()
             .environmentObject(CadenceGame())
-            .environmentObject(SettingsManager())
+            .environmentObject(SettingsManager.shared)
     }
 }

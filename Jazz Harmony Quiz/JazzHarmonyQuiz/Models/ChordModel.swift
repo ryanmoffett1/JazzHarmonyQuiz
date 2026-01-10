@@ -256,36 +256,53 @@ struct CadenceProgression: Identifiable, Codable, Equatable {
 
         // Determine tonality preference based on key
         let preferSharps = key.isSharp || ["B", "E", "A", "D", "G"].contains(key.name)
+        
+        // Helper to safely get chord type with fallback
+        let database = JazzChordDatabase.shared
+        
+        // Create fallback chord type for safety
+        let fallbackChordType = ChordType(
+            name: "Major",
+            symbol: "",
+            chordTones: [ChordTone.allTones[0], ChordTone.allTones[2], ChordTone.allTones[4]],
+            difficulty: .beginner
+        )
 
         switch cadenceType {
         case .major:
             // Major ii-V-I: iim7, V7, Imaj7
             // ii chord: 2 semitones above tonic
-            let iiRoot = Note.noteFromMidi(key.midiNumber + 2, preferSharps: preferSharps)!
-            let iiChord = Chord(root: iiRoot, chordType: JazzChordDatabase.shared.getChordType(symbol: "m7")!)
+            let iiRoot = Note.noteFromMidi(key.midiNumber + 2, preferSharps: preferSharps) ?? key
+            let iiChordType = database.getChordType(symbol: "m7") ?? fallbackChordType
+            let iiChord = Chord(root: iiRoot, chordType: iiChordType)
 
             // V chord: 7 semitones above tonic
-            let vRoot = Note.noteFromMidi(key.midiNumber + 7, preferSharps: preferSharps)!
-            let vChord = Chord(root: vRoot, chordType: JazzChordDatabase.shared.getChordType(symbol: "7")!)
+            let vRoot = Note.noteFromMidi(key.midiNumber + 7, preferSharps: preferSharps) ?? key
+            let vChordType = database.getChordType(symbol: "7") ?? fallbackChordType
+            let vChord = Chord(root: vRoot, chordType: vChordType)
 
             // I chord: tonic
-            let iChord = Chord(root: key, chordType: JazzChordDatabase.shared.getChordType(symbol: "maj7")!)
+            let iChordType = database.getChordType(symbol: "maj7") ?? fallbackChordType
+            let iChord = Chord(root: key, chordType: iChordType)
 
             generatedChords = [iiChord, vChord, iChord]
 
         case .minor:
             // Minor ii-V-I: iiø7 (half-diminished), V7, im7
             // ii chord: 2 semitones above tonic
-            let iiRoot = Note.noteFromMidi(key.midiNumber + 2, preferSharps: preferSharps)!
+            let iiRoot = Note.noteFromMidi(key.midiNumber + 2, preferSharps: preferSharps) ?? key
             // Use half-diminished (ø7) for the ii chord in minor
-            let iiChord = Chord(root: iiRoot, chordType: JazzChordDatabase.shared.getChordType(symbol: "ø7")!)
+            let iiChordType = database.getChordType(symbol: "ø7") ?? fallbackChordType
+            let iiChord = Chord(root: iiRoot, chordType: iiChordType)
 
             // V chord: 7 semitones above tonic
-            let vRoot = Note.noteFromMidi(key.midiNumber + 7, preferSharps: preferSharps)!
-            let vChord = Chord(root: vRoot, chordType: JazzChordDatabase.shared.getChordType(symbol: "7")!)
+            let vRoot = Note.noteFromMidi(key.midiNumber + 7, preferSharps: preferSharps) ?? key
+            let vChordType = database.getChordType(symbol: "7") ?? fallbackChordType
+            let vChord = Chord(root: vRoot, chordType: vChordType)
 
             // i chord: tonic minor 7
-            let iChord = Chord(root: key, chordType: JazzChordDatabase.shared.getChordType(symbol: "m7")!)
+            let iChordType = database.getChordType(symbol: "m7") ?? fallbackChordType
+            let iChord = Chord(root: key, chordType: iChordType)
 
             generatedChords = [iiChord, vChord, iChord]
         }

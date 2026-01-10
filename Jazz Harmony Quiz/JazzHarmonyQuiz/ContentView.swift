@@ -141,71 +141,94 @@ struct MainMenuView: View {
 
 struct ContentView: View {
     @EnvironmentObject var quizGame: QuizGame
+    @EnvironmentObject var cadenceGame: CadenceGame
+    @EnvironmentObject var settings: SettingsManager
+    @State private var navigationPath = NavigationPath()
     
     var body: some View {
-        VStack(spacing: 30) {
-            Text("Jazz Harmony Quiz")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
-            
-            Text("Master jazz chord theory with interactive drills")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-            
-            VStack(spacing: 20) {
-                NavigationLink(destination: ChordDrillView()) {
-                    HStack {
-                        Image(systemName: "music.note")
-                            .font(.title2)
-                        Text("Chord Drill")
-                            .font(.headline)
+        NavigationStack(path: $navigationPath) {
+            VStack(spacing: 30) {
+                Text("Jazz Harmony Quiz")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text("Master jazz chord theory with interactive drills")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                
+                VStack(spacing: 20) {
+                    Button(action: {
+                        navigationPath.append("chordDrill")
+                    }) {
+                        HStack {
+                            Image(systemName: "music.note")
+                                .font(.title2)
+                            Text("Chord Drill")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(12)
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(12)
-                }
 
-                NavigationLink(destination: CadenceDrillView()) {
-                    HStack {
-                        Image(systemName: "music.note.list")
-                            .font(.title2)
-                        Text("Cadence Mode (ii-V-I)")
-                            .font(.headline)
+                    Button(action: {
+                        navigationPath.append("cadenceDrill")
+                    }) {
+                        HStack {
+                            Image(systemName: "music.note.list")
+                                .font(.title2)
+                            Text("Cadence Mode (ii-V-I)")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.purple)
+                        .cornerRadius(12)
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.purple)
-                    .cornerRadius(12)
-                }
 
-                NavigationLink(destination: LeaderboardView()) {
-                    HStack {
-                        Image(systemName: "trophy")
-                            .font(.title2)
-                        Text("Leaderboard")
-                            .font(.headline)
+                    Button(action: {
+                        navigationPath.append("leaderboard")
+                    }) {
+                        HStack {
+                            Image(systemName: "trophy")
+                                .font(.title2)
+                            Text("Leaderboard")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.orange)
+                        .cornerRadius(12)
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.orange)
-                    .cornerRadius(12)
+                }
+                .padding(.horizontal)
+                
+                Spacer()
+            }
+            .padding()
+            .navigationBarHidden(true)
+            .navigationDestination(for: String.self) { destination in
+                switch destination {
+                case "chordDrill":
+                    ChordDrillView()
+                case "cadenceDrill":
+                    CadenceDrillView()
+                case "leaderboard":
+                    LeaderboardView()
+                default:
+                    EmptyView()
                 }
             }
-            .padding(.horizontal)
-            
-            Spacer()
-        }
-        .padding()
-        .navigationBarHidden(true)
-        .onAppear {
-            // Reset quiz state when returning to main menu
-            quizGame.resetQuizState()
+            .onAppear {
+                // Reset quiz state when returning to main menu
+                quizGame.resetQuizState()
+            }
         }
     }
 }

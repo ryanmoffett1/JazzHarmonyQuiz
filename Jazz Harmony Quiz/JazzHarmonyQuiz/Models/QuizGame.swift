@@ -289,7 +289,7 @@ class QuizGame: ObservableObject {
     }
     
     deinit {
-        stopTimer()
+        timer?.invalidate()
     }
 }
 

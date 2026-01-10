@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		944280232F12A0160035FE8B /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280222F12A0160035FE8B /* SettingsManager.swift */; };
+		944280252F12A0230035FE8B /* CadenceGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280242F12A0230035FE8B /* CadenceGame.swift */; };
+		944280272F12A0630035FE8B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280262F12A0630035FE8B /* SettingsView.swift */; };
+		944280292F12A0770035FE8B /* CadenceLeaderboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280282F12A0770035FE8B /* CadenceLeaderboardView.swift */; };
+		9442802B2F12A08C0035FE8B /* CadenceDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9442802A2F12A08C0035FE8B /* CadenceDrillView.swift */; };
+		9442802F2F12A19E0035FE8B /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9442802D2F12A19E0035FE8B /* FlowLayout.swift */; };
 		A1234567890ABCDEF001 /* JazzHarmonyQuizApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */; };
 		A1234567890ABCDEF003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF002 /* ContentView.swift */; };
 		A1234567890ABCDEF005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF004 /* Assets.xcassets */; };
@@ -21,6 +27,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		944280222F12A0160035FE8B /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
+		944280242F12A0230035FE8B /* CadenceGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceGame.swift; sourceTree = "<group>"; };
+		944280262F12A0630035FE8B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		944280282F12A0770035FE8B /* CadenceLeaderboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceLeaderboardView.swift; sourceTree = "<group>"; };
+		9442802A2F12A08C0035FE8B /* CadenceDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillView.swift; sourceTree = "<group>"; };
+		9442802D2F12A19E0035FE8B /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzHarmonyQuizApp.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -46,6 +58,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9442802C2F12A1870035FE8B /* New Group */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "New Group";
+			sourceTree = "<group>";
+		};
+		9442802E2F12A19E0035FE8B /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				9442802D2F12A19E0035FE8B /* FlowLayout.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		A1234567890ABCDEF025 = {
 			isa = PBXGroup;
 			children = (
@@ -57,12 +84,14 @@
 		A1234567890ABCDEF026 /* JazzHarmonyQuiz */ = {
 			isa = PBXGroup;
 			children = (
+				9442802C2F12A1870035FE8B /* New Group */,
 				A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */,
 				A1234567890ABCDEF002 /* ContentView.swift */,
 				A1234567890ABCDEF028 /* Models */,
 				A1234567890ABCDEF029 /* Views */,
 				A1234567890ABCDEF004 /* Assets.xcassets */,
 				A1234567890ABCDEF030 /* Preview Content */,
+				9442802E2F12A19E0035FE8B /* Helpers */,
 			);
 			path = JazzHarmonyQuiz;
 			sourceTree = "<group>";
@@ -81,6 +110,8 @@
 				A1234567890ABCDEF009 /* ChordModel.swift */,
 				A1234567890ABCDEF013 /* QuizGame.swift */,
 				A1234567890ABCDEF021 /* JazzChordDatabase.swift */,
+				944280222F12A0160035FE8B /* SettingsManager.swift */,
+				944280242F12A0230035FE8B /* CadenceGame.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -92,6 +123,9 @@
 				A1234567890ABCDEF015 /* ChordDrillView.swift */,
 				A1234567890ABCDEF017 /* ResultsView.swift */,
 				A1234567890ABCDEF019 /* LeaderboardView.swift */,
+				944280262F12A0630035FE8B /* SettingsView.swift */,
+				944280282F12A0770035FE8B /* CadenceLeaderboardView.swift */,
+				9442802A2F12A08C0035FE8B /* CadenceDrillView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -178,10 +212,16 @@
 				A1234567890ABCDEF001 /* JazzHarmonyQuizApp.swift in Sources */,
 				A1234567890ABCDEF010 /* ChordModel.swift in Sources */,
 				A1234567890ABCDEF012 /* PianoKeyboard.swift in Sources */,
+				944280252F12A0230035FE8B /* CadenceGame.swift in Sources */,
 				A1234567890ABCDEF014 /* QuizGame.swift in Sources */,
 				A1234567890ABCDEF016 /* ChordDrillView.swift in Sources */,
+				9442802F2F12A19E0035FE8B /* FlowLayout.swift in Sources */,
+				944280232F12A0160035FE8B /* SettingsManager.swift in Sources */,
 				A1234567890ABCDEF018 /* ResultsView.swift in Sources */,
+				944280272F12A0630035FE8B /* SettingsView.swift in Sources */,
+				9442802B2F12A08C0035FE8B /* CadenceDrillView.swift in Sources */,
 				A1234567890ABCDEF020 /* LeaderboardView.swift in Sources */,
+				944280292F12A0770035FE8B /* CadenceLeaderboardView.swift in Sources */,
 				A1234567890ABCDEF022 /* JazzChordDatabase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

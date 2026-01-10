@@ -1,9 +1,9 @@
 import Foundation
 
-class JazzChordDatabase: ObservableObject {
+class JazzChordDatabase {
     static let shared = JazzChordDatabase()
     
-    @Published var chordTypes: [ChordType] = []
+    var chordTypes: [ChordType] = []
     
     private init() {
         setupChordTypes()
