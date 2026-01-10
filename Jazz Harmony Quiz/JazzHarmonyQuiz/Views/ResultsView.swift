@@ -2,10 +2,12 @@ import SwiftUI
 
 struct ResultsView: View {
     @EnvironmentObject var quizGame: QuizGame
+    @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
     @State private var showingReview = false
     @State private var selectedQuestionIndex = 0
     var onNewQuiz: (() -> Void)? = nil // Add callback for new quiz
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) { // Reduced from 30 to 20
@@ -53,34 +55,35 @@ struct ResultsView: View {
                         }
                         .padding(.vertical, 15) // Reduced vertical padding
                         .padding(.horizontal)
-                        .background(Color(.systemGray6))
+                        .background(settings.cardBackground(for: colorScheme))
                         .cornerRadius(16)
-                        
+
                         // Performance Indicators - Made more compact
                         VStack(alignment: .leading, spacing: 10) { // Reduced from 15 to 10
                             Text("Performance")
                                 .font(.headline)
-                            
+                                .foregroundColor(settings.primaryText(for: colorScheme))
+
                             PerformanceBar(
                                 label: "Accuracy",
                                 value: result.accuracy,
-                                color: .blue
+                                color: settings.primaryAccent(for: colorScheme)
                             )
-                            
+
                             PerformanceBar(
                                 label: "Speed",
                                 value: speedScore(result.averageTimePerQuestion),
-                                color: .green
+                                color: settings.successColor(for: colorScheme)
                             )
-                            
+
                             PerformanceBar(
                                 label: "Overall",
                                 value: overallScore(result),
-                                color: .purple
+                                color: settings.infoColor(for: colorScheme)
                             )
                         }
                         .padding()
-                        .background(Color(.systemGray6))
+                        .background(settings.cardBackground(for: colorScheme))
                         .cornerRadius(12)
                         
                         // Action Buttons - Reduced spacing and padding
@@ -97,10 +100,10 @@ struct ResultsView: View {
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12) // Reduced from default padding
-                                .background(Color.orange)
+                                .background(settings.warningColor(for: colorScheme))
                                 .cornerRadius(12)
                             }
-                            
+
                             Button(action: {
                                 // Debug: Check if button is being tapped
                                 print("New Quiz button tapped")
@@ -115,11 +118,11 @@ struct ResultsView: View {
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12) // Reduced from default padding
-                                .background(Color.blue)
+                                .background(settings.primaryAccent(for: colorScheme))
                                 .cornerRadius(12)
                             }
-                            
-                            NavigationLink(destination: LeaderboardView().environmentObject(quizGame)) {
+
+                            NavigationLink(destination: LeaderboardView().environmentObject(quizGame).environmentObject(settings)) {
                                 HStack {
                                     Image(systemName: "trophy")
                                     Text("View Leaderboard")
@@ -128,7 +131,7 @@ struct ResultsView: View {
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12) // Reduced from default padding
-                                .background(Color.purple)
+                                .background(settings.infoColor(for: colorScheme))
                                 .cornerRadius(12)
                             }
                         }
@@ -187,6 +190,7 @@ struct ResultsView: View {
             NavigationView {
                 ReviewView(selectedQuestionIndex: $selectedQuestionIndex)
                     .environmentObject(quizGame)
+                    .environmentObject(settings)
             }
         }
         .onAppear {
@@ -354,12 +358,14 @@ struct ReviewView: View {
 }
 
 struct QuestionReviewCard: View {
+    @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
     let question: QuizQuestion
     let originalIndex: Int
     let userAnswer: [Note]
     let correctAnswer: [Note]
     let isCorrect: Bool
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -368,12 +374,13 @@ struct QuestionReviewCard: View {
                     Text("Question \(originalIndex + 1)")
                         .font(.title2)
                         .fontWeight(.bold)
-                    
+                        .foregroundColor(settings.primaryText(for: colorScheme))
+
                     Text("Chord: \(question.chord.displayName)")
-                        .font(.title)
-                        .fontWeight(.bold)
+                        .font(settings.chordDisplayFont(size: 28, weight: .bold))
+                        .foregroundColor(settings.primaryText(for: colorScheme))
                         .padding()
-                        .background(Color.blue.opacity(0.1))
+                        .background(settings.chordDisplayBackground(for: colorScheme))
                         .cornerRadius(8)
                     
                     Text(questionPrompt)
@@ -403,7 +410,7 @@ struct QuestionReviewCard: View {
                                     let displayNote = convertToChordTonality(note)
                                     VStack(spacing: 4) {
                                         Text(displayNote.name)
-                                            .font(.headline)
+                                            .font(settings.chordDisplayFont(size: 18, weight: .semibold))
                                             .foregroundColor(.white)
                                             .frame(height: 40)
                                         Text(getChordToneLabel(for: note))
@@ -412,26 +419,27 @@ struct QuestionReviewCard: View {
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 8)
-                                    .background(isUserNoteCorrect(note) ? Color.green : Color.red)
+                                    .background(isUserNoteCorrect(note) ? settings.successColor(for: colorScheme) : settings.errorColor(for: colorScheme))
                                     .cornerRadius(8)
                                 }
                             }
                         }
                     }
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(settings.cardBackground(for: colorScheme))
                     .cornerRadius(12)
-                    
+
                     // Correct Answer
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Correct Answer:")
                             .font(.headline)
+                            .foregroundColor(settings.primaryText(for: colorScheme))
                         
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 10) {
                             ForEach(Array(correctAnswer.sorted(by: { $0.midiNumber < $1.midiNumber }).enumerated()), id: \.element.midiNumber) { index, note in
                                 VStack(spacing: 4) {
                                     Text(note.name)
-                                        .font(.headline)
+                                        .font(settings.chordDisplayFont(size: 18, weight: .semibold))
                                         .foregroundColor(.white)
                                         .frame(height: 40)
                                     Text(getChordToneLabel(for: note, isCorrectAnswer: true, index: index))
@@ -440,20 +448,21 @@ struct QuestionReviewCard: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 8)
-                                .background(Color.green)
+                                .background(settings.successColor(for: colorScheme))
                                 .cornerRadius(8)
                             }
                         }
                     }
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(settings.cardBackground(for: colorScheme))
                     .cornerRadius(12)
                 }
-                
+
                 // Chord Information
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Chord Information:")
                         .font(.headline)
+                        .foregroundColor(settings.primaryText(for: colorScheme))
                     
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Full Name: \(question.chord.fullName)")
@@ -461,10 +470,10 @@ struct QuestionReviewCard: View {
                         Text("Chord Tones: \(formatChordTonesWithLabels())")
                     }
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(settings.secondaryText(for: colorScheme))
                 }
                 .padding()
-                .background(Color(.systemGray6))
+                .background(settings.cardBackground(for: colorScheme))
                 .cornerRadius(12)
                 
                 Spacer()

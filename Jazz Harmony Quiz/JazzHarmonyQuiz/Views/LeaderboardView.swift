@@ -2,6 +2,8 @@ import SwiftUI
 
 struct LeaderboardView: View {
     @EnvironmentObject var quizGame: QuizGame
+    @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) private var dismiss
     @State private var selectedSortOption: SortOption = .score
     @State private var showingClearConfirmation = false
@@ -119,23 +121,26 @@ struct LeaderboardView: View {
 }
 
 struct EmptyLeaderboardView: View {
+    @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
         VStack(spacing: 30) {
             Image(systemName: "trophy")
                 .font(.system(size: 80))
-                .foregroundColor(.gray)
-            
+                .foregroundColor(settings.secondaryText(for: colorScheme))
+
             Text("No Results Yet")
                 .font(.title)
                 .fontWeight(.bold)
-            
+                .foregroundColor(settings.primaryText(for: colorScheme))
+
             Text("Complete some quizzes to see your results here!")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(settings.secondaryText(for: colorScheme))
                 .multilineTextAlignment(.center)
-            
+
             Button(action: {
                 dismiss()
             }) {
@@ -147,7 +152,7 @@ struct EmptyLeaderboardView: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue)
+                .background(settings.primaryAccent(for: colorScheme))
                 .cornerRadius(12)
             }
         }
@@ -156,46 +161,50 @@ struct EmptyLeaderboardView: View {
 }
 
 struct LeaderboardRowView: View {
+    @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
     let result: QuizResult
     let rank: Int
-    
+
     var body: some View {
         HStack {
             // Rank
             Text("\(rank)")
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .foregroundColor(settings.primaryText(for: colorScheme))
                 .frame(width: 30)
-            
+
             // Score and Details
             VStack(alignment: .leading, spacing: 4) {
                 Text("\(result.score)%")
                     .font(.headline)
                     .fontWeight(.bold)
-                
+                    .foregroundColor(settings.primaryText(for: colorScheme))
+
                 Text("\(result.correctAnswers)/\(result.totalQuestions)")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
+                    .foregroundColor(settings.secondaryText(for: colorScheme))
+
                 Text(formatDate(result.date))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(settings.secondaryText(for: colorScheme))
             }
-            
+
             Spacer()
-            
+
             // Time
             VStack(alignment: .trailing, spacing: 4) {
                 Text(formatTime(result.totalTime))
                     .font(.subheadline)
                     .fontWeight(.medium)
-                
+                    .foregroundColor(settings.primaryText(for: colorScheme))
+
                 Text("\(formatTime(result.averageTimePerQuestion))/q")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(settings.secondaryText(for: colorScheme))
             }
-            
+
             // Trophy for top 3
             if rank <= 3 {
                 Image(systemName: "trophy.fill")

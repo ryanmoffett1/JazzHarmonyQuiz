@@ -100,11 +100,14 @@ struct ChordDrillView: View {
 
 struct QuizSetupView: View {
     @EnvironmentObject var quizGame: QuizGame
+    @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
+    @State private var showingSettings = false
     @Binding var numberOfQuestions: Int
     @Binding var selectedDifficulty: ChordType.ChordDifficulty
     @Binding var selectedQuestionTypes: Set<QuestionType>
     let onStartQuiz: () -> Void
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 30) {
@@ -207,7 +210,31 @@ struct QuizSetupView: View {
                             .stroke(Color.orange, lineWidth: 1.5)
                     )
                 }
-                
+
+                // Settings Button
+                Button(action: {
+                    showingSettings = true
+                }) {
+                    HStack {
+                        Image(systemName: "gear")
+                        Text("Settings")
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.purple)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.purple.opacity(0.1))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.purple, lineWidth: 1.5)
+                    )
+                }
+                .sheet(isPresented: $showingSettings) {
+                    SettingsView()
+                        .environmentObject(settings)
+                }
+
                 Spacer()
             }
             .padding()
@@ -217,6 +244,8 @@ struct QuizSetupView: View {
 
 struct ActiveQuizView: View {
     @EnvironmentObject var quizGame: QuizGame
+    @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
     @Binding var selectedNotes: Set<Note>
     @Binding var showingFeedback: Bool
     @Binding var viewState: ChordDrillView.ViewState
@@ -224,17 +253,17 @@ struct ActiveQuizView: View {
     @State private var currentQuestionForFeedback: QuizQuestion?
     @State private var correctAnswerForFeedback: [Note] = []
     @State private var isLastQuestion = false
-    
+
     var body: some View {
         VStack(spacing: 20) {
             if let question = quizGame.currentQuestion {
                 // Question Display
                 VStack(spacing: 15) {
                     Text("Chord: \(question.chord.displayName)")
-                        .font(.title)
-                        .fontWeight(.bold)
+                        .font(settings.chordDisplayFont(size: 28, weight: .bold))
+                        .foregroundColor(settings.primaryText(for: colorScheme))
                         .padding()
-                        .background(Color.blue.opacity(0.1))
+                        .background(settings.chordDisplayBackground(for: colorScheme))
                         .cornerRadius(8)
                     
                     Text(questionPrompt(for: question))
@@ -264,24 +293,23 @@ struct ActiveQuizView: View {
                     VStack(spacing: 8) {
                         Text("Selected Notes:")
                             .font(.headline)
-                            .foregroundColor(.secondary)
-                        
+                            .foregroundColor(settings.secondaryText(for: colorScheme))
+
                         // Use FlowLayout for wrapping with dynamic sizing
                         FlowLayout(spacing: 8) {
                             ForEach(Array(selectedNotes.sorted(by: { $0.midiNumber < $1.midiNumber })), id: \.midiNumber) { note in
                                 Text(note.name)
-                                    .font(selectedNotes.count > 5 ? .body : .title3)
-                                    .fontWeight(.semibold)
+                                    .font(settings.chordDisplayFont(size: selectedNotes.count > 5 ? 18 : 22, weight: .semibold))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, selectedNotes.count > 5 ? 12 : 16)
                                     .padding(.vertical, selectedNotes.count > 5 ? 8 : 10)
-                                    .background(Color.blue)
+                                    .background(settings.selectedNoteBackground(for: colorScheme))
                                     .cornerRadius(8)
                             }
                         }
                     }
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(settings.backgroundColor(for: colorScheme))
                     .cornerRadius(12)
                 }
                 
@@ -292,17 +320,17 @@ struct ActiveQuizView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(selectedNotes.isEmpty ? Color.gray : Color.green)
+                        .background(selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
                         .cornerRadius(12)
                 }
                 .disabled(selectedNotes.isEmpty)
                 .padding(.horizontal)
-                
+
                 // Clear Button
                 Button(action: clearSelection) {
                     Text("Clear Selection")
                         .font(.subheadline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(settings.primaryAccent(for: colorScheme))
                 }
                 
                 Spacer()
