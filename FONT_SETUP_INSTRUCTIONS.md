@@ -68,6 +68,7 @@ If the font doesn't appear:
    - Go to Build Phases
    - Expand "Copy Bundle Resources"
    - Ensure `Caveat-VariableFont.ttf` is listed
+   - If not listed, click the `+` button and add `Caveat-VariableFont.ttf` from the file browser
 
 2. Clean build folder (Product → Clean Build Folder) and rebuild
 
