@@ -449,13 +449,19 @@ class JazzChordDatabase: ObservableObject {
     
     func getRandomChordTypes(count: Int, difficulty: ChordType.ChordDifficulty? = nil) -> [ChordType] {
         let availableTypes: [ChordType]
-        
+
         if let difficulty = difficulty {
             availableTypes = getChordTypes(by: difficulty)
         } else {
             availableTypes = chordTypes
         }
-        
+
         return Array(availableTypes.shuffled().prefix(count))
+    }
+
+    func getChordType(symbol: String) -> ChordType? {
+        // Handle special case: ø7 is the same as m7b5 (half-diminished)
+        let normalizedSymbol = symbol == "ø7" ? "m7b5" : symbol
+        return chordTypes.first { $0.symbol == normalizedSymbol }
     }
 }
