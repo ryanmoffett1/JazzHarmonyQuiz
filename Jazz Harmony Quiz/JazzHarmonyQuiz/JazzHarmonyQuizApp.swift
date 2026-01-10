@@ -8,7 +8,7 @@ struct JazzHarmonyQuizApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationView {
-                ChordDrillView()
+                ContentView()
                     .environmentObject(quizGame)
                     .environmentObject(settings)
             }

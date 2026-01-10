@@ -168,7 +168,21 @@ struct ContentView: View {
                     .background(Color.blue)
                     .cornerRadius(12)
                 }
-                
+
+                NavigationLink(destination: CadenceDrillView()) {
+                    HStack {
+                        Image(systemName: "music.note.list")
+                            .font(.title2)
+                        Text("Cadence Mode (ii-V-I)")
+                            .font(.headline)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.purple)
+                    .cornerRadius(12)
+                }
+
                 NavigationLink(destination: LeaderboardView()) {
                     HStack {
                         Image(systemName: "trophy")
