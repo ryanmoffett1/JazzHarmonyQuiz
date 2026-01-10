@@ -92,6 +92,40 @@ struct SettingsView: View {
                 } header: {
                     Text("About")
                 }
+                
+                // Audio Section
+                Section {
+                    Toggle("Audio Enabled", isOn: $settings.audioEnabled)
+                    
+                    if settings.audioEnabled {
+                        Toggle("Play Chord on Correct Answer", isOn: $settings.playChordOnCorrect)
+                        
+                        VStack(alignment: .leading) {
+                            HStack {
+                                Text("Volume")
+                                Spacer()
+                                Text("\(Int(settings.audioVolume * 100))%")
+                                    .foregroundColor(settings.secondaryText(for: colorScheme))
+                            }
+                            Slider(value: $settings.audioVolume, in: 0...1, step: 0.1)
+                        }
+                        
+                        Button("Test Sound") {
+                            AudioManager.shared.playChord([
+                                Note(name: "C", midiNumber: 60, isSharp: false),
+                                Note(name: "E", midiNumber: 64, isSharp: false),
+                                Note(name: "G", midiNumber: 67, isSharp: false),
+                                Note(name: "B", midiNumber: 71, isSharp: false)
+                            ], duration: 1.5)
+                        }
+                        .foregroundColor(.blue)
+                    }
+                } header: {
+                    Text("Audio")
+                } footer: {
+                    Text("Hear the chord played back when you answer correctly. Great for ear training!")
+                        .foregroundColor(settings.secondaryText(for: colorScheme))
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)

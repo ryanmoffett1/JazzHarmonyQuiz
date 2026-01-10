@@ -7,6 +7,11 @@ struct Note: Identifiable, Hashable, Codable {
     let midiNumber: Int
     let isSharp: Bool
     
+    /// Returns the pitch class (0-11) for octave-agnostic comparison
+    var pitchClass: Int {
+        return midiNumber % 12
+    }
+    
     // Custom hash implementation based on MIDI number only
     func hash(into hasher: inout Hasher) {
         hasher.combine(midiNumber)
@@ -170,6 +175,22 @@ struct Chord: Identifiable, Hashable, Codable {
         let midiNumber = root.midiNumber + tone.semitonesFromRoot
         return Note.noteFromMidi(midiNumber, preferSharps: preferSharps)
     }
+    
+    /// Find notes that are common between this chord and another chord (using pitch class comparison)
+    func commonTones(with other: Chord) -> [Note] {
+        let myNotes = self.chordTones
+        let otherNotes = other.chordTones
+        
+        // Convert to pitch classes for comparison (0-11)
+        let myPitchClasses = Set(myNotes.map { $0.pitchClass })
+        let otherPitchClasses = Set(otherNotes.map { $0.pitchClass })
+        
+        // Find intersection
+        let commonPitchClasses = myPitchClasses.intersection(otherPitchClasses)
+        
+        // Return the notes from this chord that have common pitch classes
+        return myNotes.filter { commonPitchClasses.contains($0.pitchClass) }
+    }
 }
 
 // MARK: - Question Types
@@ -222,16 +243,193 @@ struct QuizQuestion: Identifiable, Codable, Equatable {
 }
 
 // MARK: - Cadence Models
+
+/// Drill mode determines how the cadence quiz is structured
+enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
+    case fullProgression = "Full Progression"
+    case isolatedChord = "Isolated Chord"
+    case speedRound = "Speed Round"
+    case commonTones = "Common Tones"
+    
+    var description: String {
+        switch self {
+        case .fullProgression:
+            return "Spell all 3 chords in the ii-V-I"
+        case .isolatedChord:
+            return "Focus on one chord position across all keys"
+        case .speedRound:
+            return "Timed challenge - spell each chord before time runs out!"
+        case .commonTones:
+            return "Identify notes shared between adjacent chords"
+        }
+    }
+    
+    /// Whether this mode has a per-chord timer
+    var hasPerChordTimer: Bool {
+        return self == .speedRound
+    }
+}
+
+/// Which chord pair to find common tones between
+enum CommonTonePair: String, CaseIterable, Codable, Equatable {
+    case iiToV = "ii → V"
+    case vToI = "V → I"
+    case random = "Random"
+    
+    var description: String {
+        switch self {
+        case .iiToV: return "Find notes shared between ii and V chords"
+        case .vToI: return "Find notes shared between V and I chords"
+        case .random: return "Randomly choose chord pairs"
+        }
+    }
+}
+
+/// Which chord position to drill in isolated mode
+enum IsolatedChordPosition: String, CaseIterable, Codable, Equatable {
+    case ii = "ii Chord"
+    case V = "V Chord"
+    case I = "I Chord"
+    
+    var index: Int {
+        switch self {
+        case .ii: return 0
+        case .V: return 1
+        case .I: return 2
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .ii: return "Practice the ii chord (m7 or ø7)"
+        case .V: return "Practice the V chord (7 or 7b9)"
+        case .I: return "Practice the I chord (maj7 or m7)"
+        }
+    }
+}
+
+/// Extended V chord options for more advanced practice
+enum ExtendedVChordOption: String, CaseIterable, Codable, Equatable {
+    case basic = "V7"
+    case ninth = "V9"
+    case thirteenth = "V13"
+    case flatNine = "V7b9"
+    case sharpNine = "V7#9"
+    
+    var chordSymbol: String {
+        switch self {
+        case .basic: return "7"
+        case .ninth: return "9"
+        case .thirteenth: return "13"
+        case .flatNine: return "7b9"
+        case .sharpNine: return "7#9"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .basic: return "Standard dominant 7th"
+        case .ninth: return "Dominant with added 9th"
+        case .thirteenth: return "Dominant with 9th and 13th"
+        case .flatNine: return "Dominant with flat 9 (minor resolution)"
+        case .sharpNine: return "Dominant with sharp 9 (Hendrix chord)"
+        }
+    }
+}
+
+/// Key difficulty tiers based on number of accidentals
+enum KeyDifficulty: String, CaseIterable, Codable, Equatable {
+    case easy = "Easy"
+    case medium = "Medium"
+    case hard = "Hard"
+    case expert = "Expert"
+    case all = "All Keys"
+    
+    var description: String {
+        switch self {
+        case .easy: return "C, F, G (0-1 accidentals)"
+        case .medium: return "Bb, Eb, D, A (2-3 accidentals)"
+        case .hard: return "Ab, Db, E, B (4-5 accidentals)"
+        case .expert: return "F#/Gb (6 accidentals)"
+        case .all: return "All 12 keys"
+        }
+    }
+    
+    /// Returns the root notes available for this difficulty tier
+    var availableRoots: [Note] {
+        switch self {
+        case .easy:
+            return [
+                Note(name: "C", midiNumber: 60, isSharp: false),
+                Note(name: "F", midiNumber: 65, isSharp: false),
+                Note(name: "G", midiNumber: 67, isSharp: false)
+            ]
+        case .medium:
+            return [
+                Note(name: "Bb", midiNumber: 70, isSharp: false),
+                Note(name: "Eb", midiNumber: 63, isSharp: false),
+                Note(name: "D", midiNumber: 62, isSharp: false),
+                Note(name: "A", midiNumber: 69, isSharp: false)
+            ]
+        case .hard:
+            return [
+                Note(name: "Ab", midiNumber: 68, isSharp: false),
+                Note(name: "Db", midiNumber: 61, isSharp: false),
+                Note(name: "E", midiNumber: 64, isSharp: false),
+                Note(name: "B", midiNumber: 71, isSharp: false)
+            ]
+        case .expert:
+            return [
+                Note(name: "F#", midiNumber: 66, isSharp: true)
+            ]
+        case .all:
+            return [
+                Note(name: "C", midiNumber: 60, isSharp: false),
+                Note(name: "Db", midiNumber: 61, isSharp: false),
+                Note(name: "D", midiNumber: 62, isSharp: false),
+                Note(name: "Eb", midiNumber: 63, isSharp: false),
+                Note(name: "E", midiNumber: 64, isSharp: false),
+                Note(name: "F", midiNumber: 65, isSharp: false),
+                Note(name: "F#", midiNumber: 66, isSharp: true),
+                Note(name: "G", midiNumber: 67, isSharp: false),
+                Note(name: "Ab", midiNumber: 68, isSharp: false),
+                Note(name: "A", midiNumber: 69, isSharp: false),
+                Note(name: "Bb", midiNumber: 70, isSharp: false),
+                Note(name: "B", midiNumber: 71, isSharp: false)
+            ]
+        }
+    }
+}
+
 enum CadenceType: String, CaseIterable, Codable, Equatable {
     case major = "Major ii-V-I"
     case minor = "Minor ii-V-I"
+    case tritoneSubstitution = "Tritone Sub"
+    case backdoor = "Backdoor ii-V"
+    case birdChanges = "Bird Changes"
 
     var description: String {
         switch self {
         case .major:
             return "Major resolution (iim7, V7, Imaj7)"
         case .minor:
-            return "Minor resolution (iiø7 or iim7b5, V7, im7)"
+            return "Minor resolution (iiø7, V7b9, im7)"
+        case .tritoneSubstitution:
+            return "Tritone sub (iim7, bII7, Imaj7)"
+        case .backdoor:
+            return "Backdoor resolution (ivm7, bVII7, Imaj7)"
+        case .birdChanges:
+            return "Bird changes (iiim7, VI7, iim7, V7, Imaj7)"
+        }
+    }
+    
+    /// Returns the number of chords in this cadence type
+    var chordCount: Int {
+        switch self {
+        case .birdChanges:
+            return 5  // iiim7, VI7, iim7, V7, Imaj7
+        default:
+            return 3
         }
     }
 }
@@ -241,17 +439,23 @@ struct CadenceProgression: Identifiable, Codable, Equatable {
     let id = UUID()
     let key: Note
     let cadenceType: CadenceType
-    let chords: [Chord] // Array of 3 chords: [ii, V, I]
+    let chords: [Chord] // Array of chords in progression
+    let extendedVChord: ExtendedVChordOption?
 
     var displayName: String {
         return "\(key.name) \(cadenceType.rawValue)"
     }
-
+    
     init(key: Note, cadenceType: CadenceType) {
+        self.init(key: key, cadenceType: cadenceType, extendedVChord: nil)
+    }
+
+    init(key: Note, cadenceType: CadenceType, extendedVChord: ExtendedVChordOption?) {
         self.key = key
         self.cadenceType = cadenceType
+        self.extendedVChord = extendedVChord
 
-        // Generate the three chords based on the cadence type
+        // Generate the chords based on the cadence type
         var generatedChords: [Chord] = []
 
         // Determine tonality preference based on key
@@ -267,18 +471,35 @@ struct CadenceProgression: Identifiable, Codable, Equatable {
             chordTones: [ChordTone.allTones[0], ChordTone.allTones[2], ChordTone.allTones[4]],
             difficulty: .beginner
         )
+        
+        // Helper to get V chord type based on extended option
+        func getVChordType(forMinor: Bool = false) -> ChordType {
+            if let extended = extendedVChord, extended != .basic {
+                return database.getChordType(symbol: extended.chordSymbol)
+                    ?? database.getChordType(symbol: "7")
+                    ?? fallbackChordType
+            } else if forMinor {
+                // For minor, use b9 80% of the time
+                let useAlteredV = Double.random(in: 0...1) < 0.8
+                return useAlteredV
+                    ? (database.getChordType(symbol: "7b9") ?? database.getChordType(symbol: "7") ?? fallbackChordType)
+                    : (database.getChordType(symbol: "7") ?? fallbackChordType)
+            } else {
+                return database.getChordType(symbol: "7") ?? fallbackChordType
+            }
+        }
 
         switch cadenceType {
         case .major:
-            // Major ii-V-I: iim7, V7, Imaj7
+            // Major ii-V-I: iim7, V7 (or extended), Imaj7
             // ii chord: 2 semitones above tonic
             let iiRoot = Note.noteFromMidi(key.midiNumber + 2, preferSharps: preferSharps) ?? key
             let iiChordType = database.getChordType(symbol: "m7") ?? fallbackChordType
             let iiChord = Chord(root: iiRoot, chordType: iiChordType)
 
-            // V chord: 7 semitones above tonic
+            // V chord: 7 semitones above tonic (uses extended option if set)
             let vRoot = Note.noteFromMidi(key.midiNumber + 7, preferSharps: preferSharps) ?? key
-            let vChordType = database.getChordType(symbol: "7") ?? fallbackChordType
+            let vChordType = getVChordType(forMinor: false)
             let vChord = Chord(root: vRoot, chordType: vChordType)
 
             // I chord: tonic
@@ -288,16 +509,16 @@ struct CadenceProgression: Identifiable, Codable, Equatable {
             generatedChords = [iiChord, vChord, iChord]
 
         case .minor:
-            // Minor ii-V-I: iiø7 (half-diminished), V7, im7
+            // Minor ii-V-I: iiø7 (half-diminished), V7b9 (or extended), im7
             // ii chord: 2 semitones above tonic
             let iiRoot = Note.noteFromMidi(key.midiNumber + 2, preferSharps: preferSharps) ?? key
             // Use half-diminished (ø7) for the ii chord in minor
             let iiChordType = database.getChordType(symbol: "ø7") ?? fallbackChordType
             let iiChord = Chord(root: iiRoot, chordType: iiChordType)
 
-            // V chord: 7 semitones above tonic
+            // V chord: 7 semitones above tonic (uses extended option if set, otherwise b9 by default)
             let vRoot = Note.noteFromMidi(key.midiNumber + 7, preferSharps: preferSharps) ?? key
-            let vChordType = database.getChordType(symbol: "7") ?? fallbackChordType
+            let vChordType = getVChordType(forMinor: true)
             let vChord = Chord(root: vRoot, chordType: vChordType)
 
             // i chord: tonic minor 7
@@ -305,6 +526,78 @@ struct CadenceProgression: Identifiable, Codable, Equatable {
             let iChord = Chord(root: key, chordType: iChordType)
 
             generatedChords = [iiChord, vChord, iChord]
+            
+        case .tritoneSubstitution:
+            // Tritone Substitution: iim7, bII7 (SubV7), Imaj7
+            // The bII7 is a tritone substitution for V7 - creates chromatic bass line
+            
+            // ii chord: 2 semitones above tonic
+            let iiRoot = Note.noteFromMidi(key.midiNumber + 2, preferSharps: preferSharps) ?? key
+            let iiChordType = database.getChordType(symbol: "m7") ?? fallbackChordType
+            let iiChord = Chord(root: iiRoot, chordType: iiChordType)
+
+            // bII7 chord (SubV7): 1 semitone above tonic
+            // This is the tritone substitution for V7
+            let subVRoot = Note.noteFromMidi(key.midiNumber + 1, preferSharps: false) ?? key
+            let subVChordType = database.getChordType(symbol: "7") ?? fallbackChordType
+            let subVChord = Chord(root: subVRoot, chordType: subVChordType)
+
+            // I chord: tonic major 7
+            let iChordType = database.getChordType(symbol: "maj7") ?? fallbackChordType
+            let iChord = Chord(root: key, chordType: iChordType)
+
+            generatedChords = [iiChord, subVChord, iChord]
+            
+        case .backdoor:
+            // Backdoor ii-V: ivm7, bVII7, Imaj7
+            // Alternative resolution that approaches I from a half-step above
+            
+            // iv chord: 5 semitones above tonic (perfect 4th)
+            let ivRoot = Note.noteFromMidi(key.midiNumber + 5, preferSharps: preferSharps) ?? key
+            let ivChordType = database.getChordType(symbol: "m7") ?? fallbackChordType
+            let ivChord = Chord(root: ivRoot, chordType: ivChordType)
+
+            // bVII7 chord: 10 semitones above tonic (minor 7th interval)
+            let bVIIRoot = Note.noteFromMidi(key.midiNumber + 10, preferSharps: false) ?? key
+            let bVIIChordType = database.getChordType(symbol: "7") ?? fallbackChordType
+            let bVIIChord = Chord(root: bVIIRoot, chordType: bVIIChordType)
+
+            // I chord: tonic major 7
+            let iChordType = database.getChordType(symbol: "maj7") ?? fallbackChordType
+            let iChord = Chord(root: key, chordType: iChordType)
+
+            generatedChords = [ivChord, bVIIChord, iChord]
+            
+        case .birdChanges:
+            // Bird Changes (Confirmation changes): iiim7, VI7, iim7, V7, Imaj7
+            // Extended turnaround commonly found in jazz standards like "Confirmation"
+            
+            // iii chord: 4 semitones above tonic (major 3rd)
+            let iiiRoot = Note.noteFromMidi(key.midiNumber + 4, preferSharps: preferSharps) ?? key
+            let iiiChordType = database.getChordType(symbol: "m7") ?? fallbackChordType
+            let iiiChord = Chord(root: iiiRoot, chordType: iiiChordType)
+            
+            // VI7 chord: 9 semitones above tonic (major 6th)
+            // This is a secondary dominant (V of ii)
+            let viRoot = Note.noteFromMidi(key.midiNumber + 9, preferSharps: preferSharps) ?? key
+            let viChordType = database.getChordType(symbol: "7") ?? fallbackChordType
+            let viChord = Chord(root: viRoot, chordType: viChordType)
+            
+            // ii chord: 2 semitones above tonic
+            let iiRoot = Note.noteFromMidi(key.midiNumber + 2, preferSharps: preferSharps) ?? key
+            let iiChordType = database.getChordType(symbol: "m7") ?? fallbackChordType
+            let iiChord = Chord(root: iiRoot, chordType: iiChordType)
+            
+            // V7 chord: 7 semitones above tonic (uses extended option if set)
+            let vRoot = Note.noteFromMidi(key.midiNumber + 7, preferSharps: preferSharps) ?? key
+            let vChordType = getVChordType(forMinor: false)
+            let vChord = Chord(root: vRoot, chordType: vChordType)
+            
+            // I chord: tonic major 7
+            let iChordType = database.getChordType(symbol: "maj7") ?? fallbackChordType
+            let iChord = Chord(root: key, chordType: iChordType)
+            
+            generatedChords = [iiiChord, viChord, iiChord, vChord, iChord]
         }
 
         self.chords = generatedChords
@@ -315,14 +608,127 @@ struct CadenceProgression: Identifiable, Codable, Equatable {
 struct CadenceQuestion: Identifiable, Codable, Equatable {
     let id = UUID()
     let cadence: CadenceProgression
-    let correctAnswers: [[Note]] // Array of 3 chord spellings
+    let correctAnswers: [[Note]] // Array of chord spellings (or common tones for common tones mode)
     let timeLimit: TimeInterval
+    let drillMode: CadenceDrillMode
+    let isolatedPosition: IsolatedChordPosition?
+    let commonTonePair: CommonTonePair?  // For common tones mode
+    
+    /// The chord(s) the user needs to spell for this question
+    var chordsToSpell: [Chord] {
+        switch drillMode {
+        case .fullProgression, .speedRound:
+            return cadence.chords
+        case .isolatedChord:
+            guard let position = isolatedPosition else { return cadence.chords }
+            let index = min(position.index, cadence.chords.count - 1)
+            return [cadence.chords[index]]
+        case .commonTones:
+            // Return the two chords being compared
+            guard let pair = commonTonePair, cadence.chords.count >= 3 else { return [] }
+            switch pair {
+            case .iiToV:
+                return [cadence.chords[0], cadence.chords[1]]
+            case .vToI:
+                return [cadence.chords[1], cadence.chords[2]]
+            case .random:
+                return [cadence.chords[0], cadence.chords[1]] // Default to ii-V
+            }
+        }
+    }
+    
+    /// The correct answer(s) for this question
+    var expectedAnswers: [[Note]] {
+        switch drillMode {
+        case .fullProgression, .speedRound:
+            return correctAnswers
+        case .isolatedChord:
+            guard let position = isolatedPosition else { return correctAnswers }
+            let index = min(position.index, correctAnswers.count - 1)
+            return [correctAnswers[index]]
+        case .commonTones:
+            // For common tones, correctAnswers[0] contains the common tones
+            return correctAnswers.isEmpty ? [[]] : [correctAnswers[0]]
+        }
+    }
+    
+    /// Display text for the question
+    var questionText: String {
+        switch drillMode {
+        case .fullProgression, .speedRound:
+            return "Spell all chords in the progression"
+        case .isolatedChord:
+            guard let position = isolatedPosition else { return "Spell the chord" }
+            return "Spell the \(position.rawValue)"
+        case .commonTones:
+            guard let pair = commonTonePair else { return "Find the common tones" }
+            let chords = chordsToSpell
+            if chords.count >= 2 {
+                return "Find notes shared between \(chords[0].displayName) and \(chords[1].displayName)"
+            }
+            return "Find the common tones between \(pair.rawValue)"
+        }
+    }
 
     init(cadence: CadenceProgression) {
         self.cadence = cadence
-        // Store the correct spelling for each of the 3 chords
         self.correctAnswers = cadence.chords.map { $0.chordTones }
-        self.timeLimit = 60.0 // 60 seconds for full cadence
+        self.timeLimit = 60.0
+        self.drillMode = .fullProgression
+        self.isolatedPosition = nil
+        self.commonTonePair = nil
+    }
+    
+    init(cadence: CadenceProgression, drillMode: CadenceDrillMode, isolatedPosition: IsolatedChordPosition?) {
+        self.cadence = cadence
+        self.drillMode = drillMode
+        self.isolatedPosition = isolatedPosition
+        self.commonTonePair = nil
+        
+        // Calculate correct answers based on mode
+        self.correctAnswers = cadence.chords.map { $0.chordTones }
+        
+        // Shorter time limit for isolated chord mode
+        switch drillMode {
+        case .fullProgression:
+            self.timeLimit = 60.0
+        case .isolatedChord:
+            self.timeLimit = 20.0
+        case .speedRound:
+            self.timeLimit = 5.0
+        case .commonTones:
+            self.timeLimit = 30.0
+        }
+    }
+    
+    init(cadence: CadenceProgression, commonTonePair: CommonTonePair) {
+        self.cadence = cadence
+        self.drillMode = .commonTones
+        self.isolatedPosition = nil
+        self.commonTonePair = commonTonePair
+        self.timeLimit = 30.0
+        
+        // Calculate common tones between the chord pair
+        guard cadence.chords.count >= 3 else {
+            self.correctAnswers = [[]]
+            return
+        }
+        
+        let commonTones: [Note]
+        switch commonTonePair {
+        case .iiToV:
+            commonTones = cadence.chords[0].commonTones(with: cadence.chords[1])
+        case .vToI:
+            commonTones = cadence.chords[1].commonTones(with: cadence.chords[2])
+        case .random:
+            // Randomly pick one
+            if Bool.random() {
+                commonTones = cadence.chords[0].commonTones(with: cadence.chords[1])
+            } else {
+                commonTones = cadence.chords[1].commonTones(with: cadence.chords[2])
+            }
+        }
+        self.correctAnswers = [commonTones]
     }
 }
 

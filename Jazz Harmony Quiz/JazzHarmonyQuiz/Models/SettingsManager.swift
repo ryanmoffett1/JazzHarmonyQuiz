@@ -43,6 +43,42 @@ class SettingsManager: ObservableObject {
             UserDefaults.standard.set(selectedChordFont.rawValue, forKey: "selectedChordFont")
         }
     }
+    
+    // Audio settings
+    @Published var audioEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(audioEnabled, forKey: "audioEnabled")
+            updateAudioManagerEnabled()
+        }
+    }
+    
+    @Published var playChordOnCorrect: Bool {
+        didSet {
+            UserDefaults.standard.set(playChordOnCorrect, forKey: "playChordOnCorrect")
+        }
+    }
+    
+    @Published var audioVolume: Float {
+        didSet {
+            UserDefaults.standard.set(audioVolume, forKey: "audioVolume")
+            updateAudioManagerVolume()
+        }
+    }
+    
+    // MARK: - Audio Manager Helpers
+    
+    private func updateAudioManagerEnabled() {
+        AudioManager.shared.isEnabled = audioEnabled
+    }
+    
+    private func updateAudioManagerVolume() {
+        AudioManager.shared.setVolume(audioVolume)
+    }
+    
+    func applyAudioSettings() {
+        AudioManager.shared.isEnabled = audioEnabled
+        AudioManager.shared.setVolume(audioVolume)
+    }
 
     private init() {
         // Load saved preferences or use defaults
@@ -58,6 +94,16 @@ class SettingsManager: ObservableObject {
             self.selectedChordFont = font
         } else {
             self.selectedChordFont = .system
+        }
+        
+        // Audio settings - load from UserDefaults
+        self.audioEnabled = UserDefaults.standard.object(forKey: "audioEnabled") as? Bool ?? true
+        self.playChordOnCorrect = UserDefaults.standard.object(forKey: "playChordOnCorrect") as? Bool ?? true
+        self.audioVolume = UserDefaults.standard.object(forKey: "audioVolume") as? Float ?? 0.7
+        
+        // Apply audio settings after a brief delay to ensure AudioManager is initialized
+        DispatchQueue.main.async { [weak self] in
+            self?.applyAudioSettings()
         }
     }
 
