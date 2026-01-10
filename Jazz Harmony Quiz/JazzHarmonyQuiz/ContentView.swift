@@ -169,7 +169,7 @@ struct ContentView: View {
                     .cornerRadius(12)
                 }
 
-                NavigationLink(destination: CadenceDrillView()) {
+                NavigationLink(destination: CadenceDrillView().environmentObject(SettingsManager.shared)) {
                     HStack {
                         Image(systemName: "music.note.list")
                             .font(.title2)
