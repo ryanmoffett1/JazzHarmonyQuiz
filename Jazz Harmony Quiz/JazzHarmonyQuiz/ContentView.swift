@@ -329,6 +329,18 @@ struct DrillOptionsSection: View {
                     color: .yellow
                 )
             }
+            
+            // Settings
+            Button(action: {
+                navigationPath.append("settings")
+            }) {
+                DrillOptionCard(
+                    icon: "gear",
+                    title: "Settings",
+                    subtitle: "Customize your experience",
+                    color: .gray
+                )
+            }
         }
     }
 }

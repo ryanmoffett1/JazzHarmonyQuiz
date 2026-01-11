@@ -198,6 +198,79 @@ class AudioManager: ObservableObject {
         }
     }
     
+    // MARK: - Scale Playback
+    
+    /// Direction for scale playback
+    enum ScaleDirection {
+        case ascending
+        case descending
+        case ascendingDescending
+    }
+    
+    /// Play a scale with proper timing
+    /// - Parameters:
+    ///   - notes: The scale notes (should include root through octave)
+    ///   - bpm: Tempo in beats per minute (default 160 BPM for lively playback)
+    ///   - direction: Whether to play ascending, descending, or both
+    func playScale(_ notes: [Note], bpm: Double = 160, direction: ScaleDirection = .ascendingDescending) {
+        guard isEnabled, let sampler = sampler, !notes.isEmpty else { return }
+        
+        let secondsPerBeat = 60.0 / bpm
+        let noteDuration = secondsPerBeat  // Quarter notes
+        
+        // Prepare the sequence of notes based on direction
+        var sequence: [Note] = []
+        switch direction {
+        case .ascending:
+            sequence = notes
+        case .descending:
+            sequence = notes.reversed()
+        case .ascendingDescending:
+            // Go up, then back down (don't repeat the top note)
+            sequence = notes + Array(notes.dropLast().reversed())
+        }
+        
+        // Play each note in sequence
+        for (index, note) in sequence.enumerated() {
+            let delay = Double(index) * noteDuration
+            let midiNote = UInt8(note.midiNumber)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
+            }
+            
+            // Stop note slightly before next one for articulation
+            let stopDelay = delay + (noteDuration * 0.85)
+            DispatchQueue.main.asyncAfter(deadline: .now() + stopDelay) {
+                sampler.stopNote(midiNote, onChannel: 0)
+            }
+        }
+    }
+    
+    /// Play a scale from a Scale object (ascending then descending)
+    /// Adjusts MIDI numbers so the scale plays in proper ascending order from middle C
+    func playScaleObject(_ scale: Scale, bpm: Double = 160) {
+        guard isEnabled, let sampler = sampler else { return }
+        
+        let ascendingNotes = scale.notesAscending()
+        let rootMidi = 60  // Start from middle C
+        
+        // Build adjusted notes with correct MIDI numbers
+        var adjustedNotes: [Note] = []
+        for (index, note) in ascendingNotes.enumerated() {
+            let interval = scale.scaleType.degrees[index].semitonesFromRoot
+            let adjustedMidi = rootMidi + interval
+            let adjustedNote = Note(
+                name: note.name,
+                midiNumber: adjustedMidi,
+                isSharp: note.isSharp
+            )
+            adjustedNotes.append(adjustedNote)
+        }
+        
+        playScale(adjustedNotes, bpm: bpm, direction: .ascendingDescending)
+    }
+    
     deinit {
         audioEngine?.stop()
     }
