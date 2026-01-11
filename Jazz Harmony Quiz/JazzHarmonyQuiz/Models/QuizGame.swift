@@ -552,7 +552,7 @@ class QuizGame: ObservableObject {
         var rng = SeededRandomNumberGenerator(seed: UInt64(seed))
         questions = []
         
-        let allChords = chordDatabase.getAllChords(difficulty: selectedDifficulty)
+        let allChords = chordDatabase.getChords(by: selectedDifficulty)
         guard !allChords.isEmpty else { return }
         
         for _ in 0..<totalQuestions {
@@ -1017,23 +1017,6 @@ class QuizGame: ObservableObject {
     
     deinit {
         timer?.invalidate()
-    }
-}
-
-// MARK: - Seeded Random Number Generator (for Daily Challenge)
-
-struct SeededRandomNumberGenerator: RandomNumberGenerator {
-    var state: UInt64
-    
-    init(seed: UInt64) {
-        self.state = seed
-    }
-    
-    mutating func next() -> UInt64 {
-        state ^= state << 13
-        state ^= state >> 7
-        state ^= state << 17
-        return state
     }
 }
 
