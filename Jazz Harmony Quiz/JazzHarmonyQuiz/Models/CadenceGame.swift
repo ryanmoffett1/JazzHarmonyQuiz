@@ -43,6 +43,9 @@ class CadenceGame: ObservableObject {
     @Published var didRankUp: Bool = false
     @Published var previousRank: Rank?
     
+    // Shared player stats (rating, streaks, achievements)
+    var playerStats: PlayerStats { PlayerStats.shared }
+    
     // MARK: - Streak Tracking
     @Published var currentStreak: Int = 0
     @Published var lastPracticeDate: Date?
@@ -282,23 +285,32 @@ class CadenceGame: ObservableObject {
             saveToLeaderboard(result)
         }
         
-        // Calculate and apply rating change
+        // Calculate rating change
         let ratingChange = calculateRatingChange(correctAnswers: correctAnswers, totalQuestions: totalQuestions)
-        let ratingBefore = lifetimeStats.currentRating
-        let previousRankTitle = lifetimeStats.currentRank.title
         
-        // Store previous rank for comparison
-        previousRank = lifetimeStats.currentRank
+        // Apply to shared player stats
+        let wasPerfectScore = correctAnswers == totalQuestions
+        let ratingResult = playerStats.applyRatingChange(ratingChange)
+        playerStats.updateStreak()
+        playerStats.recordPractice(
+            questionsAnswered: totalQuestions,
+            correctAnswers: correctAnswers,
+            time: totalQuizTime,
+            wasPerfectScore: wasPerfectScore
+        )
         
-        // Phase 4: Update lifetime statistics (this will also update the rating)
-        updateLifetimeStats(ratingChange: ratingChange)
-        
-        // Track rating change for UI
+        // Store for UI
         lastRatingChange = ratingChange
+        didRankUp = ratingResult.didRankUp
+        previousRank = ratingResult.previousRank
         
-        // Check for rank up
-        let newRankTitle = lifetimeStats.currentRank.title
-        didRankUp = newRankTitle != previousRankTitle && ratingChange > 0
+        // Handle daily challenge completion
+        if isDailyChallenge && !playerStats.isDailyChallengeCompletedToday {
+            playerStats.completeDailyChallenge()
+        }
+        
+        // Update mode-specific lifetime statistics
+        updateLifetimeStats(ratingChange: ratingChange)
         
         // Phase 4: Save settings for quick practice
         saveLastQuizSettings()

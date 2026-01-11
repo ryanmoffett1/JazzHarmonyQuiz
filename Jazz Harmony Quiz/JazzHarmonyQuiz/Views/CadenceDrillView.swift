@@ -222,29 +222,29 @@ struct CadenceSetupView: View {
                         .font(.largeTitle)
                         .fontWeight(.bold)
                     
-                    // Stats row - Rank and Rating
+                    // Stats row - Rank and Rating (from shared PlayerStats)
                     HStack(spacing: 20) {
                         // Rank
                         HStack(spacing: 4) {
-                            Text(cadenceGame.lifetimeStats.currentRank.emoji)
-                            Text("\(cadenceGame.lifetimeStats.currentRating)")
+                            Text(cadenceGame.playerStats.currentRank.emoji)
+                            Text("\(cadenceGame.playerStats.currentRating)")
                                 .fontWeight(.semibold)
                         }
                         .font(.subheadline)
                         .foregroundColor(.blue)
                         
                         // Streak
-                        if cadenceGame.currentStreak > 0 {
+                        if cadenceGame.playerStats.currentStreak > 0 {
                             HStack(spacing: 4) {
                                 Text("🔥")
-                                Text("\(cadenceGame.currentStreak)")
+                                Text("\(cadenceGame.playerStats.currentStreak)")
                                     .fontWeight(.semibold)
                             }
                             .font(.subheadline)
                             .foregroundColor(.orange)
                         }
                         
-                        // Accuracy
+                        // Accuracy (mode-specific)
                         if cadenceGame.lifetimeStats.totalQuestionsAnswered > 0 {
                             HStack(spacing: 4) {
                                 Text("📊")
@@ -1304,7 +1304,7 @@ struct CadenceResultsView: View {
                                 .frame(height: 40)
                             
                             VStack {
-                                Text("\(cadenceGame.lifetimeStats.currentRating)")
+                                Text("\(cadenceGame.playerStats.currentRating)")
                                     .font(.title2)
                                     .fontWeight(.bold)
                                     .foregroundColor(.blue)
@@ -1318,9 +1318,9 @@ struct CadenceResultsView: View {
                                 .frame(height: 40)
                             
                             VStack {
-                                Text(cadenceGame.lifetimeStats.currentRank.emoji)
+                                Text(cadenceGame.playerStats.currentRank.emoji)
                                     .font(.title)
-                                Text(cadenceGame.lifetimeStats.currentRank.title)
+                                Text(cadenceGame.playerStats.currentRank.title)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                     .lineLimit(1)
@@ -1336,7 +1336,7 @@ struct CadenceResultsView: View {
                                 }
                                 Image(systemName: "arrow.right")
                                     .foregroundColor(.green)
-                                Text(cadenceGame.lifetimeStats.currentRank.emoji)
+                                Text(cadenceGame.playerStats.currentRank.emoji)
                                 Text("Rank Up!")
                                     .fontWeight(.bold)
                                     .foregroundColor(.green)
@@ -1348,7 +1348,7 @@ struct CadenceResultsView: View {
                         }
                         
                         // Points to next rank
-                        if let pointsNeeded = cadenceGame.lifetimeStats.pointsToNextRank {
+                        if let pointsNeeded = cadenceGame.playerStats.pointsToNextRank {
                             Text("\(pointsNeeded) points to next rank")
                                 .font(.caption)
                                 .foregroundColor(.secondary)

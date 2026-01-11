@@ -68,15 +68,17 @@ struct ContentView: View {
 struct StatsDashboardCard: View {
     @EnvironmentObject var quizGame: QuizGame
     
+    private var playerStats: PlayerStats { PlayerStats.shared }
+    
     var body: some View {
         VStack(spacing: 16) {
             // Rank and Rating Row
             HStack(spacing: 20) {
                 // Rank Badge
                 VStack(spacing: 4) {
-                    Text(quizGame.stats.currentRank.emoji)
+                    Text(playerStats.currentRank.emoji)
                         .font(.system(size: 44))
-                    Text(quizGame.stats.currentRank.title)
+                    Text(playerStats.currentRank.title)
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .multilineTextAlignment(.center)
@@ -90,7 +92,7 @@ struct StatsDashboardCard: View {
                 
                 // Rating
                 VStack(spacing: 4) {
-                    Text("\(quizGame.stats.currentRating)")
+                    Text("\(playerStats.currentRating)")
                         .font(.system(size: 36, weight: .bold))
                         .foregroundColor(.blue)
                     Text("Rating")
@@ -98,7 +100,7 @@ struct StatsDashboardCard: View {
                         .foregroundColor(.secondary)
                     
                     // Progress to next rank
-                    if let pointsNeeded = quizGame.stats.pointsToNextRank {
+                    if let pointsNeeded = playerStats.pointsToNextRank {
                         Text("\(pointsNeeded) to next rank")
                             .font(.caption2)
                             .foregroundColor(.secondary)
@@ -116,7 +118,7 @@ struct StatsDashboardCard: View {
                     HStack(spacing: 2) {
                         Text("🔥")
                             .font(.title)
-                        Text("\(quizGame.stats.currentStreak)")
+                        Text("\(playerStats.currentStreak)")
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.orange)
                     }
@@ -198,6 +200,8 @@ struct QuickActionsSection: View {
     @EnvironmentObject var quizGame: QuizGame
     @Binding var navigationPath: NavigationPath
     
+    private var playerStats: PlayerStats { PlayerStats.shared }
+    
     var body: some View {
         VStack(spacing: 12) {
             // Daily Challenge Button
@@ -210,13 +214,13 @@ struct QuickActionsSection: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Daily Challenge")
                             .font(.headline)
-                        Text(quizGame.stats.isDailyChallengeCompletedToday ? "Completed! ✓" : "Same challenge for everyone")
+                        Text(playerStats.isDailyChallengeCompletedToday ? "Completed! ✓" : "Same challenge for everyone")
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                     }
                     Spacer()
-                    if quizGame.stats.dailyChallengeStreak > 0 {
-                        Text("🔥 \(quizGame.stats.dailyChallengeStreak)")
+                    if playerStats.dailyChallengeStreak > 0 {
+                        Text("🔥 \(playerStats.dailyChallengeStreak)")
                             .font(.subheadline)
                             .fontWeight(.bold)
                     }
@@ -226,7 +230,7 @@ struct QuickActionsSection: View {
                 .padding()
                 .background(
                     LinearGradient(
-                        colors: quizGame.stats.isDailyChallengeCompletedToday ? [.green, .mint] : [.orange, .red],
+                        colors: playerStats.isDailyChallengeCompletedToday ? [.green, .mint] : [.orange, .red],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -321,7 +325,7 @@ struct DrillOptionsSection: View {
                 DrillOptionCard(
                     icon: "star.fill",
                     title: "Achievements",
-                    subtitle: "\(quizGame.stats.unlockedAchievements.count)/\(AchievementType.allCases.count) unlocked",
+                    subtitle: "\(PlayerStats.shared.unlockedAchievements.count)/\(AchievementType.allCases.count) unlocked",
                     color: .yellow
                 )
             }
@@ -452,13 +456,15 @@ struct AchievementsView: View {
     @EnvironmentObject var quizGame: QuizGame
     @Environment(\.colorScheme) var colorScheme
     
+    private var playerStats: PlayerStats { PlayerStats.shared }
+    
     var unlockedAchievements: [Achievement] {
-        quizGame.stats.unlockedAchievements.sorted { $0.unlockedDate > $1.unlockedDate }
+        playerStats.unlockedAchievements.sorted { $0.unlockedDate > $1.unlockedDate }
     }
     
     var lockedAchievements: [AchievementType] {
         AchievementType.allCases.filter { type in
-            !quizGame.stats.hasAchievement(type)
+            !playerStats.hasAchievement(type)
         }
     }
     

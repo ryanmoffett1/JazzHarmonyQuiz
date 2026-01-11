@@ -173,6 +173,8 @@ struct QuizSetupView: View {
     @Binding var selectedChordSymbols: Set<String>
     let onStartQuiz: () -> Void
     let onStartDailyChallenge: () -> Void
+    
+    private var playerStats: PlayerStats { PlayerStats.shared }
 
     var body: some View {
         ScrollView {
@@ -187,18 +189,18 @@ struct QuizSetupView: View {
                     HStack(spacing: 20) {
                         // Rank
                         HStack(spacing: 4) {
-                            Text(quizGame.stats.currentRank.emoji)
-                            Text("\(quizGame.stats.currentRating)")
+                            Text(playerStats.currentRank.emoji)
+                            Text("\(playerStats.currentRating)")
                                 .fontWeight(.semibold)
                         }
                         .font(.subheadline)
                         .foregroundColor(.blue)
                         
                         // Streak
-                        if quizGame.stats.currentStreak > 0 {
+                        if playerStats.currentStreak > 0 {
                             HStack(spacing: 4) {
                                 Text("🔥")
-                                Text("\(quizGame.stats.currentStreak)")
+                                Text("\(playerStats.currentStreak)")
                                     .fontWeight(.semibold)
                             }
                             .font(.subheadline)
@@ -214,7 +216,7 @@ struct QuizSetupView: View {
                         VStack(alignment: .leading) {
                             Text("Daily Challenge")
                                 .font(.headline)
-                            Text(quizGame.stats.isDailyChallengeCompletedToday ? "Completed! ✓" : "Same challenge for everyone!")
+                            Text(playerStats.isDailyChallengeCompletedToday ? "Completed! ✓" : "Same challenge for everyone!")
                                 .font(.caption)
                                 .foregroundColor(.white.opacity(0.8))
                         }
@@ -225,7 +227,7 @@ struct QuizSetupView: View {
                     .padding()
                     .background(
                         LinearGradient(
-                            colors: quizGame.stats.isDailyChallengeCompletedToday ? [.green, .mint] : [.orange, .red],
+                            colors: playerStats.isDailyChallengeCompletedToday ? [.green, .mint] : [.orange, .red],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -758,6 +760,8 @@ struct ChordDrillResultsView: View {
     @Environment(\.colorScheme) var colorScheme
     let onNewQuiz: () -> Void
     
+    private var playerStats: PlayerStats { PlayerStats.shared }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -785,9 +789,9 @@ struct ChordDrillResultsView: View {
                                     .foregroundColor(.green)
                                 
                                 VStack {
-                                    Text(quizGame.stats.currentRank.emoji)
+                                    Text(playerStats.currentRank.emoji)
                                         .font(.system(size: 50))
-                                    Text(quizGame.stats.currentRank.title)
+                                    Text(playerStats.currentRank.title)
                                         .font(.subheadline)
                                         .fontWeight(.bold)
                                 }
@@ -856,7 +860,7 @@ struct ChordDrillResultsView: View {
                                 .frame(height: 40)
                             
                             VStack {
-                                Text("\(quizGame.stats.currentRating)")
+                                Text("\(playerStats.currentRating)")
                                     .font(.title2)
                                     .fontWeight(.bold)
                                     .foregroundColor(.blue)
@@ -870,9 +874,9 @@ struct ChordDrillResultsView: View {
                                 .frame(height: 40)
                             
                             VStack {
-                                Text(quizGame.stats.currentRank.emoji)
+                                Text(playerStats.currentRank.emoji)
                                     .font(.title)
-                                Text(quizGame.stats.currentRank.title)
+                                Text(playerStats.currentRank.title)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -891,10 +895,10 @@ struct ChordDrillResultsView: View {
                     }
                     
                     // Streak info
-                    if quizGame.stats.currentStreak > 1 {
+                    if playerStats.currentStreak > 1 {
                         HStack {
                             Text("🔥")
-                            Text("\(quizGame.stats.currentStreak) day streak!")
+                            Text("\(playerStats.currentStreak) day streak!")
                         }
                         .font(.headline)
                         .foregroundColor(.orange)

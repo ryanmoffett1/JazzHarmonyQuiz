@@ -460,12 +460,15 @@ class QuizGame: ObservableObject {
     @Published var selectedDifficulty: ChordType.ChordDifficulty = .beginner
     @Published var selectedQuestionTypes: Set<QuestionType> = [.singleTone, .allTones]
     
-    // MARK: - Stats & Rating
-    @Published var stats: ChordDrillStats = ChordDrillStats()
+    // MARK: - Stats & Rating (uses shared PlayerStats for unified rating)
+    @Published var stats: ChordDrillStats = ChordDrillStats()  // Mode-specific stats
     @Published var isDailyChallenge: Bool = false
     @Published var lastRatingChange: Int = 0
     @Published var didRankUp: Bool = false
     @Published var previousRank: Rank?
+    
+    // Shared player stats (rating, streaks, achievements)
+    var playerStats: PlayerStats { PlayerStats.shared }
     
     // MARK: - Filtering Options
     @Published var selectedRoots: Set<Note> = []  // Empty means all roots
@@ -694,15 +697,25 @@ class QuizGame: ObservableObject {
             correctAnswers: correctAnswers,
             chordTypes: chordTypesUsed,
             difficulty: selectedDifficulty.rawValue,
-            ratingBefore: ratingBefore,
-            ratingAfter: ratingBefore + ratingChange
+            ratingBefore: playerStats.currentRating,
+            ratingAfter: playerStats.currentRating + ratingChange
         )
         
-        // Update stats
+        // Update mode-specific stats
         stats.recordSession(session)
-        stats.updateStreak()
         
-        // Update per-chord and per-key stats
+        // Update shared player stats (rating, streak, achievements)
+        let wasPerfectScore = correctAnswers == totalQuestions
+        let ratingResult = playerStats.applyRatingChange(ratingChange)
+        playerStats.updateStreak()
+        playerStats.recordPractice(
+            questionsAnswered: totalQuestions,
+            correctAnswers: correctAnswers,
+            time: totalQuizTime,
+            wasPerfectScore: wasPerfectScore
+        )
+        
+        // Update per-chord and per-key stats (mode-specific)
         for question in questions {
             let isCorrect = questionResults[question.id] ?? false
             let chordSymbol = question.chord.chordType.symbol
@@ -722,20 +735,16 @@ class QuizGame: ObservableObject {
         // Track rating change for UI
         lastRatingChange = ratingChange
         
-        // Check for rank up
-        let newRankTitle = stats.currentRank.title
-        didRankUp = newRankTitle != previousRankTitle && ratingChange > 0
+        // Check for rank up (using shared stats)
+        didRankUp = ratingResult.didRankUp
+        previousRank = ratingResult.previousRank
         
         // Handle daily challenge completion
-        if isDailyChallenge && !stats.isDailyChallengeCompletedToday {
-            stats.completeDailyChallenge()
+        if isDailyChallenge && !playerStats.isDailyChallengeCompletedToday {
+            playerStats.completeDailyChallenge()
         }
         
-        // Check for achievements
-        let wasPerfectScore = correctAnswers == totalQuestions
-        stats.checkAchievements(wasPerfectScore: wasPerfectScore)
-        
-        // Save stats
+        // Save mode-specific stats
         saveStatsToUserDefaults()
     }
     
