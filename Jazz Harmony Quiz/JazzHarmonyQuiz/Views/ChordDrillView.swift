@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChordDrillView: View {
     @EnvironmentObject var quizGame: QuizGame
+    @EnvironmentObject var settings: SettingsManager
     @State private var selectedNotes: Set<Note> = []
     @State private var viewState: ViewState = .setup
     @State private var numberOfQuestions: Int
@@ -9,6 +10,10 @@ struct ChordDrillView: View {
     @State private var selectedQuestionTypes: Set<QuestionType>
     @State private var showingResults = false
     @State private var showingFeedback = false
+    
+    // For direct launch modes
+    private var startDailyChallenge: Bool = false
+    private var startQuickPractice: Bool = false
     
     enum ViewState {
         case setup
@@ -18,10 +23,14 @@ struct ChordDrillView: View {
     
     init(numberOfQuestions: Int = 10,
          selectedDifficulty: ChordType.ChordDifficulty = .beginner,
-         selectedQuestionTypes: Set<QuestionType> = [.singleTone, .allTones]) {
+         selectedQuestionTypes: Set<QuestionType> = [.singleTone, .allTones],
+         startDailyChallenge: Bool = false,
+         startQuickPractice: Bool = false) {
         self._numberOfQuestions = State(initialValue: numberOfQuestions)
         self._selectedDifficulty = State(initialValue: selectedDifficulty)
         self._selectedQuestionTypes = State(initialValue: selectedQuestionTypes)
+        self.startDailyChallenge = startDailyChallenge
+        self.startQuickPractice = startQuickPractice
     }
     
     var body: some View {
@@ -32,12 +41,13 @@ struct ChordDrillView: View {
                     numberOfQuestions: $numberOfQuestions,
                     selectedDifficulty: $selectedDifficulty,
                     selectedQuestionTypes: $selectedQuestionTypes,
-                    onStartQuiz: startQuiz
+                    onStartQuiz: startQuiz,
+                    onStartDailyChallenge: startDailyChallengeQuiz
                 )
             case .active:
                 ActiveQuizView(selectedNotes: $selectedNotes, showingFeedback: $showingFeedback, viewState: $viewState)
             case .results:
-                ResultsView(onNewQuiz: {
+                ChordDrillResultsView(onNewQuiz: {
                     // Reset quiz and show setup
                     quizGame.resetQuizState()
                     viewState = .setup
@@ -59,8 +69,13 @@ struct ChordDrillView: View {
             ToolbarItem(placement: .principal) {
                 if quizGame.isQuizActive {
                     VStack {
-                        Text("Question \(quizGame.currentQuestionNumber) of \(quizGame.totalQuestions)")
-                            .font(.headline)
+                        HStack(spacing: 4) {
+                            Text("Question \(quizGame.currentQuestionNumber) of \(quizGame.totalQuestions)")
+                                .font(.headline)
+                            if quizGame.isDailyChallenge {
+                                Text("📅")
+                            }
+                        }
                         ProgressView(value: quizGame.progress)
                             .frame(width: 200)
                     }
@@ -70,6 +85,14 @@ struct ChordDrillView: View {
         .onChange(of: quizGame.isQuizCompleted) { oldValue, newValue in
             if newValue && !oldValue {
                 viewState = .results
+            }
+        }
+        .onAppear {
+            // Handle direct launch modes
+            if startDailyChallenge {
+                startDailyChallengeQuiz()
+            } else if startQuickPractice {
+                startQuickPracticeQuiz()
             }
         }
     }
@@ -86,6 +109,20 @@ struct ChordDrillView: View {
             difficulty: selectedDifficulty,
             questionTypes: selectedQuestionTypes
         )
+    }
+    
+    private func startDailyChallengeQuiz() {
+        selectedNotes = []
+        showingFeedback = false
+        viewState = .active
+        quizGame.startDailyChallenge()
+    }
+    
+    private func startQuickPracticeQuiz() {
+        selectedNotes = []
+        showingFeedback = false
+        viewState = .active
+        quizGame.startQuickPractice()
     }
     
     private func quitQuiz() {
@@ -105,13 +142,66 @@ struct QuizSetupView: View {
     @Binding var selectedDifficulty: ChordType.ChordDifficulty
     @Binding var selectedQuestionTypes: Set<QuestionType>
     let onStartQuiz: () -> Void
+    let onStartDailyChallenge: () -> Void
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 30) {
-                Text("Chord Drill Setup")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+            VStack(spacing: 24) {
+                // Header with rank and streak
+                VStack(spacing: 8) {
+                    Text("Chord Drill Setup")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    
+                    // Stats row
+                    HStack(spacing: 20) {
+                        // Rank
+                        HStack(spacing: 4) {
+                            Text(quizGame.stats.currentRank.emoji)
+                            Text("\(quizGame.stats.currentRating)")
+                                .fontWeight(.semibold)
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                        
+                        // Streak
+                        if quizGame.stats.currentStreak > 0 {
+                            HStack(spacing: 4) {
+                                Text("🔥")
+                                Text("\(quizGame.stats.currentStreak)")
+                                    .fontWeight(.semibold)
+                            }
+                            .font(.subheadline)
+                            .foregroundColor(.orange)
+                        }
+                    }
+                }
+                
+                // Daily Challenge Button
+                Button(action: onStartDailyChallenge) {
+                    HStack {
+                        Image(systemName: "calendar.badge.clock")
+                        VStack(alignment: .leading) {
+                            Text("Daily Challenge")
+                                .font(.headline)
+                            Text(quizGame.stats.isDailyChallengeCompletedToday ? "Completed! ✓" : "Same challenge for everyone!")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(
+                        LinearGradient(
+                            colors: quizGame.stats.isDailyChallengeCompletedToday ? [.green, .mint] : [.orange, .red],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(12)
+                }
                 
                 VStack(alignment: .leading, spacing: 20) {
                     // Number of Questions
@@ -471,8 +561,206 @@ struct ActiveQuizView: View {
     }
 }
 
+// MARK: - Chord Drill Results View
+
+struct ChordDrillResultsView: View {
+    @EnvironmentObject var quizGame: QuizGame
+    @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
+    let onNewQuiz: () -> Void
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                if let result = quizGame.currentResult {
+                    // Rank Up Celebration (if applicable)
+                    if quizGame.didRankUp {
+                        VStack(spacing: 12) {
+                            Text("🎉 Rank Up! 🎉")
+                                .font(.title)
+                                .fontWeight(.bold)
+                            
+                            HStack(spacing: 20) {
+                                if let prev = quizGame.previousRank {
+                                    VStack {
+                                        Text(prev.emoji)
+                                            .font(.system(size: 40))
+                                        Text(prev.title)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                
+                                Image(systemName: "arrow.right")
+                                    .font(.title2)
+                                    .foregroundColor(.green)
+                                
+                                VStack {
+                                    Text(quizGame.stats.currentRank.emoji)
+                                        .font(.system(size: 50))
+                                    Text(quizGame.stats.currentRank.title)
+                                        .font(.subheadline)
+                                        .fontWeight(.bold)
+                                }
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            LinearGradient(
+                                colors: [.yellow.opacity(0.3), .orange.opacity(0.3)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .cornerRadius(16)
+                    }
+                    
+                    // Header
+                    VStack(spacing: 8) {
+                        Text("Quiz Complete!")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                        
+                        if quizGame.isDailyChallenge {
+                            HStack {
+                                Image(systemName: "calendar.badge.clock")
+                                Text("Daily Challenge")
+                            }
+                            .font(.subheadline)
+                            .foregroundColor(.orange)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.orange.opacity(0.1))
+                            .cornerRadius(8)
+                        }
+                    }
+                    
+                    // Score Display
+                    VStack(spacing: 16) {
+                        // Accuracy
+                        Text("\(Int(result.accuracy * 100))%")
+                            .font(.system(size: 72, weight: .bold))
+                            .foregroundColor(accuracyColor(result.accuracy))
+                        
+                        Text("\(result.correctAnswers) of \(result.totalQuestions) correct")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        // Rating Change
+                        HStack(spacing: 16) {
+                            VStack {
+                                HStack(spacing: 4) {
+                                    Text(quizGame.lastRatingChange >= 0 ? "+" : "")
+                                    Text("\(quizGame.lastRatingChange)")
+                                }
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(quizGame.lastRatingChange >= 0 ? .green : .red)
+                                
+                                Text("Rating")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Divider()
+                                .frame(height: 40)
+                            
+                            VStack {
+                                Text("\(quizGame.stats.currentRating)")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.blue)
+                                
+                                Text("Total")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Divider()
+                                .frame(height: 40)
+                            
+                            VStack {
+                                Text(quizGame.stats.currentRank.emoji)
+                                    .font(.title)
+                                Text(quizGame.stats.currentRank.title)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        
+                        // Time
+                        HStack {
+                            Image(systemName: "clock")
+                            Text(formatTime(result.totalTime))
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    }
+                    
+                    // Streak info
+                    if quizGame.stats.currentStreak > 1 {
+                        HStack {
+                            Text("🔥")
+                            Text("\(quizGame.stats.currentStreak) day streak!")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.orange)
+                    }
+                    
+                    // Action Buttons
+                    VStack(spacing: 12) {
+                        Button(action: onNewQuiz) {
+                            HStack {
+                                Image(systemName: "arrow.counterclockwise")
+                                Text("New Quiz")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(12)
+                        }
+                        
+                        NavigationLink(destination: LeaderboardView()) {
+                            HStack {
+                                Image(systemName: "trophy")
+                                Text("View Leaderboard")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.orange)
+                            .cornerRadius(12)
+                        }
+                    }
+                }
+            }
+            .padding()
+        }
+    }
+    
+    private func accuracyColor(_ accuracy: Double) -> Color {
+        if accuracy >= 0.9 { return .green }
+        if accuracy >= 0.7 { return .orange }
+        return .red
+    }
+    
+    private func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+}
+
 // MARK: - Preview
 #Preview {
     ChordDrillView()
         .environmentObject(QuizGame())
+        .environmentObject(SettingsManager.shared)
 }

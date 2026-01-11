@@ -249,14 +249,17 @@ struct Rank {
 
 | Feature | Status | Date Completed |
 |---------|--------|----------------|
-| Rating System | ⬜ Pending | |
-| Rank Titles | ⬜ Pending | |
-| Daily Challenge | ⬜ Pending | |
-| Streak System | ⬜ Pending | |
-| Stats Dashboard | ⬜ Pending | |
+| Rating System | ✅ Done | Jan 10, 2026 |
+| Rank Titles | ✅ Done | Jan 10, 2026 |
+| Daily Challenge | ✅ Done | Jan 10, 2026 |
+| Streak System | ✅ Done | Jan 10, 2026 |
+| Stats Dashboard | ✅ Done | Jan 10, 2026 |
+| Quick Practice | ✅ Done | Jan 10, 2026 |
+| Practice Session Log | ✅ Done | Jan 10, 2026 |
+| Rating Change Display | ✅ Done | Jan 10, 2026 |
+| Rank Up Celebration | ✅ Done | Jan 10, 2026 |
 | Chord Type Filtering | ⬜ Pending | |
 | Key Filtering | ⬜ Pending | |
-| Quick Actions | ⬜ Pending | |
 | Audio Feedback | ⬜ Pending | |
 | Haptic Feedback | ⬜ Pending | |
 | Achievements | ⬜ Pending | |
