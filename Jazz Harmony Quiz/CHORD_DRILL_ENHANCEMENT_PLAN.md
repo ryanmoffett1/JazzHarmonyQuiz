@@ -258,10 +258,11 @@ struct Rank {
 | Practice Session Log | ✅ Done | Jan 10, 2026 |
 | Rating Change Display | ✅ Done | Jan 10, 2026 |
 | Rank Up Celebration | ✅ Done | Jan 10, 2026 |
-| Chord Type Filtering | ⬜ Pending | |
-| Key Filtering | ⬜ Pending | |
-| Audio Feedback | ⬜ Pending | |
-| Haptic Feedback | ⬜ Pending | |
+| Key Difficulty Filtering | ✅ Done | Jan 10, 2026 |
+| Chord Type Filtering (Backend) | ✅ Done | Jan 10, 2026 |
+| Audio Feedback | ✅ Done | Jan 10, 2026 |
+| Haptic Feedback | ✅ Done | Jan 10, 2026 |
+| Chord Type Filtering (UI) | ⬜ Pending | |
 | Achievements | ⬜ Pending | |
 
 ---

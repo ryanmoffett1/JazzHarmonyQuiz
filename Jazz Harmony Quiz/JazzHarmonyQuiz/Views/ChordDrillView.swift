@@ -1,4 +1,23 @@
 import SwiftUI
+import UIKit
+
+// MARK: - Haptic Feedback Helper (shared with CadenceDrillView)
+fileprivate enum ChordDrillHaptics {
+    static func success() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+    }
+    
+    static func error() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+    }
+    
+    static func light() {
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+    }
+}
 
 struct ChordDrillView: View {
     @EnvironmentObject var quizGame: QuizGame
@@ -8,6 +27,7 @@ struct ChordDrillView: View {
     @State private var numberOfQuestions: Int
     @State private var selectedDifficulty: ChordType.ChordDifficulty
     @State private var selectedQuestionTypes: Set<QuestionType>
+    @State private var selectedKeyDifficulty: KeyDifficulty = .all
     @State private var showingResults = false
     @State private var showingFeedback = false
     
@@ -41,6 +61,7 @@ struct ChordDrillView: View {
                     numberOfQuestions: $numberOfQuestions,
                     selectedDifficulty: $selectedDifficulty,
                     selectedQuestionTypes: $selectedQuestionTypes,
+                    selectedKeyDifficulty: $selectedKeyDifficulty,
                     onStartQuiz: startQuiz,
                     onStartDailyChallenge: startDailyChallengeQuiz
                 )
@@ -103,6 +124,9 @@ struct ChordDrillView: View {
         showingFeedback = false
         viewState = .active
         
+        // Set key difficulty before starting
+        quizGame.selectedKeyDifficulty = selectedKeyDifficulty
+        
         // Start the new quiz
         quizGame.startNewQuiz(
             numberOfQuestions: numberOfQuestions,
@@ -141,6 +165,7 @@ struct QuizSetupView: View {
     @Binding var numberOfQuestions: Int
     @Binding var selectedDifficulty: ChordType.ChordDifficulty
     @Binding var selectedQuestionTypes: Set<QuestionType>
+    @Binding var selectedKeyDifficulty: KeyDifficulty
     let onStartQuiz: () -> Void
     let onStartDailyChallenge: () -> Void
 
@@ -219,7 +244,7 @@ struct QuizSetupView: View {
                     
                     // Difficulty Level
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Difficulty Level")
+                        Text("Chord Difficulty")
                             .font(.headline)
                         
                         Picker("Difficulty", selection: $selectedDifficulty) {
@@ -228,6 +253,23 @@ struct QuizSetupView: View {
                             }
                         }
                         .pickerStyle(SegmentedPickerStyle())
+                    }
+                    
+                    // Key Difficulty
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Key Difficulty")
+                            .font(.headline)
+                        
+                        Picker("Keys", selection: $selectedKeyDifficulty) {
+                            ForEach(KeyDifficulty.allCases, id: \.self) { keyDiff in
+                                Text(keyDiff.rawValue).tag(keyDiff)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        
+                        Text(selectedKeyDifficulty.description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                     
                     // Question Types
@@ -464,6 +506,18 @@ struct ActiveQuizView: View {
         
         // Check if answer is correct
         isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
+        
+        // Haptic feedback
+        if isCorrect {
+            ChordDrillHaptics.success()
+            
+            // Play chord audio if enabled
+            if settings.playChordOnCorrect && settings.audioEnabled {
+                AudioManager.shared.playChord(correctAnswer, duration: 1.0)
+            }
+        } else {
+            ChordDrillHaptics.error()
+        }
         
         // Show feedback FIRST (especially important for last question)
         showingFeedback = true

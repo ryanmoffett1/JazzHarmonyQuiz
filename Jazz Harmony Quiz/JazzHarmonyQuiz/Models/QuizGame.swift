@@ -241,7 +241,7 @@ class QuizGame: ObservableObject {
     // MARK: - Filtering Options
     @Published var selectedRoots: Set<Note> = []  // Empty means all roots
     @Published var selectedChordSymbols: Set<String> = []  // Empty means all chord types
-    @Published var selectedQuestionTypes: Set<QuestionType> = [.singleTone, .allTones]
+    @Published var selectedKeyDifficulty: KeyDifficulty = .all  // Key difficulty tier
     
     private let chordDatabase = JazzChordDatabase.shared
     private var quizStartTime: Date?
@@ -350,7 +350,24 @@ class QuizGame: ObservableObject {
         questions = []
         
         for _ in 0..<totalQuestions {
-            let chord = chordDatabase.getRandomChord(difficulty: selectedDifficulty)
+            // Determine which roots to use based on key difficulty or explicit selection
+            let rootNames: Set<String>?
+            if !selectedRoots.isEmpty {
+                rootNames = Set(selectedRoots.map { $0.name })
+            } else if selectedKeyDifficulty != .all {
+                rootNames = Set(selectedKeyDifficulty.availableRoots.map { $0.name })
+            } else {
+                rootNames = nil
+            }
+            
+            // Use filtered chord selection
+            let symbols = selectedChordSymbols.isEmpty ? nil : selectedChordSymbols
+            let chord = chordDatabase.getRandomFilteredChord(
+                difficulty: selectedDifficulty,
+                chordSymbols: symbols,
+                rootNames: rootNames
+            )
+            
             let questionType = selectedQuestionTypes.randomElement() ?? .singleTone
             
             let question: QuizQuestion

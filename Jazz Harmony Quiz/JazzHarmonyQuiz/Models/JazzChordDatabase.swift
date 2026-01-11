@@ -464,4 +464,89 @@ class JazzChordDatabase {
         let normalizedSymbol = symbol == "ø7" ? "m7b5" : symbol
         return chordTypes.first { $0.symbol == normalizedSymbol }
     }
+    
+    // MARK: - Chord Categories for Filtering
+    
+    /// Categories of chord types for filtering UI
+    enum ChordCategory: String, CaseIterable {
+        case triads = "Triads"
+        case sevenths = "7th Chords"
+        case extensions = "Extensions"
+        case altered = "Altered"
+        
+        var chordSymbols: [String] {
+            switch self {
+            case .triads:
+                return ["", "m", "dim", "aug"]
+            case .sevenths:
+                return ["7", "maj7", "m7", "m7b5", "dim7", "m(maj7)"]
+            case .extensions:
+                return ["9", "maj9", "m9", "11", "13", "maj13"]
+            case .altered:
+                return ["7b9", "7#9", "7b5", "7#5", "7#11", "7alt"]
+            }
+        }
+    }
+    
+    /// Get all unique chord symbols
+    func getAllChordSymbols() -> [String] {
+        return chordTypes.map { $0.symbol }
+    }
+    
+    /// Get chord symbols by category
+    func getChordSymbols(for category: ChordCategory) -> [String] {
+        return chordTypes
+            .filter { category.chordSymbols.contains($0.symbol) }
+            .map { $0.symbol }
+    }
+    
+    /// Get chords with filtering options
+    func getFilteredChords(
+        difficulty: ChordType.ChordDifficulty? = nil,
+        chordSymbols: Set<String>? = nil,
+        rootNames: Set<String>? = nil
+    ) -> [Chord] {
+        var chords: [Chord] = []
+        
+        // Filter chord types
+        var filteredTypes = chordTypes
+        if let difficulty = difficulty {
+            filteredTypes = filteredTypes.filter { $0.difficulty == difficulty }
+        }
+        if let symbols = chordSymbols, !symbols.isEmpty {
+            filteredTypes = filteredTypes.filter { symbols.contains($0.symbol) }
+        }
+        
+        // Determine root notes to use
+        let rootsToUse: [String]
+        if let roots = rootNames, !roots.isEmpty {
+            rootsToUse = Array(roots)
+        } else {
+            rootsToUse = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
+        }
+        
+        for rootName in rootsToUse {
+            if let rootNote = Note.allNotes.first(where: { $0.name == rootName }) {
+                for chordType in filteredTypes {
+                    chords.append(Chord(root: rootNote, chordType: chordType))
+                }
+            }
+        }
+        
+        return chords
+    }
+    
+    /// Get a random chord with filtering
+    func getRandomFilteredChord(
+        difficulty: ChordType.ChordDifficulty? = nil,
+        chordSymbols: Set<String>? = nil,
+        rootNames: Set<String>? = nil
+    ) -> Chord {
+        let availableChords = getFilteredChords(
+            difficulty: difficulty,
+            chordSymbols: chordSymbols,
+            rootNames: rootNames
+        )
+        return availableChords.randomElement() ?? Chord(root: Note.allNotes[0], chordType: chordTypes[0])
+    }
 }
