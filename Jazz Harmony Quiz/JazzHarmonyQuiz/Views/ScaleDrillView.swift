@@ -490,9 +490,10 @@ struct ActiveScaleQuizView: View {
                 Spacer()
                 
                 // Piano Keyboard
-                PianoKeyboard(selectedNotes: $selectedNotes, isInteractive: !hasSubmitted)
+                PianoKeyboard(selectedNotes: $selectedNotes)
                     .frame(height: 180)
                     .padding(.horizontal, 8)
+                    .disabled(hasSubmitted)
                 
                 // Action Buttons
                 HStack(spacing: 16) {
