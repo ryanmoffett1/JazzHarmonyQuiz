@@ -15,6 +15,7 @@ struct ScaleDegree: Identifiable, Hashable, Codable {
     static let sharpTwo = ScaleDegree(degree: 2, name: "#2", semitonesFromRoot: 3, isAltered: true)
     static let flatThird = ScaleDegree(degree: 3, name: "b3", semitonesFromRoot: 3, isAltered: true)
     static let third = ScaleDegree(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false)
+    static let flatFour = ScaleDegree(degree: 4, name: "b4", semitonesFromRoot: 4, isAltered: true)
     static let fourth = ScaleDegree(degree: 4, name: "4th", semitonesFromRoot: 5, isAltered: false)
     static let sharpFour = ScaleDegree(degree: 4, name: "#4", semitonesFromRoot: 6, isAltered: true)
     static let flatFive = ScaleDegree(degree: 5, name: "b5", semitonesFromRoot: 6, isAltered: true)
