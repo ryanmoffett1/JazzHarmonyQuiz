@@ -155,8 +155,8 @@ class ScaleGame: ObservableObject {
     private func generateQuestions() {
         questions = []
         
-        // Get available roots based on key difficulty
-        let availableRoots = selectedKeyDifficulty.availableRootNames
+        // Get available roots based on key difficulty (map Note objects to names)
+        let availableRoots = selectedKeyDifficulty.availableRoots.map { $0.name }
         
         for _ in 0..<totalQuestions {
             guard let scale = scaleDatabase.getRandomScale(

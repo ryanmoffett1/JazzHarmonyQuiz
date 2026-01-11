@@ -7,13 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		944280302F12B0000035FE8B /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280312F12B0000035FE8B /* AudioManager.swift */; };
 		944280232F12A0160035FE8B /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280222F12A0160035FE8B /* SettingsManager.swift */; };
 		944280252F12A0230035FE8B /* CadenceGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280242F12A0230035FE8B /* CadenceGame.swift */; };
 		944280272F12A0630035FE8B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280262F12A0630035FE8B /* SettingsView.swift */; };
 		944280292F12A0770035FE8B /* CadenceLeaderboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280282F12A0770035FE8B /* CadenceLeaderboardView.swift */; };
 		9442802B2F12A08C0035FE8B /* CadenceDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9442802A2F12A08C0035FE8B /* CadenceDrillView.swift */; };
 		9442802F2F12A19E0035FE8B /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9442802D2F12A19E0035FE8B /* FlowLayout.swift */; };
+		944280302F12B0000035FE8B /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280312F12B0000035FE8B /* AudioManager.swift */; };
+		94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */; };
+		94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */; };
+		94DFCCE12F13E0DD00FBC0C2 /* JazzScaleDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */; };
+		94DFCCE32F13E0F400FBC0C2 /* PlayerStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCE22F13E0F400FBC0C2 /* PlayerStats.swift */; };
+		94DFCCE52F13E13F00FBC0C2 /* ScaleDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCE42F13E13F00FBC0C2 /* ScaleDrillView.swift */; };
 		A1234567890ABCDEF001 /* JazzHarmonyQuizApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */; };
 		A1234567890ABCDEF003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF002 /* ContentView.swift */; };
 		A1234567890ABCDEF005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF004 /* Assets.xcassets */; };
@@ -28,18 +33,18 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		944280352F12B2000035FE8B /* ScaleModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleModel.swift; sourceTree = "<group>"; };
-		944280372F12B2010035FE8B /* JazzScaleDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzScaleDatabase.swift; sourceTree = "<group>"; };
-		944280392F12B2020035FE8B /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
-		9442803B2F12B2030035FE8B /* ScaleDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillView.swift; sourceTree = "<group>"; };
-		9442803D2F12B1000035FE8B /* PlayerStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerStats.swift; sourceTree = "<group>"; };
-		944280312F12B0000035FE8B /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		944280222F12A0160035FE8B /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
 		944280242F12A0230035FE8B /* CadenceGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceGame.swift; sourceTree = "<group>"; };
 		944280262F12A0630035FE8B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		944280282F12A0770035FE8B /* CadenceLeaderboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceLeaderboardView.swift; sourceTree = "<group>"; };
 		9442802A2F12A08C0035FE8B /* CadenceDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillView.swift; sourceTree = "<group>"; };
 		9442802D2F12A19E0035FE8B /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
+		944280312F12B0000035FE8B /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
+		94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleModel.swift; sourceTree = "<group>"; };
+		94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzScaleDatabase.swift; sourceTree = "<group>"; };
+		94DFCCE22F13E0F400FBC0C2 /* PlayerStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerStats.swift; sourceTree = "<group>"; };
+		94DFCCE42F13E13F00FBC0C2 /* ScaleDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzHarmonyQuizApp.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -120,6 +125,10 @@
 				A1234567890ABCDEF021 /* JazzChordDatabase.swift */,
 				944280222F12A0160035FE8B /* SettingsManager.swift */,
 				944280242F12A0230035FE8B /* CadenceGame.swift */,
+				94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */,
+				94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */,
+				94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */,
+				94DFCCE22F13E0F400FBC0C2 /* PlayerStats.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -134,6 +143,7 @@
 				944280262F12A0630035FE8B /* SettingsView.swift */,
 				944280282F12A0770035FE8B /* CadenceLeaderboardView.swift */,
 				9442802A2F12A08C0035FE8B /* CadenceDrillView.swift */,
+				94DFCCE42F13E13F00FBC0C2 /* ScaleDrillView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -217,8 +227,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1234567890ABCDEF003 /* ContentView.swift in Sources */,
+				94DFCCE12F13E0DD00FBC0C2 /* JazzScaleDatabase.swift in Sources */,
 				A1234567890ABCDEF001 /* JazzHarmonyQuizApp.swift in Sources */,
 				A1234567890ABCDEF010 /* ChordModel.swift in Sources */,
+				94DFCCE52F13E13F00FBC0C2 /* ScaleDrillView.swift in Sources */,
+				94DFCCE32F13E0F400FBC0C2 /* PlayerStats.swift in Sources */,
 				A1234567890ABCDEF012 /* PianoKeyboard.swift in Sources */,
 				944280252F12A0230035FE8B /* CadenceGame.swift in Sources */,
 				A1234567890ABCDEF014 /* QuizGame.swift in Sources */,
@@ -228,7 +241,9 @@
 				944280232F12A0160035FE8B /* SettingsManager.swift in Sources */,
 				A1234567890ABCDEF018 /* ResultsView.swift in Sources */,
 				944280272F12A0630035FE8B /* SettingsView.swift in Sources */,
+				94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */,
 				9442802B2F12A08C0035FE8B /* CadenceDrillView.swift in Sources */,
+				94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */,
 				A1234567890ABCDEF020 /* LeaderboardView.swift in Sources */,
 				944280292F12A0770035FE8B /* CadenceLeaderboardView.swift in Sources */,
 				A1234567890ABCDEF022 /* JazzChordDatabase.swift in Sources */,
