@@ -38,6 +38,11 @@ class CadenceGame: ObservableObject {
     @Published var lifetimeStats: CadenceLifetimeStats = CadenceLifetimeStats()
     @Published var lastQuizSettings: QuickPracticeSettings?
     
+    // MARK: - Rating & Ranking System
+    @Published var lastRatingChange: Int = 0
+    @Published var didRankUp: Bool = false
+    @Published var previousRank: Rank?
+    
     // MARK: - Streak Tracking
     @Published var currentStreak: Int = 0
     @Published var lastPracticeDate: Date?
@@ -277,11 +282,117 @@ class CadenceGame: ObservableObject {
             saveToLeaderboard(result)
         }
         
-        // Phase 4: Update lifetime statistics
-        updateLifetimeStats()
+        // Calculate and apply rating change
+        let ratingChange = calculateRatingChange(correctAnswers: correctAnswers, totalQuestions: totalQuestions)
+        let ratingBefore = lifetimeStats.currentRating
+        let previousRankTitle = lifetimeStats.currentRank.title
+        
+        // Store previous rank for comparison
+        previousRank = lifetimeStats.currentRank
+        
+        // Phase 4: Update lifetime statistics (this will also update the rating)
+        updateLifetimeStats(ratingChange: ratingChange)
+        
+        // Track rating change for UI
+        lastRatingChange = ratingChange
+        
+        // Check for rank up
+        let newRankTitle = lifetimeStats.currentRank.title
+        didRankUp = newRankTitle != previousRankTitle && ratingChange > 0
         
         // Phase 4: Save settings for quick practice
         saveLastQuizSettings()
+    }
+    
+    /// Calculate rating change based on performance
+    private func calculateRatingChange(correctAnswers: Int, totalQuestions: Int) -> Int {
+        let accuracy = Double(correctAnswers) / Double(totalQuestions)
+        
+        // Base points from accuracy
+        var points: Double = 0
+        
+        if accuracy >= 1.0 {
+            points = 35  // Perfect score bonus (cadences are harder)
+        } else if accuracy >= 0.9 {
+            points = 25
+        } else if accuracy >= 0.8 {
+            points = 18
+        } else if accuracy >= 0.7 {
+            points = 12
+        } else if accuracy >= 0.6 {
+            points = 6
+        } else if accuracy >= 0.5 {
+            points = 0  // Break even
+        } else if accuracy >= 0.3 {
+            points = -5
+        } else {
+            points = -10
+        }
+        
+        // Drill mode multiplier (harder modes = more points)
+        let modeMultiplier: Double
+        switch selectedDrillMode {
+        case .fullProgression:
+            modeMultiplier = 1.0
+        case .isolatedChord:
+            modeMultiplier = 0.7  // Easier
+        case .speedRound:
+            modeMultiplier = 1.5  // Harder
+        case .commonTones:
+            modeMultiplier = 1.3  // Different skill
+        }
+        
+        // Cadence type complexity bonus
+        let cadenceMultiplier: Double
+        switch selectedCadenceType {
+        case .major, .minor:
+            cadenceMultiplier = 1.0
+        case .tritoneSubstitution, .backdoor:
+            cadenceMultiplier = 1.3
+        case .birdChanges:
+            cadenceMultiplier = 1.5
+        }
+        
+        // Key difficulty multiplier
+        let keyMultiplier: Double
+        switch selectedKeyDifficulty {
+        case .easy:
+            keyMultiplier = 0.7
+        case .medium:
+            keyMultiplier = 1.0
+        case .hard:
+            keyMultiplier = 1.3
+        case .expert:
+            keyMultiplier = 1.5
+        case .all:
+            keyMultiplier = 1.1
+        }
+        
+        // Question count bonus (more questions = more reliable score)
+        let questionBonus = Double(totalQuestions) / 10.0
+        
+        // Daily challenge bonus
+        let dailyBonus: Double = isDailyChallenge ? 1.25 : 1.0
+        
+        // Speed bonus (if fast and accurate)
+        let avgTimePerQuestion = totalQuizTime / Double(totalQuestions)
+        let speedBonus: Double
+        if accuracy >= 0.7 && avgTimePerQuestion < 8.0 {
+            speedBonus = 1.2
+        } else if accuracy >= 0.7 && avgTimePerQuestion < 15.0 {
+            speedBonus = 1.1
+        } else {
+            speedBonus = 1.0
+        }
+        
+        // Hint penalty (using hints reduces points)
+        let hintPenalty: Double = max(0.5, 1.0 - (Double(totalHintsUsed) * 0.1))
+        
+        let finalPoints = points * modeMultiplier * cadenceMultiplier * keyMultiplier * questionBonus * dailyBonus * speedBonus * hintPenalty
+        
+        // Ensure rating doesn't go below 0
+        let newRating = max(0, lifetimeStats.currentRating + Int(finalPoints.rounded()))
+        return newRating - lifetimeStats.currentRating
     }
     
     // MARK: - Mistake Review Drill
@@ -706,9 +817,9 @@ class CadenceGame: ObservableObject {
     }
     
     /// Update lifetime stats after a quiz completes
-    func updateLifetimeStats() {
+    func updateLifetimeStats(ratingChange: Int) {
         guard let result = currentResult else { return }
-        lifetimeStats.recordQuizResult(result, questions: questions)
+        lifetimeStats.recordQuizResult(result, questions: questions, ratingChange: ratingChange)
         saveLifetimeStats()
     }
     
@@ -865,6 +976,10 @@ struct CadenceLifetimeStats: Codable {
     var totalQuizzesTaken: Int = 0
     var totalPracticeTime: TimeInterval = 0
     
+    // Rating system
+    var currentRating: Int = 1000  // Start at "Jam Session Ready"
+    var peakRating: Int = 1000
+    
     // Per-cadence type stats
     var statsByCadenceType: [String: CadenceTypeStats] = [:]
     
@@ -879,16 +994,29 @@ struct CadenceLifetimeStats: Codable {
         return Double(totalCorrectAnswers) / Double(totalQuestionsAnswered)
     }
     
+    var currentRank: Rank {
+        return Rank.forRating(currentRating)
+    }
+    
+    var pointsToNextRank: Int? {
+        guard let nextRank = Rank.nextRank(after: currentRank) else { return nil }
+        return nextRank.minRating - currentRating
+    }
+    
     var averageTimePerQuestion: TimeInterval {
         guard totalQuestionsAnswered > 0 else { return 0 }
         return totalPracticeTime / Double(totalQuestionsAnswered)
     }
     
-    mutating func recordQuizResult(_ result: CadenceResult, questions: [CadenceQuestion]) {
+    mutating func recordQuizResult(_ result: CadenceResult, questions: [CadenceQuestion], ratingChange: Int) {
         totalQuizzesTaken += 1
         totalQuestionsAnswered += result.totalQuestions
         totalCorrectAnswers += result.correctAnswers
         totalPracticeTime += result.totalTime
+        
+        // Apply rating change
+        currentRating += ratingChange
+        peakRating = max(peakRating, currentRating)
         
         // Update per-cadence stats
         let cadenceKey = result.cadenceType.rawValue

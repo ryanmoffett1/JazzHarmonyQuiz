@@ -222,8 +222,18 @@ struct CadenceSetupView: View {
                         .font(.largeTitle)
                         .fontWeight(.bold)
                     
-                    // Stats row
+                    // Stats row - Rank and Rating
                     HStack(spacing: 20) {
+                        // Rank
+                        HStack(spacing: 4) {
+                            Text(cadenceGame.lifetimeStats.currentRank.emoji)
+                            Text("\(cadenceGame.lifetimeStats.currentRating)")
+                                .fontWeight(.semibold)
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                        
+                        // Streak
                         if cadenceGame.currentStreak > 0 {
                             HStack(spacing: 4) {
                                 Text("🔥")
@@ -234,6 +244,7 @@ struct CadenceSetupView: View {
                             .foregroundColor(.orange)
                         }
                         
+                        // Accuracy
                         if cadenceGame.lifetimeStats.totalQuestionsAnswered > 0 {
                             HStack(spacing: 4) {
                                 Text("📊")
@@ -241,7 +252,7 @@ struct CadenceSetupView: View {
                                     .fontWeight(.semibold)
                             }
                             .font(.subheadline)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.green)
                             
                             HStack(spacing: 4) {
                                 Text("✅")
@@ -1267,6 +1278,78 @@ struct CadenceResultsView: View {
                             }
                             
                             Text("Key Difficulty: \(cadenceGame.selectedKeyDifficulty.rawValue)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Divider()
+                        
+                        // Rating Change Display
+                        HStack(spacing: 16) {
+                            VStack {
+                                HStack(spacing: 4) {
+                                    Text(cadenceGame.lastRatingChange >= 0 ? "+" : "")
+                                    Text("\(cadenceGame.lastRatingChange)")
+                                }
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(cadenceGame.lastRatingChange >= 0 ? .green : .red)
+                                
+                                Text("Rating")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Divider()
+                                .frame(height: 40)
+                            
+                            VStack {
+                                Text("\(cadenceGame.lifetimeStats.currentRating)")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.blue)
+                                
+                                Text("Total")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Divider()
+                                .frame(height: 40)
+                            
+                            VStack {
+                                Text(cadenceGame.lifetimeStats.currentRank.emoji)
+                                    .font(.title)
+                                Text(cadenceGame.lifetimeStats.currentRank.title)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                            }
+                        }
+                        
+                        // Rank Up Celebration
+                        if cadenceGame.didRankUp {
+                            HStack(spacing: 8) {
+                                if let prev = cadenceGame.previousRank {
+                                    Text(prev.emoji)
+                                }
+                                Image(systemName: "arrow.right")
+                                    .foregroundColor(.green)
+                                Text(cadenceGame.lifetimeStats.currentRank.emoji)
+                                Text("Rank Up!")
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.green)
+                            }
+                            .font(.headline)
+                            .padding()
+                            .background(Color.green.opacity(0.1))
+                            .cornerRadius(8)
+                        }
+                        
+                        // Points to next rank
+                        if let pointsNeeded = cadenceGame.lifetimeStats.pointsToNextRank {
+                            Text("\(pointsNeeded) points to next rank")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
