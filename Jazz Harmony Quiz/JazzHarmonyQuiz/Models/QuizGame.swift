@@ -76,6 +76,11 @@ struct ChordDrillStats: Codable {
     var lastPracticeDate: Date?
     var dailyChallengeLastCompleted: Date?
     var dailyChallengeStreak: Int = 0
+    var perfectScoreStreak: Int = 0  // Track consecutive perfect scores
+    
+    // Achievements
+    var unlockedAchievements: [Achievement] = []
+    var newlyUnlockedAchievements: [Achievement] = []  // For showing celebration
     
     // Per-chord-type stats
     var statsByChordSymbol: [String: ChordTypeStatistics] = [:]
@@ -98,6 +103,21 @@ struct ChordDrillStats: Codable {
     var pointsToNextRank: Int? {
         guard let nextRank = Rank.nextRank(after: currentRank) else { return nil }
         return nextRank.minRating - currentRating
+    }
+    
+    func hasAchievement(_ type: AchievementType) -> Bool {
+        return unlockedAchievements.contains { $0.type == type }
+    }
+    
+    mutating func unlockAchievement(_ type: AchievementType) {
+        guard !hasAchievement(type) else { return }
+        let achievement = Achievement(type: type, unlockedDate: Date())
+        unlockedAchievements.append(achievement)
+        newlyUnlockedAchievements.append(achievement)
+    }
+    
+    mutating func clearNewAchievements() {
+        newlyUnlockedAchievements.removeAll()
     }
     
     mutating func recordSession(_ session: PracticeSession) {
@@ -193,6 +213,90 @@ struct ChordDrillStats: Codable {
         
         dailyChallengeLastCompleted = Date()
     }
+    
+    /// Check and unlock any newly earned achievements
+    mutating func checkAchievements(wasPerfectScore: Bool) {
+        // First quiz
+        if practiceLog.count == 1 {
+            unlockAchievement(.firstQuiz)
+        }
+        
+        // Chord milestones
+        if totalChordsAnswered >= 100 { unlockAchievement(.hundredChords) }
+        if totalChordsAnswered >= 500 { unlockAchievement(.fiveHundredChords) }
+        if totalChordsAnswered >= 1000 { unlockAchievement(.thousandChords) }
+        
+        // Perfect score tracking
+        if wasPerfectScore {
+            perfectScoreStreak += 1
+            if !hasAchievement(.firstPerfect) { unlockAchievement(.firstPerfect) }
+            if perfectScoreStreak >= 3 { unlockAchievement(.perfectStreak3) }
+            if perfectScoreStreak >= 5 { unlockAchievement(.perfectStreak5) }
+        } else {
+            perfectScoreStreak = 0
+        }
+        
+        // Accuracy achievement
+        if totalChordsAnswered >= 50 && overallAccuracy >= 0.9 {
+            unlockAchievement(.accuracy90)
+        }
+        
+        // Streak achievements
+        if currentStreak >= 3 { unlockAchievement(.streak3) }
+        if currentStreak >= 7 { unlockAchievement(.streak7) }
+        if currentStreak >= 14 { unlockAchievement(.streak14) }
+        if currentStreak >= 30 { unlockAchievement(.streak30) }
+        
+        // Daily challenge achievements
+        if dailyChallengeStreak >= 1 { unlockAchievement(.dailyFirst) }
+        if dailyChallengeStreak >= 7 { unlockAchievement(.dailyStreak7) }
+        
+        // Rank achievements
+        if currentRating >= 1001 { unlockAchievement(.rankGigging) }
+        if currentRating >= 1501 { unlockAchievement(.rankBebop) }
+        if currentRating >= 2001 { unlockAchievement(.rankWizard) }
+        if currentRating >= 2751 { unlockAchievement(.rankMaster) }
+        
+        // Mastery achievements
+        let triadSymbols = ["", "m"]
+        let triadStats = triadSymbols.compactMap { statsByChordSymbol[$0] }
+        let totalTriadAttempts = triadStats.reduce(0) { $0 + $1.questionsAnswered }
+        let totalTriadCorrect = triadStats.reduce(0) { $0 + $1.correctAnswers }
+        if totalTriadAttempts >= 50 && Double(totalTriadCorrect) / Double(totalTriadAttempts) >= 0.95 {
+            unlockAchievement(.masterTriads)
+        }
+        
+        let seventhSymbols = ["7", "maj7", "m7", "m7b5", "dim7"]
+        let seventhStats = seventhSymbols.compactMap { statsByChordSymbol[$0] }
+        let totalSeventhAttempts = seventhStats.reduce(0) { $0 + $1.questionsAnswered }
+        let totalSeventhCorrect = seventhStats.reduce(0) { $0 + $1.correctAnswers }
+        if totalSeventhAttempts >= 50 && Double(totalSeventhCorrect) / Double(totalSeventhAttempts) >= 0.95 {
+            unlockAchievement(.masterSevenths)
+        }
+        
+        // All keys played
+        let allKeys = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
+        let playedKeys = statsByKey.keys
+        if allKeys.allSatisfy({ key in playedKeys.contains(key) || playedKeys.contains(enharmonicKey(key)) }) {
+            unlockAchievement(.allKeysPlayed)
+        }
+    }
+    
+    private func enharmonicKey(_ key: String) -> String {
+        switch key {
+        case "Db": return "C#"
+        case "C#": return "Db"
+        case "Eb": return "D#"
+        case "D#": return "Eb"
+        case "F#": return "Gb"
+        case "Gb": return "F#"
+        case "Ab": return "G#"
+        case "G#": return "Ab"
+        case "Bb": return "A#"
+        case "A#": return "Bb"
+        default: return key
+        }
+    }
 }
 
 struct ChordTypeStatistics: Codable {
@@ -213,6 +317,131 @@ struct KeyStatistics: Codable {
         guard questionsAnswered > 0 else { return 0 }
         return Double(correctAnswers) / Double(questionsAnswered)
     }
+}
+
+// MARK: - Achievement System
+
+enum AchievementType: String, CaseIterable, Codable {
+    // Practice milestones
+    case firstQuiz = "first_quiz"
+    case hundredChords = "hundred_chords"
+    case fiveHundredChords = "five_hundred_chords"
+    case thousandChords = "thousand_chords"
+    
+    // Accuracy achievements
+    case firstPerfect = "first_perfect"
+    case perfectStreak3 = "perfect_streak_3"
+    case perfectStreak5 = "perfect_streak_5"
+    case accuracy90 = "accuracy_90"
+    
+    // Streak achievements
+    case streak3 = "streak_3"
+    case streak7 = "streak_7"
+    case streak14 = "streak_14"
+    case streak30 = "streak_30"
+    
+    // Daily challenge
+    case dailyFirst = "daily_first"
+    case dailyStreak7 = "daily_streak_7"
+    
+    // Rank achievements
+    case rankGigging = "rank_gigging"
+    case rankBebop = "rank_bebop"
+    case rankWizard = "rank_wizard"
+    case rankMaster = "rank_master"
+    
+    // Mastery
+    case masterTriads = "master_triads"
+    case masterSevenths = "master_sevenths"
+    case allKeysPlayed = "all_keys_played"
+    
+    var title: String {
+        switch self {
+        case .firstQuiz: return "First Steps"
+        case .hundredChords: return "Getting Started"
+        case .fiveHundredChords: return "Dedicated Student"
+        case .thousandChords: return "Chord Connoisseur"
+        case .firstPerfect: return "Perfect Score!"
+        case .perfectStreak3: return "Hat Trick"
+        case .perfectStreak5: return "On Fire"
+        case .accuracy90: return "Sharp Ears"
+        case .streak3: return "Three-Peat"
+        case .streak7: return "Week Warrior"
+        case .streak14: return "Fortnight Fighter"
+        case .streak30: return "Monthly Master"
+        case .dailyFirst: return "Daily Dabbler"
+        case .dailyStreak7: return "Daily Devotee"
+        case .rankGigging: return "Ready to Gig"
+        case .rankBebop: return "Bebop Scholar"
+        case .rankWizard: return "Chord Wizard"
+        case .rankMaster: return "Harmony Master"
+        case .masterTriads: return "Triad Tamer"
+        case .masterSevenths: return "Seventh Heaven"
+        case .allKeysPlayed: return "Key Explorer"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .firstQuiz: return "Complete your first quiz"
+        case .hundredChords: return "Answer 100 chord questions"
+        case .fiveHundredChords: return "Answer 500 chord questions"
+        case .thousandChords: return "Answer 1,000 chord questions"
+        case .firstPerfect: return "Get a perfect score on any quiz"
+        case .perfectStreak3: return "Get 3 perfect scores in a row"
+        case .perfectStreak5: return "Get 5 perfect scores in a row"
+        case .accuracy90: return "Maintain 90%+ overall accuracy"
+        case .streak3: return "Practice 3 days in a row"
+        case .streak7: return "Practice 7 days in a row"
+        case .streak14: return "Practice 14 days in a row"
+        case .streak30: return "Practice 30 days in a row"
+        case .dailyFirst: return "Complete your first daily challenge"
+        case .dailyStreak7: return "Complete 7 daily challenges in a row"
+        case .rankGigging: return "Reach Gigging Musician rank"
+        case .rankBebop: return "Reach Bebop Scholar rank"
+        case .rankWizard: return "Reach Chord Wizard rank"
+        case .rankMaster: return "Reach Harmony Master rank"
+        case .masterTriads: return "Get 95%+ accuracy on triads (50+ attempts)"
+        case .masterSevenths: return "Get 95%+ accuracy on 7th chords (50+ attempts)"
+        case .allKeysPlayed: return "Practice chords in all 12 keys"
+        }
+    }
+    
+    var emoji: String {
+        switch self {
+        case .firstQuiz: return "🎵"
+        case .hundredChords: return "💯"
+        case .fiveHundredChords: return "📚"
+        case .thousandChords: return "🏆"
+        case .firstPerfect: return "⭐"
+        case .perfectStreak3: return "🎩"
+        case .perfectStreak5: return "🔥"
+        case .accuracy90: return "🎯"
+        case .streak3: return "3️⃣"
+        case .streak7: return "📅"
+        case .streak14: return "💪"
+        case .streak30: return "🌟"
+        case .dailyFirst: return "☀️"
+        case .dailyStreak7: return "🌈"
+        case .rankGigging: return "🎷"
+        case .rankBebop: return "📚"
+        case .rankWizard: return "🧙"
+        case .rankMaster: return "👑"
+        case .masterTriads: return "🔺"
+        case .masterSevenths: return "7️⃣"
+        case .allKeysPlayed: return "🗝️"
+        }
+    }
+}
+
+struct Achievement: Codable, Identifiable, Equatable {
+    let type: AchievementType
+    let unlockedDate: Date
+    
+    var id: String { type.rawValue }
+    var title: String { type.title }
+    var description: String { type.description }
+    var emoji: String { type.emoji }
 }
 
 // MARK: - Quiz Game
@@ -501,6 +730,10 @@ class QuizGame: ObservableObject {
         if isDailyChallenge && !stats.isDailyChallengeCompletedToday {
             stats.completeDailyChallenge()
         }
+        
+        // Check for achievements
+        let wasPerfectScore = correctAnswers == totalQuestions
+        stats.checkAchievements(wasPerfectScore: wasPerfectScore)
         
         // Save stats
         saveStatsToUserDefaults()

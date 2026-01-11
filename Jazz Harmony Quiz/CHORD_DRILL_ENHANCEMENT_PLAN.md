@@ -260,10 +260,11 @@ struct Rank {
 | Rank Up Celebration | ✅ Done | Jan 10, 2026 |
 | Key Difficulty Filtering | ✅ Done | Jan 10, 2026 |
 | Chord Type Filtering (Backend) | ✅ Done | Jan 10, 2026 |
+| Chord Type Filtering (UI) | ✅ Done | Jan 10, 2026 |
 | Audio Feedback | ✅ Done | Jan 10, 2026 |
 | Haptic Feedback | ✅ Done | Jan 10, 2026 |
-| Chord Type Filtering (UI) | ⬜ Pending | |
-| Achievements | ⬜ Pending | |
+| Achievements System | ✅ Done | Jan 10, 2026 |
+| Achievements View | ✅ Done | Jan 10, 2026 |
 
 ---
 

@@ -53,6 +53,8 @@ struct ContentView: View {
                     ChordDrillView(startDailyChallenge: true)
                 case "quickPractice":
                     ChordDrillView(startQuickPractice: true)
+                case "achievements":
+                    AchievementsView()
                 default:
                     EmptyView()
                 }
@@ -267,6 +269,7 @@ struct QuickActionsSection: View {
 // MARK: - Drill Options Section
 
 struct DrillOptionsSection: View {
+    @EnvironmentObject var quizGame: QuizGame
     @Binding var navigationPath: NavigationPath
     
     var body: some View {
@@ -308,6 +311,18 @@ struct DrillOptionsSection: View {
                     title: "Leaderboard",
                     subtitle: "View your best scores",
                     color: .orange
+                )
+            }
+            
+            // Achievements
+            Button(action: {
+                navigationPath.append("achievements")
+            }) {
+                DrillOptionCard(
+                    icon: "star.fill",
+                    title: "Achievements",
+                    subtitle: "\(quizGame.stats.unlockedAchievements.count)/\(AchievementType.allCases.count) unlocked",
+                    color: .yellow
                 )
             }
         }
@@ -428,6 +443,144 @@ struct ProgressCard: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+    }
+}
+
+// MARK: - Achievements View
+
+struct AchievementsView: View {
+    @EnvironmentObject var quizGame: QuizGame
+    @Environment(\.colorScheme) var colorScheme
+    
+    var unlockedAchievements: [Achievement] {
+        quizGame.stats.unlockedAchievements.sorted { $0.unlockedDate > $1.unlockedDate }
+    }
+    
+    var lockedAchievements: [AchievementType] {
+        AchievementType.allCases.filter { type in
+            !quizGame.stats.hasAchievement(type)
+        }
+    }
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                // Header
+                VStack(spacing: 8) {
+                    Text("🏆 Achievements")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    
+                    Text("\(unlockedAchievements.count) of \(AchievementType.allCases.count) unlocked")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    // Progress bar
+                    ProgressView(value: Double(unlockedAchievements.count), total: Double(AchievementType.allCases.count))
+                        .progressViewStyle(LinearProgressViewStyle(tint: .yellow))
+                        .frame(width: 200)
+                }
+                .padding(.top)
+                
+                // Unlocked Achievements
+                if !unlockedAchievements.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Unlocked")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        ForEach(unlockedAchievements) { achievement in
+                            AchievementCard(achievement: achievement, isUnlocked: true)
+                        }
+                    }
+                }
+                
+                // Locked Achievements
+                if !lockedAchievements.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Locked")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        ForEach(lockedAchievements, id: \.self) { type in
+                            LockedAchievementCard(type: type)
+                        }
+                    }
+                }
+                
+                Spacer(minLength: 20)
+            }
+            .padding(.horizontal)
+        }
+        .navigationTitle("Achievements")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct AchievementCard: View {
+    let achievement: Achievement
+    let isUnlocked: Bool
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Text(achievement.emoji)
+                .font(.system(size: 40))
+                .frame(width: 60, height: 60)
+                .background(Color.yellow.opacity(0.2))
+                .cornerRadius(12)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(achievement.title)
+                    .font(.headline)
+                
+                Text(achievement.description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Text("Unlocked \(achievement.unlockedDate.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.caption2)
+                    .foregroundColor(.green)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundColor(.green)
+                .font(.title2)
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+}
+
+struct LockedAchievementCard: View {
+    let type: AchievementType
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Text("🔒")
+                .font(.system(size: 40))
+                .frame(width: 60, height: 60)
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(12)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(type.title)
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                
+                Text(type.description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+        .opacity(0.6)
     }
 }
 

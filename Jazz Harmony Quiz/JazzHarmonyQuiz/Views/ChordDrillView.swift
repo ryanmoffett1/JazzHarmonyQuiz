@@ -28,6 +28,7 @@ struct ChordDrillView: View {
     @State private var selectedDifficulty: ChordType.ChordDifficulty
     @State private var selectedQuestionTypes: Set<QuestionType>
     @State private var selectedKeyDifficulty: KeyDifficulty = .all
+    @State private var selectedChordSymbols: Set<String> = []  // Empty = all chord types
     @State private var showingResults = false
     @State private var showingFeedback = false
     
@@ -62,6 +63,7 @@ struct ChordDrillView: View {
                     selectedDifficulty: $selectedDifficulty,
                     selectedQuestionTypes: $selectedQuestionTypes,
                     selectedKeyDifficulty: $selectedKeyDifficulty,
+                    selectedChordSymbols: $selectedChordSymbols,
                     onStartQuiz: startQuiz,
                     onStartDailyChallenge: startDailyChallengeQuiz
                 )
@@ -124,8 +126,9 @@ struct ChordDrillView: View {
         showingFeedback = false
         viewState = .active
         
-        // Set key difficulty before starting
+        // Set filtering options before starting
         quizGame.selectedKeyDifficulty = selectedKeyDifficulty
+        quizGame.selectedChordSymbols = selectedChordSymbols
         
         // Start the new quiz
         quizGame.startNewQuiz(
@@ -162,10 +165,12 @@ struct QuizSetupView: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     @State private var showingSettings = false
+    @State private var showChordTypeFilter = false
     @Binding var numberOfQuestions: Int
     @Binding var selectedDifficulty: ChordType.ChordDifficulty
     @Binding var selectedQuestionTypes: Set<QuestionType>
     @Binding var selectedKeyDifficulty: KeyDifficulty
+    @Binding var selectedChordSymbols: Set<String>
     let onStartQuiz: () -> Void
     let onStartDailyChallenge: () -> Void
 
@@ -306,6 +311,39 @@ struct QuizSetupView: View {
                             }
                         }
                     }
+                    
+                    // Chord Type Filter
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("Chord Types")
+                                .font(.headline)
+                            Spacer()
+                            Text(selectedChordSymbols.isEmpty ? "All" : "\(selectedChordSymbols.count) selected")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Button(action: { showChordTypeFilter.toggle() }) {
+                            HStack {
+                                Image(systemName: "slider.horizontal.3")
+                                Text(selectedChordSymbols.isEmpty ? "Filter by chord type..." : chordFilterSummary)
+                                    .lineLimit(1)
+                                Spacer()
+                                Image(systemName: showChordTypeFilter ? "chevron.up" : "chevron.down")
+                            }
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                            .padding()
+                            .background(Color(.systemGray5))
+                            .cornerRadius(8)
+                        }
+                        
+                        if showChordTypeFilter {
+                            ChordTypeFilterView(selectedSymbols: $selectedChordSymbols)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+                    }
+                    .animation(.easeInOut(duration: 0.2), value: showChordTypeFilter)
                 }
                 .padding()
                 .background(Color(.systemGray6))
@@ -368,6 +406,103 @@ struct QuizSetupView: View {
                 Spacer()
             }
             .padding()
+        }
+    }
+    
+    private var chordFilterSummary: String {
+        if selectedChordSymbols.isEmpty {
+            return "All chord types"
+        } else if selectedChordSymbols.count <= 3 {
+            return selectedChordSymbols.sorted().map { $0.isEmpty ? "Major" : $0 }.joined(separator: ", ")
+        } else {
+            return "\(selectedChordSymbols.count) types selected"
+        }
+    }
+}
+
+// MARK: - Chord Type Filter View
+
+struct ChordTypeFilterView: View {
+    @Binding var selectedSymbols: Set<String>
+    let database = JazzChordDatabase.shared
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Quick actions
+            HStack {
+                Button("Select All") {
+                    selectedSymbols = Set(database.getAllChordSymbols())
+                }
+                .font(.caption)
+                .foregroundColor(.blue)
+                
+                Spacer()
+                
+                Button("Clear All") {
+                    selectedSymbols.removeAll()
+                }
+                .font(.caption)
+                .foregroundColor(.red)
+            }
+            
+            // Categories
+            ForEach(JazzChordDatabase.ChordCategory.allCases, id: \.self) { category in
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(category.rawValue)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondary)
+                    
+                    FlowLayout(spacing: 8) {
+                        ForEach(getSymbolsForCategory(category), id: \.self) { symbol in
+                            ChordTypeChip(
+                                symbol: symbol,
+                                isSelected: selectedSymbols.contains(symbol),
+                                onTap: {
+                                    if selectedSymbols.contains(symbol) {
+                                        selectedSymbols.remove(symbol)
+                                    } else {
+                                        selectedSymbols.insert(symbol)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+    
+    private func getSymbolsForCategory(_ category: JazzChordDatabase.ChordCategory) -> [String] {
+        // Get symbols that exist in the database for this category
+        return database.chordTypes
+            .filter { category.chordSymbols.contains($0.symbol) }
+            .map { $0.symbol }
+    }
+}
+
+struct ChordTypeChip: View {
+    let symbol: String
+    let isSelected: Bool
+    let onTap: () -> Void
+    
+    var displayName: String {
+        symbol.isEmpty ? "Maj" : symbol
+    }
+    
+    var body: some View {
+        Button(action: onTap) {
+            Text(displayName)
+                .font(.caption)
+                .fontWeight(.medium)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(isSelected ? Color.blue : Color(.systemGray5))
+                .foregroundColor(isSelected ? .white : .primary)
+                .cornerRadius(16)
         }
     }
 }
