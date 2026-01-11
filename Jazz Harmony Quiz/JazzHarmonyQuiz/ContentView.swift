@@ -306,6 +306,18 @@ struct DrillOptionsSection: View {
                 )
             }
             
+            // Scale Drill
+            Button(action: {
+                navigationPath.append("scaleDrill")
+            }) {
+                DrillOptionCard(
+                    icon: "waveform.path",
+                    title: "Scale Drill",
+                    subtitle: "Learn jazz scales and modes",
+                    color: .teal
+                )
+            }
+            
             // Leaderboard
             Button(action: {
                 navigationPath.append("leaderboard")
