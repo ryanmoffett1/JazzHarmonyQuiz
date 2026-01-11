@@ -32,13 +32,11 @@ class AudioManager: ObservableObject {
     }
     
     private func loadSoundFont() {
-        // Use the built-in piano sound
-        // Note: For a production app, you could bundle a custom soundfont
         guard let sampler = sampler else { return }
         
-        // Load a sound - try bundle first, then system DLS
+        // Try to load sounds in order of preference
         do {
-            // Try to load a soundfont if one exists in the bundle
+            // 1. Try bundled soundfont first (best quality, consistent across devices)
             if let soundFontURL = Bundle.main.url(forResource: "Piano", withExtension: "sf2") {
                 try sampler.loadSoundBankInstrument(
                     at: soundFontURL,
@@ -46,22 +44,33 @@ class AudioManager: ObservableObject {
                     bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
                     bankLSB: UInt8(kAUSampler_DefaultBankLSB)
                 )
-            } else {
-                // Use built-in system DLS instrument
-                let dlsURL = URL(fileURLWithPath: "/System/Library/Components/CoreAudio.component/Contents/Resources/gs_instruments.dls")
-                if FileManager.default.fileExists(atPath: dlsURL.path) {
-                    try sampler.loadSoundBankInstrument(
-                        at: dlsURL,
-                        program: 0,  // Piano
-                        bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
-                        bankLSB: UInt8(kAUSampler_DefaultBankLSB)
-                    )
-                }
-                // If no soundfont available, sampler will use default sounds
+                print("Loaded bundled Piano.sf2")
+                return
             }
+            
+            // 2. Try macOS simulator DLS file (nice piano, but simulator only)
+            #if targetEnvironment(simulator)
+            let dlsURL = URL(fileURLWithPath: "/System/Library/Components/CoreAudio.component/Contents/Resources/gs_instruments.dls")
+            if FileManager.default.fileExists(atPath: dlsURL.path) {
+                try sampler.loadSoundBankInstrument(
+                    at: dlsURL,
+                    program: 0,  // Acoustic Grand Piano
+                    bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
+                    bankLSB: UInt8(kAUSampler_DefaultBankLSB)
+                )
+                print("Loaded system DLS piano (simulator)")
+                return
+            }
+            #endif
+            
+            // 3. On device without bundled soundfont, configure the sampler with default sounds
+            // The default AVAudioUnitSampler produces a basic sine-wave tone
+            // For better sound, add a Piano.sf2 file to the bundle
+            print("Using default sampler (consider adding Piano.sf2 for better sound)")
+            
         } catch {
-            print("Failed to load sound font: \(error)")
-            // Continue without custom sounds - basic synthesis will still work
+            print("Sound loading note: \(error.localizedDescription)")
+            // Sampler will still work with default synthesis
         }
     }
     
