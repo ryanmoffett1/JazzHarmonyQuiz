@@ -114,14 +114,14 @@ struct IntervalDrillView: View {
         // Haptic feedback
         if isCorrect {
             IntervalDrillHaptics.success()
-            
-            // Play interval audio if enabled
-            if let question = intervalGame.currentQuestion,
-               settings.playChordOnCorrect && settings.audioEnabled {
-                AudioManager.shared.playInterval(question.interval)
+            if settings.playSoundOnCorrect {
+                AudioManager.shared.playSuccessSound()
             }
         } else {
             IntervalDrillHaptics.error()
+            if settings.playSoundOnIncorrect {
+                AudioManager.shared.playErrorSound()
+            }
         }
         
         showingFeedback = true
@@ -855,7 +855,7 @@ fileprivate struct StatCard: View {
 }
 
 fileprivate struct RankUpView: View {
-    let newRank: PlayerRank
+    let newRank: Rank
     
     var body: some View {
         VStack(spacing: 12) {

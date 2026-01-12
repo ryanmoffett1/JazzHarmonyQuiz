@@ -17,8 +17,8 @@ class IntervalGame: ObservableObject {
     @Published var showingResults: Bool = false
     @Published var leaderboard: [IntervalQuizResult] = []
     @Published var lastRatingChange: Int = 0
-    @Published var previousRank: PlayerRank?
-    @Published var newRank: PlayerRank?
+    @Published var previousRank: Rank?
+    @Published var newRank: Rank?
     
     // MARK: - Quiz Configuration
     
