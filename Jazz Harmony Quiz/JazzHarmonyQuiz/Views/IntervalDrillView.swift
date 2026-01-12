@@ -31,7 +31,7 @@ struct IntervalDrillView: View {
     @State private var selectedDifficulty: IntervalDifficulty = .beginner
     @State private var selectedQuestionTypes: Set<IntervalQuestionType> = [.buildInterval]
     @State private var selectedDirection: IntervalDirection = .ascending
-    @State private var selectedKeyDifficulty: KeyDifficulty = .natural
+    @State private var selectedKeyDifficulty: KeyDifficulty = .easy
     @State private var showingFeedback = false
     @State private var hasSubmitted = false
     
