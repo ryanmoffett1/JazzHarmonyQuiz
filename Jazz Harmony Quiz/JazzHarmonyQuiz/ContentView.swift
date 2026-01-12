@@ -47,8 +47,6 @@ struct ContentView: View {
                     ChordDrillView()
                 case "cadenceDrill":
                     CadenceDrillView()
-                case "scaleDrill":
-                    ScaleDrillView()
                 case "leaderboard":
                     LeaderboardView()
                 case "dailyChallenge":
@@ -57,8 +55,6 @@ struct ContentView: View {
                     ChordDrillView(startQuickPractice: true)
                 case "achievements":
                     AchievementsView()
-                case "settings":
-                    SettingsView()
                 default:
                     EmptyView()
                 }
@@ -319,6 +315,18 @@ struct DrillOptionsSection: View {
                     title: "Scale Drill",
                     subtitle: "Learn jazz scales and modes",
                     color: .teal
+                )
+            }
+            
+            // Interval Drill
+            Button(action: {
+                navigationPath.append("intervalDrill")
+            }) {
+                DrillOptionCard(
+                    icon: "arrow.up.arrow.down",
+                    title: "Interval Drill",
+                    subtitle: "Master musical intervals",
+                    color: .green
                 )
             }
             

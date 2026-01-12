@@ -247,6 +247,10 @@
 				A1234567890ABCDEF020 /* LeaderboardView.swift in Sources */,
 				944280292F12A0770035FE8B /* CadenceLeaderboardView.swift in Sources */,
 				A1234567890ABCDEF022 /* JazzChordDatabase.swift in Sources */,
+				94INTERVAL012F14000035FE8B /* IntervalModel.swift in Sources */,
+				94INTERVAL022F14000035FE8B /* IntervalDatabase.swift in Sources */,
+				94INTERVAL032F14000035FE8B /* IntervalGame.swift in Sources */,
+				94INTERVAL042F14000035FE8B /* IntervalDrillView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,7 +386,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"JazzHarmonyQuiz/Preview Content\"";
-				DEVELOPMENT_TEAM = U62N9UMNG7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -411,7 +414,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"JazzHarmonyQuiz/Preview Content\"";
-				DEVELOPMENT_TEAM = U62N9UMNG7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
