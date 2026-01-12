@@ -755,20 +755,20 @@ Button(action: { navigationPath.append("intervalDrill") }) {
 ## File Checklist
 
 ### Models (to create)
-- [ ] `IntervalModel.swift` - Interval, IntervalType, IntervalQuestion, etc.
-- [ ] `IntervalDatabase.swift` - All interval definitions
-- [ ] `IntervalGame.swift` - Quiz game logic
+- [x] `IntervalModel.swift` - Interval, IntervalType, IntervalQuestion, etc.
+- [x] `IntervalDatabase.swift` - All interval definitions
+- [x] `IntervalGame.swift` - Quiz game logic
 
 ### Views (to create)
-- [ ] `IntervalDrillView.swift` - Main view with setup/active/results states
-- [ ] `IntervalLeaderboardView.swift` - Interval-specific leaderboard
+- [x] `IntervalDrillView.swift` - Main view with setup/active/results states
+- [ ] `IntervalLeaderboardView.swift` - Interval-specific leaderboard (integrated into results view)
 
 ### Modifications (to existing files)
-- [ ] `JazzHarmonyQuizApp.swift` - Add IntervalGame environment object
-- [ ] `ContentView.swift` - Add navigation destination and menu option
-- [ ] `AudioManager.swift` - Add interval playback methods
-- [ ] `PlayerStats.swift` - Add interval stats tracking
-- [ ] `project.pbxproj` - Add new files to Xcode project
+- [x] `JazzHarmonyQuizApp.swift` - Add IntervalGame environment object
+- [x] `ContentView.swift` - Add navigation destination and menu option
+- [x] `AudioManager.swift` - Add interval playback methods (extension in IntervalDrillView)
+- [ ] `PlayerStats.swift` - Add interval stats tracking (uses existing generic tracking)
+- [x] `project.pbxproj` - Add new files to Xcode project
 
 ---
 
