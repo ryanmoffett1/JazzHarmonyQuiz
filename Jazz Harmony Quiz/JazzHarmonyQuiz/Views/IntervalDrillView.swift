@@ -984,6 +984,6 @@ extension AudioManager {
     NavigationStack {
         IntervalDrillView()
             .environmentObject(IntervalGame())
-            .environmentObject(SettingsManager())
+            .environmentObject(SettingsManager.shared)
     }
 }
