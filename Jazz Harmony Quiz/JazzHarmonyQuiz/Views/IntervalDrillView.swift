@@ -870,7 +870,7 @@ fileprivate struct StatCard: View {
 }
 
 fileprivate struct RankUpView: View {
-    let newRank: PlayerRank
+    let newRank: Rank
     
     var body: some View {
         VStack(spacing: 12) {
