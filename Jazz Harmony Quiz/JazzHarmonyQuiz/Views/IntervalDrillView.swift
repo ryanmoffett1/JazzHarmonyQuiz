@@ -396,14 +396,29 @@ struct IntervalActiveView: View {
                         selectedNote = notes.first
                         IntervalDrillHaptics.light()
                     }
-                ),
-                highlightedNotes: hasSubmitted ? [question.correctNote] : [],
-                correctNotes: hasSubmitted && intervalGame.lastAnswerCorrect ? [question.correctNote] : [],
-                wrongNotes: hasSubmitted && !intervalGame.lastAnswerCorrect && selectedNote != nil ? [selectedNote!] : []
+                )
             )
             .frame(height: 160)
             .disabled(hasSubmitted)
             .padding(.horizontal)
+            
+            // Show feedback after submission
+            if hasSubmitted {
+                HStack {
+                    if intervalGame.lastAnswerCorrect {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                        Text("Correct! The note is \(question.correctNote.name)")
+                            .foregroundColor(.green)
+                    } else {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.red)
+                        Text("The correct note is \(question.correctNote.name)")
+                            .foregroundColor(.red)
+                    }
+                }
+                .font(.subheadline)
+            }
         }
     }
     
@@ -969,6 +984,6 @@ extension AudioManager {
     NavigationStack {
         IntervalDrillView()
             .environmentObject(IntervalGame())
-            .environmentObject(SettingsManager.shared)
+            .environmentObject(SettingsManager())
     }
 }
