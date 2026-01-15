@@ -855,7 +855,7 @@ fileprivate struct StatCard: View {
 }
 
 fileprivate struct RankUpView: View {
-    let newRank: Rank
+    let newRank: PlayerRank
     
     var body: some View {
         VStack(spacing: 12) {
@@ -969,6 +969,6 @@ extension AudioManager {
     NavigationStack {
         IntervalDrillView()
             .environmentObject(IntervalGame())
-            .environmentObject(SettingsManager())
+            .environmentObject(SettingsManager.shared)
     }
 }
