@@ -19,13 +19,14 @@ class IntervalGame: ObservableObject {
     @Published var lastRatingChange: Int = 0
     @Published var previousRank: Rank?
     @Published var newRank: Rank?
+    @Published var didRankUp: Bool = false
     
     // MARK: - Quiz Configuration
     
     var selectedDifficulty: IntervalDifficulty = .beginner
     var selectedQuestionTypes: Set<IntervalQuestionType> = [.buildInterval]
     var selectedDirection: IntervalDirection = .ascending
-    var selectedKeyDifficulty: KeyDifficulty = .natural
+    var selectedKeyDifficulty: KeyDifficulty = .easy
     
     // MARK: - Private Properties
     
@@ -202,28 +203,26 @@ class IntervalGame: ObservableObject {
         showingResults = true
         
         // Calculate rating change
-        let accuracy = Double(correctAnswers) / Double(totalQuestions)
-        let ratingChange = PlayerStats.shared.calculateRatingChange(
-            accuracy: accuracy,
-            difficulty: difficultyMultiplier,
-            questionCount: totalQuestions
-        )
+        let ratingChange = calculateRatingChange(correctAnswers: correctAnswers, totalQuestions: totalQuestions)
         
-        // Update player stats
-        PlayerStats.shared.updateRating(change: ratingChange)
-        PlayerStats.shared.recordQuizCompletion(
-            mode: "interval",
+        // Apply to shared player stats
+        let wasPerfectScore = correctAnswers == totalQuestions
+        let ratingResult = PlayerStats.shared.applyRatingChange(ratingChange)
+        PlayerStats.shared.updateStreak()
+        PlayerStats.shared.recordPractice(
             questionsAnswered: totalQuestions,
             correctAnswers: correctAnswers,
-            timeSpent: elapsedTime
+            time: elapsedTime,
+            wasPerfectScore: wasPerfectScore
         )
         
         lastRatingChange = ratingChange
+        didRankUp = ratingResult.didRankUp
+        previousRank = ratingResult.previousRank
         
         // Check for rank change
-        let currentRank = PlayerStats.shared.currentRank
-        if let previous = previousRank, currentRank != previous {
-            newRank = currentRank
+        if didRankUp {
+            newRank = PlayerStats.shared.currentRank
         }
         
         // Save result
@@ -237,6 +236,48 @@ class IntervalGame: ObservableObject {
         )
         
         addToLeaderboard(result)
+    }
+    
+    /// Calculate rating change based on performance
+    private func calculateRatingChange(correctAnswers: Int, totalQuestions: Int) -> Int {
+        let accuracy = Double(correctAnswers) / Double(totalQuestions)
+        
+        // Base points from accuracy
+        var points: Double = 0
+        
+        if accuracy >= 1.0 {
+            points = 30  // Perfect score bonus
+        } else if accuracy >= 0.9 {
+            points = 22
+        } else if accuracy >= 0.8 {
+            points = 15
+        } else if accuracy >= 0.7 {
+            points = 10
+        } else if accuracy >= 0.6 {
+            points = 5
+        } else if accuracy >= 0.5 {
+            points = 0  // Break even
+        } else if accuracy >= 0.3 {
+            points = -5
+        } else {
+            points = -10
+        }
+        
+        // Difficulty multiplier
+        let difficultyMultiplier: Double
+        switch selectedDifficulty {
+        case .beginner:
+            difficultyMultiplier = 0.8
+        case .intermediate:
+            difficultyMultiplier = 1.0
+        case .advanced:
+            difficultyMultiplier = 1.3
+        }
+        
+        // Question count bonus (more questions = more points)
+        let questionMultiplier = 1.0 + (Double(totalQuestions - 5) * 0.02)
+        
+        return Int(points * difficultyMultiplier * questionMultiplier)
     }
     
     private var difficultyMultiplier: Double {
