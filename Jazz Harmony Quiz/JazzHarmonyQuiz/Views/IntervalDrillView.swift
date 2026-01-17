@@ -355,7 +355,8 @@ struct IntervalActiveView: View {
                 // Visual Display
                 IntervalDisplayView(
                     question: question,
-                    showTarget: hasSubmitted || question.questionType == .identifyInterval
+                    showTarget: hasSubmitted,
+                    showAnswer: hasSubmitted
                 )
                 .padding(.horizontal)
                 
@@ -566,15 +567,26 @@ struct IntervalActiveView: View {
 struct IntervalDisplayView: View {
     let question: IntervalQuestion
     let showTarget: Bool
+    let showAnswer: Bool  // Whether to show the interval name (answer)
+    
+    init(question: IntervalQuestion, showTarget: Bool, showAnswer: Bool = true) {
+        self.question = question
+        self.showTarget = showTarget
+        self.showAnswer = showAnswer
+    }
     
     private var isEarTraining: Bool {
         question.questionType == .auralIdentify
     }
     
+    private var isIdentifyQuestion: Bool {
+        question.questionType == .identifyInterval
+    }
+    
     var body: some View {
         VStack(spacing: 12) {
             // For ear training, show a speaker icon instead of notes
-            if isEarTraining && !showTarget {
+            if isEarTraining && !showAnswer {
                 VStack(spacing: 16) {
                     Image(systemName: "ear.fill")
                         .font(.system(size: 50))
@@ -599,11 +611,11 @@ struct IntervalDisplayView: View {
                         .font(.title)
                         .foregroundColor(.secondary)
                     
-                    // Target note
-                    if showTarget {
+                    // Target note - for identify questions, show the note but not the interval name
+                    if showTarget || isIdentifyQuestion {
                         NoteDisplay(
                             note: question.interval.targetNote,
-                            label: question.interval.intervalType.shortName,
+                            label: showAnswer ? question.interval.intervalType.shortName : "?",
                             color: .green
                         )
                     } else {
@@ -615,8 +627,8 @@ struct IntervalDisplayView: View {
                     }
                 }
                 
-                // Semitones hint
-                if showTarget {
+                // Semitones hint - only show after answer is revealed
+                if showAnswer && showTarget {
                     Text("\(question.interval.intervalType.semitones) semitones")
                         .font(.caption)
                         .foregroundColor(.secondary)
