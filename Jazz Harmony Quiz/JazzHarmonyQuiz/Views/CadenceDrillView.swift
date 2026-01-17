@@ -363,7 +363,7 @@ struct CadenceSetupView: View {
                                 Button(action: {
                                     selectedDrillMode = mode
                                 }) {
-                                    VStack(spacing: 4) {
+                                    return VStack(spacing: 4) {
                                         Image(systemName: mode.iconName)
                                             .font(.title2)
                                         Text(mode.shortName)
@@ -536,7 +536,7 @@ struct CadenceSetupView: View {
                                     Button(action: {
                                         selectedCadenceType = type
                                     }) {
-                                        VStack(spacing: 4) {
+                                        return VStack(spacing: 4) {
                                             Image(systemName: type.iconName)
                                                 .font(.title3)
                                             Text(type.shortName)
@@ -995,7 +995,7 @@ struct ActiveCadenceQuizView: View {
 
     private func chordDisplayCard(chord: Chord, index: Int, isActive: Bool, isCompleted: Bool) -> some View {
         let cadenceType = cadenceGame.currentQuestion?.cadence.cadenceType ?? .major
-        VStack(spacing: 4) {
+        return VStack(spacing: 4) {
             // Roman numeral
             Text(romanNumeralForBuildMode(for: index, cadenceType: cadenceType))
                 .font(.caption)
@@ -1333,7 +1333,7 @@ struct CadenceResultsView: View {
                         }
 
                         // Cadence Type and Mode
-                        VStack(spacing: 4) {
+                        return VStack(spacing: 4) {
                             Text("Cadence Type: \(result.cadenceType.rawValue)")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
@@ -1828,7 +1828,7 @@ struct ActiveChordIdentificationView: View {
         let isCompleted = index < currentChordIndex || showingFeedback
         let selection = chordSelections[safe: index]
         
-        VStack(spacing: 4) {
+        return VStack(spacing: 4) {
             // Roman numeral
             if let q = question {
                 Text(romanNumeral(for: index, cadenceType: q.cadence.cadenceType))
