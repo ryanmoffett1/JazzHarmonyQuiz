@@ -15,6 +15,7 @@
 		9442802B2F12A08C0035FE8B /* CadenceDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9442802A2F12A08C0035FE8B /* CadenceDrillView.swift */; };
 		9442802F2F12A19E0035FE8B /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9442802D2F12A19E0035FE8B /* FlowLayout.swift */; };
 		944280302F12B0000035FE8B /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280312F12B0000035FE8B /* AudioManager.swift */; };
+		94629FCC2F1BD9CB0029B7F7 /* QuizGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */; };
 		94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */; };
 		94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */; };
 		94DFCCE12F13E0DD00FBC0C2 /* JazzScaleDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */; };
@@ -29,7 +30,6 @@
 		A1234567890ABCDEF008 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF007 /* Preview Assets.xcassets */; };
 		A1234567890ABCDEF010 /* ChordModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF009 /* ChordModel.swift */; };
 		A1234567890ABCDEF012 /* PianoKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF011 /* PianoKeyboard.swift */; };
-		A1234567890ABCDEF014 /* QuizGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF013 /* QuizGame.swift */; };
 		A1234567890ABCDEF016 /* ChordDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF015 /* ChordDrillView.swift */; };
 		A1234567890ABCDEF018 /* ResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF017 /* ResultsView.swift */; };
 		A1234567890ABCDEF020 /* LeaderboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF019 /* LeaderboardView.swift */; };
@@ -45,6 +45,7 @@
 		9442802A2F12A08C0035FE8B /* CadenceDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillView.swift; sourceTree = "<group>"; };
 		9442802D2F12A19E0035FE8B /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		944280312F12B0000035FE8B /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizGame.swift; sourceTree = "<group>"; };
 		94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
 		94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleModel.swift; sourceTree = "<group>"; };
 		94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzScaleDatabase.swift; sourceTree = "<group>"; };
@@ -59,7 +60,6 @@
 		A1234567890ABCDEF007 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		A1234567890ABCDEF009 /* ChordModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordModel.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF011 /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
-		A1234567890ABCDEF013 /* QuizGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizGame.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF015 /* ChordDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF017 /* ResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF019 /* LeaderboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardView.swift; sourceTree = "<group>"; };
@@ -136,10 +136,10 @@
 				A1234567890ABCDEF021 /* JazzChordDatabase.swift */,
 				94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */,
 				94DFCCE22F13E0F400FBC0C2 /* PlayerStats.swift */,
-				A1234567890ABCDEF013 /* QuizGame.swift */,
 				94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */,
 				94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */,
 				944280222F12A0160035FE8B /* SettingsManager.swift */,
+				94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -244,9 +244,9 @@
 				A1234567890ABCDEF010 /* ChordModel.swift in Sources */,
 				94DFCCE52F13E13F00FBC0C2 /* ScaleDrillView.swift in Sources */,
 				94DFCCE32F13E0F400FBC0C2 /* PlayerStats.swift in Sources */,
+				94629FCC2F1BD9CB0029B7F7 /* QuizGame.swift in Sources */,
 				A1234567890ABCDEF012 /* PianoKeyboard.swift in Sources */,
 				944280252F12A0230035FE8B /* CadenceGame.swift in Sources */,
-				A1234567890ABCDEF014 /* QuizGame.swift in Sources */,
 				A1234567890ABCDEF016 /* ChordDrillView.swift in Sources */,
 				9442802F2F12A19E0035FE8B /* FlowLayout.swift in Sources */,
 				941565132F186B14001C0BC2 /* IntervalDrillView.swift in Sources */,
