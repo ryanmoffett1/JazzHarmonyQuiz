@@ -623,7 +623,7 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
     /// The chord(s) the user needs to spell for this question
     var chordsToSpell: [Chord] {
         switch drillMode {
-        case .fullProgression, .speedRound:
+        case .fullProgression, .speedRound, .chordIdentification:
             return cadence.chords
         case .isolatedChord:
             guard let position = isolatedPosition else { return cadence.chords }
@@ -646,7 +646,7 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
     /// The correct answer(s) for this question
     var expectedAnswers: [[Note]] {
         switch drillMode {
-        case .fullProgression, .speedRound:
+        case .fullProgression, .speedRound, .chordIdentification:
             return correctAnswers
         case .isolatedChord:
             guard let position = isolatedPosition else { return correctAnswers }
@@ -661,7 +661,7 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
     /// Display text for the question
     var questionText: String {
         switch drillMode {
-        case .fullProgression, .speedRound:
+        case .fullProgression, .speedRound, .chordIdentification:
             return "Spell all chords in the progression"
         case .isolatedChord:
             guard let position = isolatedPosition else { return "Spell the chord" }
@@ -704,6 +704,8 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
             self.timeLimit = 5.0
         case .commonTones:
             self.timeLimit = 30.0
+        case .chordIdentification:
+            self.timeLimit = 45.0
         }
     }
     
