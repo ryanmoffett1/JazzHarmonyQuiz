@@ -646,8 +646,8 @@ struct IntervalDisplayView: View {
                         color: .blue
                     )
                     
-                    // Arrow
-                    Image(systemName: question.interval.direction == .descending ? "arrow.left" : "arrow.right")
+                    // Arrow showing musical direction (up = ascending, down = descending)
+                    Image(systemName: question.interval.direction == .descending ? "arrow.down" : "arrow.up")
                         .font(.title)
                         .foregroundColor(.secondary)
                     

@@ -175,10 +175,12 @@ struct IntervalQuestion: Identifiable {
     /// Question text based on type
     var questionText: String {
         let directionText = interval.direction == .descending ? "below" : "above"
+        let directionArrow = interval.direction == .descending ? "↓" : "↑"
         
         switch questionType {
         case .identifyInterval:
-            return "What interval is \(interval.rootNote.name) to \(interval.targetNote.name)?"
+            // Show direction clearly so user knows which way to count
+            return "What interval is \(interval.rootNote.name) \(directionArrow) \(interval.targetNote.name)?"
         case .buildInterval:
             return "Find the \(interval.intervalType.name) \(directionText) \(interval.rootNote.name)"
         case .auralIdentify:
