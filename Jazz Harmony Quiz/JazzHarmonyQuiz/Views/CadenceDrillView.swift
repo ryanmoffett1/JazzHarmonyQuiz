@@ -1699,7 +1699,7 @@ struct ActiveChordIdentificationView: View {
         switch q.cadence.cadenceType {
         case .major, .tritoneSubstitution, .backdoor:
             return CadenceChordQuality.majorCadenceQualities
-        case .minor:
+        case .minor, .birdChanges:
             return CadenceChordQuality.minorCadenceQualities
         }
     }
@@ -1981,7 +1981,7 @@ struct ActiveChordIdentificationView: View {
             case 2: return "I"
             default: return ""
             }
-        case .minor:
+        case .minor, .birdChanges:
             switch index {
             case 0: return "ii°"
             case 1: return "V"
