@@ -44,7 +44,10 @@ struct Note: Identifiable, Hashable, Codable {
     
     static func noteFromMidi(_ midiNumber: Int, preferSharps: Bool = true) -> Note? {
         // Handle octave wrapping - map to the base octave (60-71)
-        let baseMidiNumber = ((midiNumber - 60) % 12) + 60
+        // Use proper modulo that handles negative numbers correctly
+        var pitchClass = (midiNumber - 60) % 12
+        if pitchClass < 0 { pitchClass += 12 }
+        let baseMidiNumber = pitchClass + 60
         
         // For black keys (enharmonic notes), choose based on tonality preference
         let candidates = allNotes.filter { $0.midiNumber == baseMidiNumber }
