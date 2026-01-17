@@ -11,14 +11,8 @@ class IntervalDatabase {
     /// Complete list of intervals from unison to compound intervals
     let allIntervals: [IntervalType] = [
         // Beginner - Perfect intervals and basic major/minor
-        IntervalType(
-            name: "Unison",
-            shortName: "P1",
-            semitones: 0,
-            quality: .perfect,
-            number: 1,
-            difficulty: .beginner
-        ),
+        // Note: Unison (P1, 0 semitones) intentionally excluded - ambiguous in quiz context
+        // (e.g., "F to F" could mean unison or octave, user can't tell which)
         IntervalType(
             name: "Minor Second",
             shortName: "m2",
@@ -107,14 +101,8 @@ class IntervalDatabase {
             number: 7,
             difficulty: .intermediate
         ),
-        IntervalType(
-            name: "Octave",
-            shortName: "P8",
-            semitones: 12,
-            quality: .perfect,
-            number: 8,
-            difficulty: .beginner
-        ),
+        // Note: Octave (P8, 12 semitones) intentionally excluded - ambiguous in quiz context
+        // (user can't tell which octave to select on piano keyboard)
         
         // Advanced - Compound intervals
         IntervalType(
