@@ -274,6 +274,27 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
     var usesChordSelection: Bool {
         return self == .chordIdentification
     }
+    /// Icon for the drill mode button
+    var iconName: String {
+        switch self {
+        case .chordIdentification: return "textformat.abc"
+        case .fullProgression: return "music.note.list"
+        case .isolatedChord: return "target"
+        case .speedRound: return "timer"
+        case .commonTones: return "link"
+        }
+    }
+
+    /// Short name for compact display
+    var shortName: String {
+        switch self {
+        case .chordIdentification: return "Chord ID"
+        case .fullProgression: return "Full"
+        case .isolatedChord: return "Isolated"
+        case .speedRound: return "Speed"
+        case .commonTones: return "Common"
+        }
+    }
 }
 
 /// Which chord pair to find common tones between
@@ -436,6 +457,28 @@ enum CadenceType: String, CaseIterable, Codable, Equatable {
             return 5  // iiim7, VI7, iim7, V7, Imaj7
         default:
             return 3
+        }
+    }
+
+    /// Icon for the cadence type button
+    var iconName: String {
+        switch self {
+        case .major: return "music.note"
+        case .minor: return "music.note.list"
+        case .tritoneSubstitution: return "arrow.left.arrow.right"
+        case .backdoor: return "arrow.uturn.backward"
+        case .birdChanges: return "bird"
+        }
+    }
+
+    /// Short name for compact display
+    var shortName: String {
+        switch self {
+        case .major: return "Major"
+        case .minor: return "Minor"
+        case .tritoneSubstitution: return "Tritone"
+        case .backdoor: return "Backdoor"
+        case .birdChanges: return "Bird"
         }
     }
 }
@@ -935,16 +978,16 @@ enum CadenceChordQuality: String, CaseIterable {
     
     /// Qualities typically used in major ii-V-I
     static var majorCadenceQualities: [CadenceChordQuality] {
-        [.minor7, .dominant7, .major7, .dominant9, .dominant13]
+        [.minor7, .dominant7, .major7]
     }
     
     /// Qualities typically used in minor ii-V-i
     static var minorCadenceQualities: [CadenceChordQuality] {
-        [.halfDiminished, .dominant7, .dominant7b9, .minor7]
+        [.halfDiminished, .dominant7, .minor7]
     }
     
     /// All common qualities for cadence practice
     static var allCadenceQualities: [CadenceChordQuality] {
-        [.minor7, .dominant7, .major7, .halfDiminished, .dominant7b9]
+        [.minor7, .dominant7, .major7, .halfDiminished]
     }
 }

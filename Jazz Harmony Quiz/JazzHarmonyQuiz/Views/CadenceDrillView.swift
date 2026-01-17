@@ -358,18 +358,32 @@ struct CadenceSetupView: View {
                         Text("Drill Mode")
                             .font(.headline)
 
-                        Picker("Drill Mode", selection: $selectedDrillMode) {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                             ForEach(CadenceDrillMode.allCases, id: \.self) { mode in
-                                Text(mode.rawValue).tag(mode)
+                                Button(action: {
+                                    selectedDrillMode = mode
+                                }) {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: mode.iconName)
+                                            .font(.title2)
+                                        Text(mode.shortName)
+                                            .font(.caption)
+                                            .fontWeight(.medium)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(selectedDrillMode == mode ? Color.blue : Color.gray.opacity(0.2))
+                                    .foregroundColor(selectedDrillMode == mode ? .white : .primary)
+                                    .cornerRadius(10)
+                                }
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
 
                         Text(selectedDrillMode.description)
                             .font(.caption)
                             .foregroundColor(.secondary)
-                    }
                     
+                    }
                     // Isolated Chord Position (only shown in isolated mode)
                     if selectedDrillMode == .isolatedChord {
                         VStack(alignment: .leading, spacing: 10) {
@@ -517,17 +531,30 @@ struct CadenceSetupView: View {
                             Text("Cadence Type")
                                 .font(.headline)
 
-                            Picker("Cadence Type", selection: $selectedCadenceType) {
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                                 ForEach(CadenceType.allCases, id: \.self) { type in
-                                    Text(type.rawValue).tag(type)
+                                    Button(action: {
+                                        selectedCadenceType = type
+                                    }) {
+                                        VStack(spacing: 4) {
+                                            Image(systemName: type.iconName)
+                                                .font(.title3)
+                                            Text(type.shortName)
+                                                .font(.caption)
+                                                .fontWeight(.medium)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
+                                        .background(selectedCadenceType == type ? Color.purple : Color.gray.opacity(0.2))
+                                        .foregroundColor(selectedCadenceType == type ? .white : .primary)
+                                        .cornerRadius(10)
+                                    }
                                 }
                             }
-                            .pickerStyle(SegmentedPickerStyle())
 
                             Text(selectedCadenceType.description)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                                .padding(.top, 5)
                         }
                     }
                     
@@ -1685,7 +1712,7 @@ struct ActiveChordIdentificationView: View {
                     Text("Key of \(question.cadence.key.name)")
                         .font(.system(size: 32, weight: .bold))
                     
-                    Text("\(question.cadence.cadenceType.rawValue) ii-V-I")
+                    Text(question.cadence.cadenceType.rawValue)
                         .font(.title3)
                         .foregroundColor(.secondary)
                 }
