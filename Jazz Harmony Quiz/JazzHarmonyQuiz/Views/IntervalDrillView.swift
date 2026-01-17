@@ -269,13 +269,9 @@ struct IntervalSetupView: View {
                     // Direction
                     SettingsCard(title: "Direction", icon: "arrow.up.arrow.down") {
                         Picker("Direction", selection: $selectedDirection) {
-                            ForEach(IntervalDirection.allCases, id: \.self) { direction in
-                                HStack {
-                                    Image(systemName: direction.icon)
-                                    Text(direction.rawValue)
-                                }
-                                .tag(direction)
-                            }
+                            Text("↑").tag(IntervalDirection.ascending)
+                            Text("↓").tag(IntervalDirection.descending)
+                            Text("↑↓").tag(IntervalDirection.both)
                         }
                         .pickerStyle(.segmented)
                     }
