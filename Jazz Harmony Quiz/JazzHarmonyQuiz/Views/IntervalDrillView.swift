@@ -549,42 +549,60 @@ struct IntervalDisplayView: View {
     let question: IntervalQuestion
     let showTarget: Bool
     
+    private var isEarTraining: Bool {
+        question.questionType == .auralIdentify
+    }
+    
     var body: some View {
         VStack(spacing: 12) {
-            HStack(spacing: 24) {
-                // Root note
-                NoteDisplay(
-                    note: question.interval.rootNote,
-                    label: "Root",
-                    color: .blue
-                )
-                
-                // Arrow
-                Image(systemName: question.interval.direction == .descending ? "arrow.left" : "arrow.right")
-                    .font(.title)
-                    .foregroundColor(.secondary)
-                
-                // Target note
-                if showTarget {
-                    NoteDisplay(
-                        note: question.interval.targetNote,
-                        label: question.interval.intervalType.shortName,
-                        color: .green
-                    )
-                } else {
-                    NoteDisplay(
-                        note: nil,
-                        label: "?",
-                        color: .gray
-                    )
+            // For ear training, show a speaker icon instead of notes
+            if isEarTraining && !showTarget {
+                VStack(spacing: 16) {
+                    Image(systemName: "ear.fill")
+                        .font(.system(size: 50))
+                        .foregroundColor(.blue)
+                    
+                    Text("Listen to the interval")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
                 }
-            }
-            
-            // Semitones hint
-            if showTarget {
-                Text("\(question.interval.intervalType.semitones) semitones")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                .padding(.vertical, 20)
+            } else {
+                HStack(spacing: 24) {
+                    // Root note
+                    NoteDisplay(
+                        note: question.interval.rootNote,
+                        label: "Root",
+                        color: .blue
+                    )
+                    
+                    // Arrow
+                    Image(systemName: question.interval.direction == .descending ? "arrow.left" : "arrow.right")
+                        .font(.title)
+                        .foregroundColor(.secondary)
+                    
+                    // Target note
+                    if showTarget {
+                        NoteDisplay(
+                            note: question.interval.targetNote,
+                            label: question.interval.intervalType.shortName,
+                            color: .green
+                        )
+                    } else {
+                        NoteDisplay(
+                            note: nil,
+                            label: "?",
+                            color: .gray
+                        )
+                    }
+                }
+                
+                // Semitones hint
+                if showTarget {
+                    Text("\(question.interval.intervalType.semitones) semitones")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .padding()
