@@ -16,6 +16,7 @@
 		9442802F2F12A19E0035FE8B /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9442802D2F12A19E0035FE8B /* FlowLayout.swift */; };
 		944280302F12B0000035FE8B /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280312F12B0000035FE8B /* AudioManager.swift */; };
 		94629FCC2F1BD9CB0029B7F7 /* QuizGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */; };
+		94CHORD022F186B14001C0BC2 /* ChordSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */; };
 		94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */; };
 		94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */; };
 		94DFCCE12F13E0DD00FBC0C2 /* JazzScaleDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */; };
@@ -34,8 +35,6 @@
 		A1234567890ABCDEF018 /* ResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF017 /* ResultsView.swift */; };
 		A1234567890ABCDEF020 /* LeaderboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF019 /* LeaderboardView.swift */; };
 		A1234567890ABCDEF022 /* JazzChordDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF021 /* JazzChordDatabase.swift */; };
-		94CHORD022F186B14001C0BC2 /* ChordSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */; };
-		94CHORD022F186B14001C0BC2 /* ChordSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +47,7 @@
 		9442802D2F12A19E0035FE8B /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		944280312F12B0000035FE8B /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizGame.swift; sourceTree = "<group>"; };
+		94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
 		94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
 		94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleModel.swift; sourceTree = "<group>"; };
 		94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzScaleDatabase.swift; sourceTree = "<group>"; };
@@ -67,8 +67,6 @@
 		A1234567890ABCDEF019 /* LeaderboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF021 /* JazzChordDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzChordDatabase.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF023 /* JazzHarmonyQuiz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JazzHarmonyQuiz.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
-		94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +80,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9420C4D02F1BFD3600C9D1F8 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		9442802C2F12A1870035FE8B /* New Group */ = {
 			isa = PBXGroup;
 			children = (
@@ -103,6 +109,7 @@
 			children = (
 				A1234567890ABCDEF026 /* JazzHarmonyQuiz */,
 				A1234567890ABCDEF027 /* Products */,
+				9420C4D02F1BFD3600C9D1F8 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -253,8 +260,6 @@
 				944280252F12A0230035FE8B /* CadenceGame.swift in Sources */,
 				A1234567890ABCDEF016 /* ChordDrillView.swift in Sources */,
 				9442802F2F12A19E0035FE8B /* FlowLayout.swift in Sources */,
-				94CHORD022F186B14001C0BC2 /* ChordSelectorView.swift in Sources */,
-				94CHORD022F186B14001C0BC2 /* ChordSelectorView.swift in Sources */,
 				941565132F186B14001C0BC2 /* IntervalDrillView.swift in Sources */,
 				94E4E7952F149D7E009754EE /* IntervalGame.swift in Sources */,
 				944280302F12B0000035FE8B /* AudioManager.swift in Sources */,
