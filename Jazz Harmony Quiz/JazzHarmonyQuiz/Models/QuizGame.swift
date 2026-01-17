@@ -523,7 +523,7 @@ class QuizGame: ObservableObject {
         isDailyChallenge = true
         totalQuestions = 10
         selectedDifficulty = difficulty
-        selectedQuestionTypes = [.allTones, .chordSpelling]
+        selectedQuestionTypes = [.allTones]
         
         // Reset rating tracking
         lastRatingChange = 0
