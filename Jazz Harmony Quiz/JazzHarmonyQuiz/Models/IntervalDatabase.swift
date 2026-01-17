@@ -235,7 +235,7 @@ class IntervalDatabase {
         }
         
         // Ensure we have candidates
-        guard !candidates.isEmpty else {
+        if candidates.isEmpty {
             candidates = [allIntervals[0]]
         }
         

@@ -491,8 +491,6 @@ struct QuestionReviewCard: View {
             return "Select the chord tone"
         case .allTones:
             return "Select all chord tones"
-        case .chordSpelling:
-            return "Spell the entire chord"
         }
     }
     

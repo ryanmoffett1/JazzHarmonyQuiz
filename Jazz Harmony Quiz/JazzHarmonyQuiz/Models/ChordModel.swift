@@ -197,7 +197,6 @@ struct Chord: Identifiable, Hashable, Codable {
 enum QuestionType: String, CaseIterable, Codable, Equatable {
     case singleTone = "Single Tone"
     case allTones = "All Tones"
-    case chordSpelling = "Chord Spelling"
     
     var description: String {
         switch self {
@@ -205,8 +204,6 @@ enum QuestionType: String, CaseIterable, Codable, Equatable {
             return "Identify a specific chord tone"
         case .allTones:
             return "Play all chord tones"
-        case .chordSpelling:
-            return "Spell the entire chord"
         }
     }
 }
@@ -233,8 +230,6 @@ struct QuizQuestion: Identifiable, Codable, Equatable {
                 self.correctAnswer = [chord.root]
             }
         case .allTones:
-            self.correctAnswer = chord.chordTones
-        case .chordSpelling:
             self.correctAnswer = chord.chordTones
         }
         

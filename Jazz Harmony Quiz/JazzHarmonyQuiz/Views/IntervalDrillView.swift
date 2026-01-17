@@ -31,7 +31,7 @@ struct IntervalDrillView: View {
     @State private var selectedDifficulty: IntervalDifficulty = .beginner
     @State private var selectedQuestionTypes: Set<IntervalQuestionType> = [.buildInterval]
     @State private var selectedDirection: IntervalDirection = .ascending
-    @State private var selectedKeyDifficulty: KeyDifficulty = .natural
+    @State private var selectedKeyDifficulty: KeyDifficulty = .easy
     @State private var showingFeedback = false
     @State private var hasSubmitted = false
     
@@ -114,12 +114,12 @@ struct IntervalDrillView: View {
         // Haptic feedback
         if isCorrect {
             IntervalDrillHaptics.success()
-            if settings.playSoundOnCorrect {
+            if settings.playChordOnCorrect {
                 AudioManager.shared.playSuccessSound()
             }
         } else {
             IntervalDrillHaptics.error()
-            if settings.playSoundOnIncorrect {
+            if settings.playChordOnCorrect {
                 AudioManager.shared.playErrorSound()
             }
         }

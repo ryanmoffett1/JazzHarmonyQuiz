@@ -277,9 +277,9 @@ final class ChordModelTests: XCTestCase {
         )
         let chord = Chord(root: dNote, chordType: dom7)
         
-        let question = QuizQuestion(chord: chord, questionType: .chordSpelling)
+        let question = QuizQuestion(chord: chord, questionType: .allTones)
         
-        XCTAssertEqual(question.questionType, .chordSpelling)
+        XCTAssertEqual(question.questionType, .allTones)
         XCTAssertNil(question.targetTone)
         XCTAssertEqual(question.correctAnswer.count, 4)
         XCTAssertEqual(question.correctAnswer, chord.chordTones)

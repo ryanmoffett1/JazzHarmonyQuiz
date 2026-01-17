@@ -85,11 +85,11 @@ final class QuizGameTests: XCTestCase {
     }
     
     func testQuestionGenerationWithMixedTypes() {
-        quizGame.startNewQuiz(numberOfQuestions: 10, difficulty: .intermediate, questionTypes: [.singleTone, .allTones, .chordSpelling])
+        quizGame.startNewQuiz(numberOfQuestions: 10, difficulty: .intermediate, questionTypes: [.singleTone, .allTones])
         
         // Should have at least one of each type (probabilistically)
         let types = Set(quizGame.questions.map { $0.questionType })
-        // With 10 questions and 3 types, we should get some variety
+        // With 10 questions and 2 types, we should get some variety
         XCTAssertGreaterThanOrEqual(types.count, 1)
     }
     

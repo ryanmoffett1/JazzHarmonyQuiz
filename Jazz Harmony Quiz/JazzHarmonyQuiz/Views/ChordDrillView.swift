@@ -623,8 +623,6 @@ struct ActiveQuizView: View {
             return "Select the chord tone shown above"
         case .allTones:
             return "Select all the chord tones for this chord"
-        case .chordSpelling:
-            return "Spell the entire chord by selecting all chord tones"
         }
     }
     
