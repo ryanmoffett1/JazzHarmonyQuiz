@@ -1043,20 +1043,28 @@ extension AudioManager {
     func playInterval(_ interval: Interval, style: IntervalPlayStyle = .melodic) {
         guard isEnabled else { return }
         
-        let rootMidi = UInt8(clamping: interval.rootNote.midiNumber)
-        let targetMidi = UInt8(clamping: interval.targetNote.midiNumber)
+        let rootMidi = interval.rootNote.midiNumber
+        // Calculate the actual target MIDI based on direction
+        // Don't use targetNote.midiNumber as it may be normalized to base octave
+        let semitoneOffset = interval.direction == .descending ? -interval.intervalType.semitones : interval.intervalType.semitones
+        let targetMidi = rootMidi + semitoneOffset
         
         switch style {
         case .melodic:
             // Play notes sequentially
-            playNote(rootMidi, velocity: 80)
+            playNote(UInt8(clamping: rootMidi), velocity: 80)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                self.playNote(targetMidi, velocity: 80)
+                self.playNote(UInt8(clamping: targetMidi), velocity: 80)
             }
         case .harmonic:
-            // Play notes simultaneously
-            let notes = [interval.rootNote, interval.targetNote]
-            playChord(notes, duration: 1.5)
+            // Play notes simultaneously - use calculated MIDI values
+            playNote(UInt8(clamping: rootMidi), velocity: 80)
+            playNote(UInt8(clamping: targetMidi), velocity: 80)
+            // Stop after duration
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                self.stopNote(UInt8(clamping: rootMidi))
+                self.stopNote(UInt8(clamping: targetMidi))
+            }
         }
     }
     
