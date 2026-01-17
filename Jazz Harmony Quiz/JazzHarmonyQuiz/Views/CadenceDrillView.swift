@@ -1697,7 +1697,7 @@ struct ActiveChordIdentificationView: View {
     private var availableQualities: [CadenceChordQuality] {
         guard let q = question else { return CadenceChordQuality.allCadenceQualities }
         switch q.cadence.cadenceType {
-        case .major, .tritoneSubstitution, .backdoor:
+        case .major, .tritoneSubstitution, .backdoor, .birdChanges:
             return CadenceChordQuality.majorCadenceQualities
         case .minor:
             return CadenceChordQuality.minorCadenceQualities
@@ -1974,7 +1974,7 @@ struct ActiveChordIdentificationView: View {
     
     private func romanNumeral(for index: Int, cadenceType: CadenceType) -> String {
         switch cadenceType {
-        case .major, .tritoneSubstitution, .backdoor:
+        case .major, .tritoneSubstitution, .backdoor, .birdChanges:
             switch index {
             case 0: return "ii"
             case 1: return cadenceType == .tritoneSubstitution ? "SubV" : "V"
