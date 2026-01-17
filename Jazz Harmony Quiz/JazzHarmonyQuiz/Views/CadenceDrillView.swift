@@ -1682,7 +1682,7 @@ struct ActiveChordIdentificationView: View {
     @Binding var viewState: CadenceDrillView.ViewState
     
     @State private var currentChordIndex = 0
-    @State private var chordSelections: [ChordSelection] = [ChordSelection(), ChordSelection(), ChordSelection()]
+    @State private var chordSelections: [ChordSelection] = [ChordSelection(), ChordSelection(), ChordSelection(), ChordSelection(), ChordSelection()]
     @State private var showingFeedback = false
     @State private var feedbackResults: [Bool] = []
     
@@ -1699,7 +1699,7 @@ struct ActiveChordIdentificationView: View {
         switch q.cadence.cadenceType {
         case .major, .tritoneSubstitution, .backdoor:
             return CadenceChordQuality.majorCadenceQualities
-        case .minor, .birdChanges:
+        case .minor:
             return CadenceChordQuality.minorCadenceQualities
         }
     }
@@ -1912,7 +1912,7 @@ struct ActiveChordIdentificationView: View {
     
     private func resetForNewQuestion() {
         currentChordIndex = 0
-        chordSelections = [ChordSelection(), ChordSelection(), ChordSelection()]
+        chordSelections = [ChordSelection(), ChordSelection(), ChordSelection(), ChordSelection(), ChordSelection()]
         showingFeedback = false
         feedbackResults = []
     }
@@ -1981,11 +1981,20 @@ struct ActiveChordIdentificationView: View {
             case 2: return "I"
             default: return ""
             }
-        case .minor, .birdChanges:
+        case .minor:
             switch index {
             case 0: return "ii°"
             case 1: return "V"
             case 2: return "i"
+            default: return ""
+            }
+        case .birdChanges:
+            switch index {
+            case 0: return "iii"
+            case 1: return "VI"
+            case 2: return "ii"
+            case 3: return "V"
+            case 4: return "I"
             default: return ""
             }
         }
