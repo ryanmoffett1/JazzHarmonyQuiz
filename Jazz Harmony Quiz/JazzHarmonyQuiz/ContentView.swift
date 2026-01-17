@@ -47,6 +47,10 @@ struct ContentView: View {
                     ChordDrillView()
                 case "cadenceDrill":
                     CadenceDrillView()
+                case "scaleDrill":
+                    ScaleDrillView()
+                case "intervalDrill":
+                    IntervalDrillView()
                 case "leaderboard":
                     LeaderboardView()
                 case "dailyChallenge":
@@ -55,6 +59,8 @@ struct ContentView: View {
                     ChordDrillView(startQuickPractice: true)
                 case "achievements":
                     AchievementsView()
+                case "settings":
+                    SettingsView()
                 default:
                     EmptyView()
                 }
