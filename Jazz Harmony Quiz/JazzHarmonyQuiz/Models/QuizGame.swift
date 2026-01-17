@@ -613,9 +613,6 @@ class QuizGame: ObservableObject {
                 
             case .allTones:
                 question = QuizQuestion(chord: chord, questionType: .allTones)
-                
-            case .chordSpelling:
-                question = QuizQuestion(chord: chord, questionType: .chordSpelling)
             }
             
             questions.append(question)
