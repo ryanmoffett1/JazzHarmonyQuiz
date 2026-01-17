@@ -352,6 +352,8 @@ class CadenceGame: ObservableObject {
             modeMultiplier = 1.5  // Harder
         case .commonTones:
             modeMultiplier = 1.3  // Different skill
+        case .chordIdentification:
+            modeMultiplier = 1.2  // Chord symbol recognition
         }
         
         // Cadence type complexity bonus
@@ -619,53 +621,6 @@ class CadenceGame: ObservableObject {
         }
     }
 
-    // MARK: - Chord Identification Mode Support
-    
-    /// Tracks chord selections for chord identification mode
-    @Published var chordIdentificationAnswers: [UUID: [ChordSelection]] = [:]
-    
-    /// Whether this is the last question
-    var isLastQuestion: Bool {
-        return currentQuestionIndex >= questions.count - 1
-    }
-    
-    /// Advance to next question (public method for chord identification)
-    func advanceToNextQuestion() {
-        currentQuestionIndex += 1
-        hintsUsedThisQuestion = 0
-        currentHintLevel = 0
-        
-        if currentQuestionIndex < questions.count {
-            currentQuestion = questions[currentQuestionIndex]
-            questionStartTime = Date()
-        }
-    }
-    
-    /// Record a chord identification answer
-    func recordChordIdentificationAnswer(selections: [ChordSelection], isCorrect: Bool) {
-        guard let question = currentQuestion else { return }
-        
-        // Store the selections
-        chordIdentificationAnswers[question.id] = selections
-        
-        // Also store as note arrays for compatibility with existing results
-        let noteArrays: [[Note]] = selections.map { selection in
-            guard let root = selection.selectedRoot else { return [] }
-            return [root] // Simplified - just store the root for identification mode
-        }
-        userAnswers[question.id] = noteArrays
-        
-        // Update time
-        if let startTime = questionStartTime {
-            totalQuizTime += Date().timeIntervalSince(startTime)
-        }
-    }
-    
-    /// End the quiz and show results
-    func endQuiz() {
-        finishQuiz()
-    }
-    
     // MARK: - Chord Identification Mode Support
     
     /// Tracks chord selections for chord identification mode
