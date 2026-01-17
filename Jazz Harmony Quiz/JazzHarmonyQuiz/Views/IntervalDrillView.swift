@@ -380,6 +380,24 @@ struct IntervalActiveView: View {
             }
         }
         .padding(.vertical)
+        .onChange(of: intervalGame.questionNumber) { _, _ in
+            // Auto-play interval for ear training questions
+            if let question = intervalGame.currentQuestion,
+               question.questionType == .auralIdentify {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    playInterval(question.interval)
+                }
+            }
+        }
+        .onAppear {
+            // Play on initial appear if ear training question
+            if let question = intervalGame.currentQuestion,
+               question.questionType == .auralIdentify {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    playInterval(question.interval)
+                }
+            }
+        }
     }
     
     @ViewBuilder
