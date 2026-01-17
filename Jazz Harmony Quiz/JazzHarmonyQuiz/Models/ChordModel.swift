@@ -244,6 +244,7 @@ struct QuizQuestion: Identifiable, Codable, Equatable {
 
 /// Drill mode determines how the cadence quiz is structured
 enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
+    case chordIdentification = "Chord Identification"
     case fullProgression = "Full Progression"
     case isolatedChord = "Isolated Chord"
     case speedRound = "Speed Round"
@@ -251,6 +252,8 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
     
     var description: String {
         switch self {
+        case .chordIdentification:
+            return "Identify chords by root and quality (e.g., F#m7 → B7 → Emaj7)"
         case .fullProgression:
             return "Spell all 3 chords in the ii-V-I"
         case .isolatedChord:
@@ -265,6 +268,11 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
     /// Whether this mode has a per-chord timer
     var hasPerChordTimer: Bool {
         return self == .speedRound
+    }
+    
+    /// Whether this mode uses chord selection (root+quality) instead of note spelling
+    var usesChordSelection: Bool {
+        return self == .chordIdentification
     }
 }
 
@@ -863,5 +871,78 @@ struct QuizResult: Identifiable, Codable, Equatable {
         try container.encode(questions, forKey: .questions)
         try container.encode(userAnswers, forKey: .userAnswers)
         try container.encode(isCorrect, forKey: .isCorrect)
+    }
+}
+// MARK: - Chord Selection (for Cadence Identification Mode)
+
+/// Represents a user's chord selection (root + quality)
+struct ChordSelection: Codable, Equatable {
+    var selectedRoot: Note?
+    var selectedQuality: String?
+    
+    var isComplete: Bool {
+        selectedRoot != nil && selectedQuality != nil
+    }
+    
+    /// Display name (e.g., "F#m7")
+    var displayName: String {
+        guard let root = selectedRoot, let quality = selectedQuality else {
+            return "—"
+        }
+        return "\(root.name)\(quality)"
+    }
+    
+    /// Check if this selection matches the expected chord
+    func matches(_ chord: Chord) -> Bool {
+        guard let root = selectedRoot, let quality = selectedQuality else {
+            return false
+        }
+        
+        // Compare root by pitch class (octave-independent)
+        let rootMatches = root.pitchClass == chord.root.pitchClass
+        
+        // Compare quality by symbol (handle common aliases)
+        let expectedSymbol = chord.chordType.symbol
+        let qualityMatches = quality == expectedSymbol ||
+            (quality == "ø7" && expectedSymbol == "m7b5") ||
+            (quality == "m7b5" && expectedSymbol == "ø7")
+        
+        return rootMatches && qualityMatches
+    }
+    
+    /// Reset the selection
+    mutating func reset() {
+        selectedRoot = nil
+        selectedQuality = nil
+    }
+}
+
+/// Common chord qualities used in cadences
+enum CadenceChordQuality: String, CaseIterable {
+    case minor7 = "m7"
+    case dominant7 = "7"
+    case major7 = "maj7"
+    case halfDiminished = "ø7"
+    case dominant7b9 = "7b9"
+    case dominant9 = "9"
+    case dominant13 = "13"
+    
+    var displayName: String {
+        rawValue
+    }
+    
+    /// Qualities typically used in major ii-V-I
+    static var majorCadenceQualities: [CadenceChordQuality] {
+        [.minor7, .dominant7, .major7, .dominant9, .dominant13]
+    }
+    
+    /// Qualities typically used in minor ii-V-i
+    static var minorCadenceQualities: [CadenceChordQuality] {
+        [.halfDiminished, .dominant7, .dominant7b9, .minor7]
+    }
+    
+    /// All common qualities for cadence practice
+    static var allCadenceQualities: [CadenceChordQuality] {
+        [.minor7, .dominant7, .major7, .halfDiminished, .dominant7b9]
     }
 }

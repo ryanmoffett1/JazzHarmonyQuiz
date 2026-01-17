@@ -87,7 +87,11 @@ struct CadenceDrillView: View {
                     onPracticeWeakKeys: startWeakKeyPractice
                 )
             case .active:
-                ActiveCadenceQuizView(viewState: $viewState)
+                if cadenceGame.selectedDrillMode == .chordIdentification {
+                    ActiveChordIdentificationView(viewState: $viewState)
+                } else {
+                    ActiveCadenceQuizView(viewState: $viewState)
+                }
             case .results:
                 CadenceResultsView(onNewQuiz: {
                     cadenceGame.resetQuizState()
@@ -1636,5 +1640,333 @@ struct ChordVoicingView: View {
         case "Bb": return "A#"
         default: return note
         }
+    }
+}
+
+// MARK: - Active Chord Identification View
+
+/// View for chord identification mode - user selects chords by root + quality
+struct ActiveChordIdentificationView: View {
+    @EnvironmentObject var cadenceGame: CadenceGame
+    @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
+    @Binding var viewState: CadenceDrillView.ViewState
+    
+    @State private var currentChordIndex = 0
+    @State private var chordSelections: [ChordSelection] = [ChordSelection(), ChordSelection(), ChordSelection()]
+    @State private var showingFeedback = false
+    @State private var feedbackResults: [Bool] = []
+    
+    private var question: CadenceQuestion? {
+        cadenceGame.currentQuestion
+    }
+    
+    private var expectedChords: [Chord] {
+        question?.cadence.chords ?? []
+    }
+    
+    private var availableQualities: [CadenceChordQuality] {
+        guard let q = question else { return CadenceChordQuality.allCadenceQualities }
+        switch q.cadence.cadenceType {
+        case .major, .tritoneSubstitution, .backdoor:
+            return CadenceChordQuality.majorCadenceQualities
+        case .minor:
+            return CadenceChordQuality.minorCadenceQualities
+        }
+    }
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            if let question = question {
+                // Header: Key and Cadence Type
+                VStack(spacing: 8) {
+                    Text("Key of \(question.cadence.key.name)")
+                        .font(.system(size: 32, weight: .bold))
+                    
+                    Text("\(question.cadence.cadenceType.rawValue) ii-V-I")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                
+                // Roman numeral indicators
+                HStack(spacing: 20) {
+                    ForEach(0..<expectedChords.count, id: \.self) { index in
+                        chordPositionIndicator(index: index)
+                    }
+                }
+                .padding(.horizontal)
+                
+                // Current selection display
+                if !showingFeedback {
+                    VStack(spacing: 8) {
+                        Text("Enter chord \(currentChordIndex + 1) of \(expectedChords.count)")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        Text(romanNumeral(for: currentChordIndex, cadenceType: question.cadence.cadenceType))
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.blue)
+                    }
+                    .padding()
+                }
+                
+                Spacer()
+                
+                // Chord Selector or Feedback
+                if showingFeedback {
+                    feedbackView()
+                } else {
+                    ChordSelectorView(
+                        selection: $chordSelections[currentChordIndex],
+                        availableQualities: availableQualities,
+                        disabled: false,
+                        onComplete: nil
+                    )
+                    .padding(.horizontal)
+                }
+                
+                Spacer()
+                
+                // Action Buttons
+                actionButtons()
+            }
+        }
+        .padding(.vertical)
+        .onAppear {
+            resetForNewQuestion()
+        }
+        .onChange(of: cadenceGame.currentQuestion?.id) { _, _ in
+            resetForNewQuestion()
+        }
+    }
+    
+    // MARK: - Subviews
+    
+    @ViewBuilder
+    private func chordPositionIndicator(index: Int) -> some View {
+        let isActive = index == currentChordIndex && !showingFeedback
+        let isCompleted = index < currentChordIndex || showingFeedback
+        let selection = chordSelections[safe: index]
+        
+        VStack(spacing: 4) {
+            // Roman numeral
+            if let q = question {
+                Text(romanNumeral(for: index, cadenceType: q.cadence.cadenceType))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            // Chord display
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(backgroundColor(isActive: isActive, isCompleted: isCompleted, index: index))
+                    .frame(width: 80, height: 50)
+                
+                if isCompleted && showingFeedback {
+                    // Show the selected chord with correctness indicator
+                    VStack(spacing: 2) {
+                        Text(selection?.displayName ?? "—")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(feedbackResults[safe: index] == true ? .green : .red)
+                        
+                        Image(systemName: feedbackResults[safe: index] == true ? "checkmark.circle.fill" : "xmark.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(feedbackResults[safe: index] == true ? .green : .red)
+                    }
+                } else if isCompleted || selection?.isComplete == true {
+                    Text(selection?.displayName ?? "—")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                } else if isActive {
+                    Text("?")
+                        .font(.title2)
+                        .foregroundColor(.white.opacity(0.7))
+                } else {
+                    Text("—")
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+    
+    private func backgroundColor(isActive: Bool, isCompleted: Bool, index: Int) -> Color {
+        if showingFeedback {
+            return feedbackResults[safe: index] == true ? Color.green.opacity(0.8) : Color.red.opacity(0.8)
+        } else if isCompleted {
+            return Color.blue
+        } else if isActive {
+            return Color.blue.opacity(0.7)
+        } else {
+            return Color(.systemGray4)
+        }
+    }
+    
+    @ViewBuilder
+    private func feedbackView() -> some View {
+        VStack(spacing: 16) {
+            let allCorrect = feedbackResults.allSatisfy { $0 }
+            
+            Image(systemName: allCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .font(.system(size: 60))
+                .foregroundColor(allCorrect ? .green : .red)
+            
+            Text(allCorrect ? "Correct!" : "Not quite right")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            // Show correct answers if wrong
+            if !allCorrect {
+                VStack(spacing: 8) {
+                    Text("Correct progression:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    HStack(spacing: 16) {
+                        ForEach(expectedChords.indices, id: \.self) { index in
+                            Text(expectedChords[index].displayName)
+                                .font(.headline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.green.opacity(0.2))
+                                .cornerRadius(8)
+                        }
+                    }
+                }
+            }
+        }
+        .padding()
+    }
+    
+    @ViewBuilder
+    private func actionButtons() -> some View {
+        HStack(spacing: 16) {
+            if showingFeedback {
+                Button(action: nextQuestion) {
+                    Text(cadenceGame.isLastQuestion ? "Finish" : "Next")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(12)
+                }
+            } else {
+                // Clear button
+                Button(action: clearCurrentChord) {
+                    Text("Clear")
+                        .font(.headline)
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                }
+                
+                // Next Chord / Submit button
+                Button(action: advanceOrSubmit) {
+                    Text(currentChordIndex < expectedChords.count - 1 ? "Next Chord" : "Submit")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(chordSelections[currentChordIndex].isComplete ? Color.blue : Color.gray)
+                        .cornerRadius(12)
+                }
+                .disabled(!chordSelections[currentChordIndex].isComplete)
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    // MARK: - Actions
+    
+    private func resetForNewQuestion() {
+        currentChordIndex = 0
+        chordSelections = [ChordSelection(), ChordSelection(), ChordSelection()]
+        showingFeedback = false
+        feedbackResults = []
+    }
+    
+    private func clearCurrentChord() {
+        chordSelections[currentChordIndex].reset()
+        HapticFeedback.light()
+    }
+    
+    private func advanceOrSubmit() {
+        if currentChordIndex < expectedChords.count - 1 {
+            // Move to next chord
+            currentChordIndex += 1
+            HapticFeedback.light()
+        } else {
+            // Submit all answers
+            submitAnswer()
+        }
+    }
+    
+    private func submitAnswer() {
+        // Check each chord
+        feedbackResults = expectedChords.indices.map { index in
+            chordSelections[index].matches(expectedChords[index])
+        }
+        
+        let allCorrect = feedbackResults.allSatisfy { $0 }
+        
+        // Record answer in game
+        cadenceGame.recordChordIdentificationAnswer(
+            selections: Array(chordSelections.prefix(expectedChords.count)),
+            isCorrect: allCorrect
+        )
+        
+        // Haptic feedback
+        if allCorrect {
+            HapticFeedback.success()
+            if settings.playChordOnCorrect {
+                AudioManager.shared.playSuccessSound()
+            }
+        } else {
+            HapticFeedback.error()
+        }
+        
+        showingFeedback = true
+    }
+    
+    private func nextQuestion() {
+        if cadenceGame.isLastQuestion {
+            cadenceGame.endQuiz()
+            viewState = .results
+        } else {
+            cadenceGame.advanceToNextQuestion()
+            resetForNewQuestion()
+        }
+    }
+    
+    // MARK: - Helpers
+    
+    private func romanNumeral(for index: Int, cadenceType: CadenceType) -> String {
+        switch cadenceType {
+        case .major, .tritoneSubstitution, .backdoor:
+            switch index {
+            case 0: return "ii"
+            case 1: return cadenceType == .tritoneSubstitution ? "SubV" : "V"
+            case 2: return "I"
+            default: return ""
+            }
+        case .minor:
+            switch index {
+            case 0: return "ii°"
+            case 1: return "V"
+            case 2: return "i"
+            default: return ""
+            }
+        }
+    }
+}
+
+// MARK: - Array Safe Subscript Extension
+
+extension Array {
+    subscript(safe index: Int) -> Element? {
+        return indices.contains(index) ? self[index] : nil
     }
 }
