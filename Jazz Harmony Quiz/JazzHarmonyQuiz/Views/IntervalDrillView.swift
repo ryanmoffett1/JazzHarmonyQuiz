@@ -451,7 +451,8 @@ struct IntervalActiveView: View {
                         selectedNote = notes.first
                         IntervalDrillHaptics.light()
                     }
-                )
+                ),
+                allowMultipleSelection: false
             )
             .frame(height: 160)
             .disabled(hasSubmitted)
