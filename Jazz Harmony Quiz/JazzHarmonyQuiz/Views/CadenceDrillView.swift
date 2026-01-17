@@ -994,7 +994,14 @@ struct ActiveCadenceQuizView: View {
     }
 
     private func chordDisplayCard(chord: Chord, index: Int, isActive: Bool, isCompleted: Bool) -> some View {
-        VStack(spacing: 8) {
+        let cadenceType = cadenceGame.currentQuestion?.cadence.cadenceType ?? .major
+        VStack(spacing: 4) {
+            // Roman numeral
+            Text(romanNumeralForBuildMode(for: index, cadenceType: cadenceType))
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            // Chord name
             Text(chord.displayName)
                 .font(.headline)
                 .foregroundColor(isActive ? .white : settings.primaryText(for: colorScheme))
@@ -1017,6 +1024,49 @@ struct ActiveCadenceQuizView: View {
         .background(isActive ? Color.blue : Color(.systemGray6))
         .cornerRadius(8)
     }
+
+    private func romanNumeralForBuildMode(for index: Int, cadenceType: CadenceType) -> String {
+        switch cadenceType {
+        case .major:
+            switch index {
+            case 0: return "ii"
+            case 1: return "V"
+            case 2: return "I"
+            default: return ""
+            }
+        case .minor:
+            switch index {
+            case 0: return "ii°"
+            case 1: return "V"
+            case 2: return "i"
+            default: return ""
+            }
+        case .tritoneSubstitution:
+            switch index {
+            case 0: return "ii"
+            case 1: return "SubV"
+            case 2: return "I"
+            default: return ""
+            }
+        case .backdoor:
+            switch index {
+            case 0: return "iv"
+            case 1: return "bVII"
+            case 2: return "I"
+            default: return ""
+            }
+        case .birdChanges:
+            switch index {
+            case 0: return "iii"
+            case 1: return "VI"
+            case 2: return "ii"
+            case 3: return "V"
+            case 4: return "I"
+            default: return ""
+            }
+        }
+    }
+
 
     private func clearSelection() {
         selectedNotes.removeAll()
@@ -1974,7 +2024,7 @@ struct ActiveChordIdentificationView: View {
     
     private func romanNumeral(for index: Int, cadenceType: CadenceType) -> String {
         switch cadenceType {
-        case .major, .tritoneSubstitution, .backdoor, .birdChanges:
+        case .major, .tritoneSubstitution, .backdoor:
             switch index {
             case 0: return "ii"
             case 1: return cadenceType == .tritoneSubstitution ? "SubV" : "V"
