@@ -111,20 +111,60 @@ struct IntervalDrillView: View {
             }
         }
         
-        // Haptic feedback
+        // Haptic feedback and audio
         if isCorrect {
             IntervalDrillHaptics.success()
             if settings.playChordOnCorrect {
-                AudioManager.shared.playSuccessSound()
+                // Play the correct interval to reinforce the sound
+                AudioManager.shared.playInterval(question.interval)
             }
         } else {
             IntervalDrillHaptics.error()
             if settings.playChordOnCorrect {
-                AudioManager.shared.playErrorSound()
+                // Play what the user entered first, then the correct answer
+                playIncorrectFeedback(question: question)
             }
         }
         
         showingFeedback = true
+    }
+    
+    /// Play audio feedback for incorrect answers
+    /// First plays what the user entered, then plays the correct interval
+    private func playIncorrectFeedback(question: IntervalQuestion) {
+        switch question.questionType {
+        case .buildInterval:
+            // User selected a wrong note - play that interval first
+            if let userNote = selectedNote {
+                let userInterval = Interval(
+                    rootNote: question.interval.rootNote,
+                    intervalType: IntervalDatabase.shared.interval(forSemitones: abs(userNote.midiNumber - question.interval.rootNote.midiNumber)) ?? question.interval.intervalType,
+                    direction: question.interval.direction
+                )
+                AudioManager.shared.playInterval(userInterval)
+                
+                // Then play the correct interval after a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    AudioManager.shared.playInterval(question.interval)
+                }
+            }
+            
+        case .identifyInterval, .auralIdentify:
+            // User selected wrong interval type - play that interval from the same root
+            if let userIntervalType = selectedInterval {
+                let userInterval = Interval(
+                    rootNote: question.interval.rootNote,
+                    intervalType: userIntervalType,
+                    direction: question.interval.direction
+                )
+                AudioManager.shared.playInterval(userInterval)
+                
+                // Then play the correct interval after a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    AudioManager.shared.playInterval(question.interval)
+                }
+            }
+        }
     }
     
     private func nextQuestion() {
