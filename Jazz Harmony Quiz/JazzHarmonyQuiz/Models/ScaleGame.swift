@@ -334,6 +334,7 @@ class ScaleGame: ObservableObject {
         case .beginner: basePoints = 8
         case .intermediate: basePoints = 12
         case .advanced: basePoints = 18
+        case .custom: basePoints = 15  // Variable difficulty
         }
         
         // Scale by number of questions (more questions = more potential change)

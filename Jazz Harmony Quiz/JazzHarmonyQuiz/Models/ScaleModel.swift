@@ -54,6 +54,7 @@ struct ScaleType: Identifiable, Hashable, Codable {
         case beginner = "Beginner"
         case intermediate = "Intermediate"
         case advanced = "Advanced"
+        case custom = "Custom"
         
         var description: String {
             switch self {
@@ -63,6 +64,8 @@ struct ScaleType: Identifiable, Hashable, Codable {
                 return "Modes, Blues, Melodic Minor"
             case .advanced:
                 return "All scale types"
+            case .custom:
+                return "Choose your own scale types"
             }
         }
     }

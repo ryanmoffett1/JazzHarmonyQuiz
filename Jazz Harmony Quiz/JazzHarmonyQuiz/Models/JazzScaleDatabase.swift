@@ -268,8 +268,13 @@ class JazzScaleDatabase {
     }
     
     func getScales(upToDifficulty difficulty: ScaleType.ScaleDifficulty) -> [ScaleType] {
+        // Custom difficulty returns all scales (filtering is done by scaleSymbols)
+        if difficulty == .custom {
+            return scaleTypes
+        }
+        
         let difficultyOrder: [ScaleType.ScaleDifficulty] = [.beginner, .intermediate, .advanced]
-        guard let maxIndex = difficultyOrder.firstIndex(of: difficulty) else { return [] }
+        guard let maxIndex = difficultyOrder.firstIndex(of: difficulty) else { return scaleTypes }
         let allowedDifficulties = Set(difficultyOrder[0...maxIndex])
         return scaleTypes.filter { allowedDifficulties.contains($0.difficulty) }
     }

@@ -196,8 +196,8 @@ struct ScaleSetupView: View {
                             .foregroundColor(.secondary)
                     }
                     .onChange(of: selectedDifficulty) { _, newValue in
-                        // Clear scale type filter when changing difficulty (unless Advanced)
-                        if newValue != .advanced {
+                        // Clear scale type filter when changing difficulty (unless Custom)
+                        if newValue != .custom {
                             selectedScaleSymbols.removeAll()
                         }
                     }
@@ -254,8 +254,8 @@ struct ScaleSetupView: View {
                         }
                     }
                     
-                    // Scale Type Filter (only for Advanced difficulty)
-                    if selectedDifficulty == .advanced {
+                    // Scale Type Filter (only for Custom difficulty)
+                    if selectedDifficulty == .custom {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
                                 Text("Scale Types Filter")
@@ -583,57 +583,58 @@ struct ActiveScaleQuizView: View {
         let sortedNotes = sortNotesForScale(userAnswerNotes, rootPitchClass: rootPitchClass)
         let correctPitchClasses = Set(question.correctNotes.map { $0.pitchClass })
         
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(Array(sortedNotes.enumerated()), id: \.offset) { index, note in
-                    let isNoteCorrect = correctPitchClasses.contains(note.pitchClass)
-                    let isHighlighted = highlightedNoteIndex == index
-                    
-                    // Check if this is an octave duplicate (higher octave of same pitch class)
-                    let isOctaveNote = note.midiNumber >= 72 && sortedNotes.contains(where: { 
-                        $0.pitchClass == note.pitchClass && $0.midiNumber < note.midiNumber 
-                    })
-                    
-                    VStack(spacing: 2) {
-                        Text(displayNoteName(note, for: question.scale))
-                            .font(.headline)
-                        if isOctaveNote {
-                            Text("8va")
-                                .font(.caption2)
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, isOctaveNote ? 6 : 8)
-                    .background(noteBackgroundColor(isCorrect: isNoteCorrect, isHighlighted: isHighlighted, isAllCorrect: isCorrect))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                    .scaleEffect(isHighlighted ? 1.15 : 1.0)
-                    .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
-                }
+        // Use FlowLayout for wrapping on smaller screens
+        FlowLayout(spacing: 6) {
+            ForEach(Array(sortedNotes.enumerated()), id: \.offset) { index, note in
+                let isNoteCorrect = correctPitchClasses.contains(note.pitchClass)
+                let isHighlighted = highlightedNoteIndex == index
                 
-                // Ghosted 8va note at the end (for playback visualization)
-                // Only show if user entered the correct number of notes (complete scale)
-                if sortedNotes.count == question.correctNotes.count {
-                    let isOctaveHighlighted = highlightedNoteIndex == sortedNotes.count
-                    let rootNote = sortedNotes.first ?? question.scale.root
-                    
-                    VStack(spacing: 2) {
-                        Text(displayNoteName(rootNote, for: question.scale))
-                            .font(.headline)
+                // Check if this is an octave duplicate (higher octave of same pitch class)
+                let isOctaveNote = note.midiNumber >= 72 && sortedNotes.contains(where: { 
+                    $0.pitchClass == note.pitchClass && $0.midiNumber < note.midiNumber 
+                })
+                
+                VStack(spacing: 1) {
+                    Text(displayNoteName(note, for: question.scale))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    if isOctaveNote {
                         Text("8va")
                             .font(.caption2)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(isOctaveHighlighted ? Color.blue : Color.gray.opacity(0.3))
-                    .foregroundColor(isOctaveHighlighted ? .white : .white.opacity(0.5))
-                    .cornerRadius(8)
-                    .scaleEffect(isOctaveHighlighted ? 1.15 : 1.0)
-                    .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
                 }
+                .padding(.horizontal, 10)
+                .padding(.vertical, isOctaveNote ? 4 : 6)
+                .background(noteBackgroundColor(isCorrect: isNoteCorrect, isHighlighted: isHighlighted, isAllCorrect: isCorrect))
+                .foregroundColor(.white)
+                .cornerRadius(6)
+                .scaleEffect(isHighlighted ? 1.1 : 1.0)
+                .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
             }
-            .padding(.horizontal)
+            
+            // Ghosted 8va note at the end (for playback visualization)
+            // Only show if user entered the correct number of notes (complete scale)
+            if sortedNotes.count == question.correctNotes.count {
+                let isOctaveHighlighted = highlightedNoteIndex == sortedNotes.count
+                let rootNote = sortedNotes.first ?? question.scale.root
+                
+                VStack(spacing: 1) {
+                    Text(displayNoteName(rootNote, for: question.scale))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    Text("8va")
+                        .font(.caption2)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(isOctaveHighlighted ? Color.blue : Color.gray.opacity(0.3))
+                .foregroundColor(isOctaveHighlighted ? .white : .white.opacity(0.5))
+                .cornerRadius(6)
+                .scaleEffect(isOctaveHighlighted ? 1.1 : 1.0)
+                .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
+            }
         }
+        .padding(.horizontal)
         
         // Show missing notes
         if !isCorrect && feedbackPhase == .showingUserAnswer {
@@ -670,42 +671,43 @@ struct ActiveScaleQuizView: View {
         let rootPitchClass = question.scale.root.pitchClass
         let sortedNotes = sortNotesForScale(question.correctNotes, rootPitchClass: rootPitchClass)
         
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                // Display the scale notes (indices 0 to count-1)
-                ForEach(Array(sortedNotes.enumerated()), id: \.offset) { index, note in
-                    let isHighlighted = highlightedNoteIndex == index
-                    
-                    Text(displayNoteName(note, for: question.scale))
-                        .font(.headline)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(isHighlighted ? Color.green : Color.green.opacity(0.7))
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                        .scaleEffect(isHighlighted ? 1.15 : 1.0)
-                        .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
-                }
+        // Use FlowLayout for wrapping on smaller screens
+        FlowLayout(spacing: 6) {
+            // Display the scale notes (indices 0 to count-1)
+            ForEach(Array(sortedNotes.enumerated()), id: \.offset) { index, note in
+                let isHighlighted = highlightedNoteIndex == index
                 
-                // Ghosted 8va note at the end (index = sortedNotes.count)
-                let isOctaveHighlighted = highlightedNoteIndex == sortedNotes.count
-                
-                VStack(spacing: 2) {
-                    Text(displayNoteName(sortedNotes.first ?? question.scale.root, for: question.scale))
-                        .font(.headline)
-                    Text("8va")
-                        .font(.caption2)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(isOctaveHighlighted ? Color.green : Color.gray.opacity(0.3))
-                .foregroundColor(isOctaveHighlighted ? .white : .white.opacity(0.5))
-                .cornerRadius(8)
-                .scaleEffect(isOctaveHighlighted ? 1.15 : 1.0)
-                .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
+                Text(displayNoteName(note, for: question.scale))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(isHighlighted ? Color.green : Color.green.opacity(0.7))
+                    .foregroundColor(.white)
+                    .cornerRadius(6)
+                    .scaleEffect(isHighlighted ? 1.1 : 1.0)
+                    .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
             }
-            .padding(.horizontal)
+            
+            // Ghosted 8va note at the end (index = sortedNotes.count)
+            let isOctaveHighlighted = highlightedNoteIndex == sortedNotes.count
+            
+            VStack(spacing: 1) {
+                Text(displayNoteName(sortedNotes.first ?? question.scale.root, for: question.scale))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                Text("8va")
+                    .font(.caption2)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(isOctaveHighlighted ? Color.green : Color.gray.opacity(0.3))
+            .foregroundColor(isOctaveHighlighted ? .white : .white.opacity(0.5))
+            .cornerRadius(6)
+            .scaleEffect(isOctaveHighlighted ? 1.1 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
         }
+        .padding(.horizontal)
     }
     
     @ViewBuilder
@@ -1406,6 +1408,7 @@ struct ScaleLeaderboardRow: View {
         case .beginner: return .green
         case .intermediate: return .blue
         case .advanced: return .orange
+        case .custom: return .purple
         }
     }
     
