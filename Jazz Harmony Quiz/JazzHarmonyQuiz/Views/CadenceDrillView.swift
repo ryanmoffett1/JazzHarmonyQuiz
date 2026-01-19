@@ -1735,6 +1735,14 @@ struct ActiveChordIdentificationView: View {
     @State private var chordSelections: [ChordSelection] = [ChordSelection(), ChordSelection(), ChordSelection(), ChordSelection(), ChordSelection()]
     @State private var showingFeedback = false
     @State private var feedbackResults: [Bool] = []
+    @State private var feedbackPhase: FeedbackPhase = .showingUserAnswer
+    @State private var highlightedChordIndex: Int? = nil
+    @State private var showContinueButton = false
+    
+    enum FeedbackPhase {
+        case showingUserAnswer
+        case showingCorrectAnswer
+    }
     
     private var question: CadenceQuestion? {
         cadenceGame.currentQuestion
@@ -1884,34 +1892,60 @@ struct ActiveChordIdentificationView: View {
     
     @ViewBuilder
     private func feedbackView() -> some View {
-        VStack(spacing: 16) {
-            let allCorrect = feedbackResults.allSatisfy { $0 }
-            
-            Image(systemName: allCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.system(size: 60))
-                .foregroundColor(allCorrect ? .green : .red)
-            
-            Text(allCorrect ? "Correct!" : "Not quite right")
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            // Show correct answers if wrong
-            if !allCorrect {
-                VStack(spacing: 8) {
-                    Text("Correct progression:")
-                        .font(.subheadline)
+        let allCorrect = feedbackResults.allSatisfy { $0 }
+        
+        VStack(spacing: 20) {
+            if allCorrect {
+                // Correct answer - simple display
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 60))
+                    .foregroundColor(.green)
+                
+                Text("Correct!")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                
+                // Show the progression with highlighting
+                userAnswerDisplay(allCorrect: true)
+                
+            } else {
+                // Wrong answer - two phase display
+                if feedbackPhase == .showingUserAnswer {
+                    // Phase 1: Show user's answer
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 50))
+                        .foregroundColor(.red)
+                    
+                    Text("Your answer:")
+                        .font(.headline)
                         .foregroundColor(.secondary)
                     
-                    HStack(spacing: 16) {
-                        ForEach(expectedChords.indices, id: \.self) { index in
-                            Text(expectedChords[index].displayName)
+                    userAnswerDisplay(allCorrect: false)
+                    
+                    if showContinueButton {
+                        Button(action: showCorrectAnswer) {
+                            Text("See Correct Answer")
                                 .font(.headline)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.green.opacity(0.2))
-                                .cornerRadius(8)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Color.blue)
+                                .cornerRadius(10)
                         }
+                        .padding(.top, 8)
                     }
+                    
+                } else {
+                    // Phase 2: Show correct answer
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 50))
+                        .foregroundColor(.green)
+                    
+                    Text("Correct answer:")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
+                    correctAnswerDisplay()
                 }
             }
         }
@@ -1919,17 +1953,111 @@ struct ActiveChordIdentificationView: View {
     }
     
     @ViewBuilder
+    private func userAnswerDisplay(allCorrect: Bool) -> some View {
+        HStack(spacing: 12) {
+            ForEach(expectedChords.indices, id: \.self) { index in
+                let isHighlighted = highlightedChordIndex == index
+                let isCorrect = feedbackResults[safe: index] ?? false
+                let selection = chordSelections[safe: index]
+                
+                VStack(spacing: 4) {
+                    if let q = question {
+                        Text(romanNumeral(for: index, cadenceType: q.cadence.cadenceType))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Text(selection?.displayName ?? "—")
+                        .font(.system(size: 16, weight: .semibold))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(chordBackgroundColor(isHighlighted: isHighlighted, isCorrect: isCorrect, showResult: highlightedChordIndex == nil || highlightedChordIndex! >= index))
+                        .foregroundColor(chordForegroundColor(isHighlighted: isHighlighted, isCorrect: isCorrect, showResult: highlightedChordIndex == nil || highlightedChordIndex! >= index))
+                        .cornerRadius(8)
+                        .scaleEffect(isHighlighted ? 1.1 : 1.0)
+                        .animation(.easeInOut(duration: 0.2), value: isHighlighted)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func correctAnswerDisplay() -> some View {
+        HStack(spacing: 12) {
+            ForEach(expectedChords.indices, id: \.self) { index in
+                let isHighlighted = highlightedChordIndex == index
+                
+                VStack(spacing: 4) {
+                    if let q = question {
+                        Text(romanNumeral(for: index, cadenceType: q.cadence.cadenceType))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Text(expectedChords[index].displayName)
+                        .font(.system(size: 16, weight: .semibold))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(isHighlighted ? Color.green : Color.green.opacity(0.2))
+                        .foregroundColor(isHighlighted ? .white : .primary)
+                        .cornerRadius(8)
+                        .scaleEffect(isHighlighted ? 1.1 : 1.0)
+                        .animation(.easeInOut(duration: 0.2), value: isHighlighted)
+                }
+            }
+        }
+    }
+    
+    private func chordBackgroundColor(isHighlighted: Bool, isCorrect: Bool, showResult: Bool) -> Color {
+        if isHighlighted {
+            return isCorrect ? Color.green : Color.red
+        }
+        if showResult {
+            return isCorrect ? Color.green.opacity(0.2) : Color.red.opacity(0.2)
+        }
+        return Color(.systemGray5)
+    }
+    
+    private func chordForegroundColor(isHighlighted: Bool, isCorrect: Bool, showResult: Bool) -> Color {
+        if isHighlighted {
+            return .white
+        }
+        if showResult {
+            return isCorrect ? .green : .red
+        }
+        return .primary
+    }
+    
+    private func showCorrectAnswer() {
+        feedbackPhase = .showingCorrectAnswer
+        highlightedChordIndex = nil
+        
+        // Play correct progression with highlighting
+        playCorrectProgressionWithHighlight()
+    }
+    
+    @ViewBuilder
     private func actionButtons() -> some View {
+        let allCorrect = feedbackResults.allSatisfy { $0 }
+        
         HStack(spacing: 16) {
             if showingFeedback {
-                Button(action: nextQuestion) {
-                    Text(cadenceGame.isLastQuestion ? "Finish" : "Next")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(12)
+                // Only show Next button when:
+                // - Answer was correct, OR
+                // - We're in phase 2 (showing correct answer)
+                if allCorrect || feedbackPhase == .showingCorrectAnswer {
+                    Button(action: nextQuestion) {
+                        Text(cadenceGame.isLastQuestion ? "Finish" : "Next")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(12)
+                    }
+                } else {
+                    // Phase 1 with wrong answer - show empty space (continue button is in feedbackView)
+                    Spacer()
                 }
             } else {
                 // Clear button
@@ -1966,6 +2094,9 @@ struct ActiveChordIdentificationView: View {
         chordSelections = [ChordSelection(), ChordSelection(), ChordSelection(), ChordSelection(), ChordSelection()]
         showingFeedback = false
         feedbackResults = []
+        feedbackPhase = .showingUserAnswer
+        highlightedChordIndex = nil
+        showContinueButton = false
     }
     
     private func clearCurrentChord() {
@@ -1998,44 +2129,90 @@ struct ActiveChordIdentificationView: View {
             isCorrect: allCorrect
         )
         
-        // Haptic feedback and audio
+        // Reset feedback state
+        feedbackPhase = .showingUserAnswer
+        highlightedChordIndex = nil
+        showContinueButton = false
+        showingFeedback = true
+        
+        // Haptic feedback
         if allCorrect {
             HapticFeedback.success()
-            // Play the correct progression
-            playUserProgression()
         } else {
             HapticFeedback.error()
-            // Play user's wrong answer first, then correct answer
-            playUserProgression()
-            
-            // After a pause, play the correct progression
-            let userProgressionDuration = Double(expectedChords.count) * 0.8 + 1.0
-            DispatchQueue.main.asyncAfter(deadline: .now() + userProgressionDuration) {
-                self.playCorrectProgression()
-            }
         }
         
-        showingFeedback = true
+        // Play user's progression with highlighting
+        playUserProgressionWithHighlight(allCorrect: allCorrect)
     }
     
-    private func playUserProgression() {
+    private func playUserProgressionWithHighlight(allCorrect: Bool) {
+        let chordCount = expectedChords.count
+        let tempoMS = 800
+        
         // Convert user's chord selections to notes
-        let userChords: [[Note]] = chordSelections.prefix(expectedChords.count).compactMap { selection in
+        let userChords: [[Note]] = chordSelections.prefix(chordCount).compactMap { selection in
             selection.toNotes()
         }
         
-        if !userChords.isEmpty {
-            AudioManager.shared.playProgression(userChords, tempoMS: 800)
+        // Play and highlight each chord
+        for index in 0..<chordCount {
+            let delay = Double(index) * Double(tempoMS) / 1000.0
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    self.highlightedChordIndex = index
+                }
+                
+                // Play the chord
+                if index < userChords.count {
+                    AudioManager.shared.playChord(userChords[index], duration: Double(tempoMS) / 1000.0 * 0.9)
+                }
+            }
+        }
+        
+        // After all chords played, clear highlight and show continue button (if wrong)
+        let totalDuration = Double(chordCount) * Double(tempoMS) / 1000.0 + 0.3
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
+            withAnimation {
+                self.highlightedChordIndex = nil
+                if !allCorrect {
+                    self.showContinueButton = true
+                }
+            }
         }
     }
     
-    private func playCorrectProgression() {
-        // Play the correct chord progression
+    private func playCorrectProgressionWithHighlight() {
+        let chordCount = expectedChords.count
+        let tempoMS = 800
+        
+        // Get correct chord notes
         let correctChords: [[Note]] = expectedChords.map { chord in
             chord.chordTones
         }
         
-        AudioManager.shared.playProgression(correctChords, tempoMS: 800)
+        // Play and highlight each chord
+        for index in 0..<chordCount {
+            let delay = Double(index) * Double(tempoMS) / 1000.0
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    self.highlightedChordIndex = index
+                }
+                
+                // Play the chord
+                AudioManager.shared.playChord(correctChords[index], duration: Double(tempoMS) / 1000.0 * 0.9)
+            }
+        }
+        
+        // After all chords played, clear highlight
+        let totalDuration = Double(chordCount) * Double(tempoMS) / 1000.0 + 0.3
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
+            withAnimation {
+                self.highlightedChordIndex = nil
+            }
+        }
     }
     
     private func nextQuestion() {
