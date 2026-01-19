@@ -22,7 +22,6 @@
 		94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */; };
 		94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */; };
 		94DFCCE12F13E0DD00FBC0C2 /* JazzScaleDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */; };
-		94DFCCE32F13E0F400FBC0C2 /* PlayerStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCE22F13E0F400FBC0C2 /* PlayerStats.swift */; };
 		94DFCCE52F13E13F00FBC0C2 /* ScaleDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCE42F13E13F00FBC0C2 /* ScaleDrillView.swift */; };
 		94E4E7932F149D6E009754EE /* IntervalDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E4E7922F149D6E009754EE /* IntervalDatabase.swift */; };
 		94E4E7952F149D7E009754EE /* IntervalGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E4E7942F149D7E009754EE /* IntervalGame.swift */; };
@@ -56,7 +55,6 @@
 		94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
 		94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleModel.swift; sourceTree = "<group>"; };
 		94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzScaleDatabase.swift; sourceTree = "<group>"; };
-		94DFCCE22F13E0F400FBC0C2 /* PlayerStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerStats.swift; sourceTree = "<group>"; };
 		94DFCCE42F13E13F00FBC0C2 /* ScaleDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillView.swift; sourceTree = "<group>"; };
 		94E4E7922F149D6E009754EE /* IntervalDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDatabase.swift; sourceTree = "<group>"; };
 		94E4E7942F149D7E009754EE /* IntervalGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalGame.swift; sourceTree = "<group>"; };
@@ -144,7 +142,6 @@
 				A1234567890ABCDEF021 /* JazzChordDatabase.swift */,
 				94DFCCE02F13E0DD00FBC0C2 /* JazzScaleDatabase.swift */,
 				9434133A2F1EDD1C009235D1 /* PlayerProfile.swift */,
-				94DFCCE22F13E0F400FBC0C2 /* PlayerStats.swift */,
 				94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */,
 				94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */,
 				94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */,
@@ -255,7 +252,6 @@
 				9434133D2F1EDD74009235D1 /* PlayerProfileView.swift in Sources */,
 				A1234567890ABCDEF010 /* ChordModel.swift in Sources */,
 				94DFCCE52F13E13F00FBC0C2 /* ScaleDrillView.swift in Sources */,
-				94DFCCE32F13E0F400FBC0C2 /* PlayerStats.swift in Sources */,
 				94629FCC2F1BD9CB0029B7F7 /* QuizGame.swift in Sources */,
 				9434133B2F1EDD1D009235D1 /* PlayerProfile.swift in Sources */,
 				A1234567890ABCDEF012 /* PianoKeyboard.swift in Sources */,

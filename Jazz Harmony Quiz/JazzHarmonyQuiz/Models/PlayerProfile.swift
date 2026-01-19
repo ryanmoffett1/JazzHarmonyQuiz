@@ -102,34 +102,86 @@ enum PracticeMode: String, CaseIterable, Codable {
     }
 }
 
-// MARK: - Player Profile
+// MARK: - Player Profile (Consolidated from PlayerStats)
 
-/// The player's RPG-style profile with stats, avatar, and progression
+/// The player's unified profile with RPG stats, progression, achievements, and streaks
 class PlayerProfile: ObservableObject {
     static let shared = PlayerProfile()
     
-    // MARK: - Published Properties
+    // MARK: - Profile Properties
     
     @Published var playerName: String = "Jazz Student"
     @Published var avatar: PlayerAvatar = .piano
-    @Published var totalXP: Int = 1000  // Global XP (same as old rating)
-    @Published var peakXP: Int = 1000
     
-    // Per-mode statistics for calculating stats
+    // MARK: - XP/Rating Properties (formerly in PlayerStats)
+    
+    @Published var currentRating: Int = 1000  // Start at "Jam Session Ready"
+    @Published var peakRating: Int = 1000
+    
+    // MARK: - Streak Properties
+    
+    @Published var currentStreak: Int = 0
+    @Published var longestStreak: Int = 0
+    @Published var lastPracticeDate: Date?
+    
+    // MARK: - Totals Across All Modes
+    
+    @Published var totalQuestionsAnswered: Int = 0
+    @Published var totalCorrectAnswers: Int = 0
+    @Published var totalPracticeTime: TimeInterval = 0
+    
+    // MARK: - Achievement Properties
+    
+    @Published var unlockedAchievements: [Achievement] = []
+    @Published var newlyUnlockedAchievements: [Achievement] = []
+    
+    // MARK: - Daily Challenge Properties
+    
+    @Published var dailyChallengeLastCompleted: Date?
+    @Published var dailyChallengeStreak: Int = 0
+    
+    // MARK: - Perfect Score Properties
+    
+    @Published var perfectScoreStreak: Int = 0
+    
+    // MARK: - Per-Mode Statistics
+    
     @Published var modeStats: [PracticeMode: ModeStatistics] = [:]
+    
+    // MARK: - Persistence Key
+    
+    private let profileKey = "JazzHarmonyPlayerProfileV2"
     
     // MARK: - Computed Properties
     
-    var currentLevel: Rank {
-        return Rank.forRating(totalXP)
+    var currentRank: Rank {
+        return Rank.forRating(currentRating)
     }
     
-    var xpToNextLevel: Int? {
-        guard let nextRank = Rank.nextRank(after: currentLevel) else { return nil }
-        return nextRank.minRating - totalXP
+    var pointsToNextRank: Int? {
+        guard let nextRank = Rank.nextRank(after: currentRank) else { return nil }
+        return nextRank.minRating - currentRating
     }
     
-    /// Calculate a specific stat value (0-100 scale)
+    var overallAccuracy: Double {
+        guard totalQuestionsAnswered > 0 else { return 0 }
+        return Double(totalCorrectAnswers) / Double(totalQuestionsAnswered)
+    }
+    
+    var isDailyChallengeCompletedToday: Bool {
+        guard let lastCompleted = dailyChallengeLastCompleted else { return false }
+        return Calendar.current.isDateInToday(lastCompleted)
+    }
+    
+    // Aliases for compatibility
+    var totalXP: Int { currentRating }
+    var peakXP: Int { peakRating }
+    var currentLevel: Rank { currentRank }
+    
+    var xpToNextLevel: Int? { pointsToNextRank }
+    
+    // MARK: - Stat Calculations (RPG Stats)
+    
     func statValue(for stat: JazzStat) -> Int {
         switch stat {
         case .harmony:
@@ -147,7 +199,6 @@ class PlayerProfile: ObservableObject {
         }
     }
     
-    /// Get all stat values as a dictionary
     var allStats: [JazzStat: Int] {
         var stats: [JazzStat: Int] = [:]
         for stat in JazzStat.allCases {
@@ -156,70 +207,78 @@ class PlayerProfile: ObservableObject {
         return stats
     }
     
-    /// Overall "power level" - average of all stats
     var overallPower: Int {
         let total = JazzStat.allCases.reduce(0) { $0 + statValue(for: $1) }
         return total / JazzStat.allCases.count
     }
     
-    // MARK: - Private Stat Calculations
-    
     private func calculateModeStat(for mode: PracticeMode) -> Int {
         guard let stats = modeStats[mode], stats.totalQuestions > 0 else { return 10 }
-        
-        // Base stat on accuracy (0-100), weighted by experience
         let accuracy = Double(stats.correctAnswers) / Double(stats.totalQuestions)
-        let experienceBonus = min(Double(stats.totalQuestions) / 500.0, 1.0) * 20  // Up to +20 for experience
-        
+        let experienceBonus = min(Double(stats.totalQuestions) / 500.0, 1.0) * 20
         return min(100, Int(accuracy * 80) + Int(experienceBonus))
     }
     
     private func calculateSpeedStat() -> Int {
-        // Average response time across all modes
-        // Lower time = higher stat
         var totalTime: TimeInterval = 0
         var totalQuestions = 0
-        
         for (_, stats) in modeStats {
             totalTime += stats.totalTime
             totalQuestions += stats.totalQuestions
         }
-        
         guard totalQuestions > 0 else { return 10 }
-        
         let avgTime = totalTime / Double(totalQuestions)
-        // 2 seconds = 100, 10 seconds = 20, scale between
-        let speedScore = max(20, min(100, Int(120 - avgTime * 10)))
-        return speedScore
+        return max(20, min(100, Int(120 - avgTime * 10)))
     }
     
     private func calculatePrecisionStat() -> Int {
-        // Overall accuracy across all modes
-        var totalCorrect = 0
-        var totalQuestions = 0
-        
-        for (_, stats) in modeStats {
-            totalCorrect += stats.correctAnswers
-            totalQuestions += stats.totalQuestions
-        }
-        
-        guard totalQuestions > 0 else { return 10 }
-        
-        let accuracy = Double(totalCorrect) / Double(totalQuestions)
-        return min(100, Int(accuracy * 100))
+        guard totalQuestionsAnswered > 0 else { return 10 }
+        return min(100, Int(overallAccuracy * 100))
     }
     
-    // MARK: - XP Management
+    // MARK: - Initialization
+    
+    private init() {
+        loadFromUserDefaults()
+    }
+    
+    // MARK: - Rating/XP Management
+    
+    @discardableResult
+    func applyRatingChange(_ change: Int) -> (newRating: Int, didRankUp: Bool, previousRank: Rank) {
+        let previousRank = currentRank
+        currentRating = max(0, currentRating + change)
+        peakRating = max(peakRating, currentRating)
+        
+        let didRankUp = currentRank.title != previousRank.title && change > 0
+        
+        saveToUserDefaults()
+        return (currentRating, didRankUp, previousRank)
+    }
     
     func addXP(_ amount: Int, from mode: PracticeMode) {
-        totalXP = max(0, totalXP + amount)
-        peakXP = max(peakXP, totalXP)
+        _ = applyRatingChange(amount)
+    }
+    
+    // MARK: - Practice Recording
+    
+    func recordPractice(questionsAnswered: Int, correctAnswers: Int, time: TimeInterval, wasPerfectScore: Bool) {
+        totalQuestionsAnswered += questionsAnswered
+        totalCorrectAnswers += correctAnswers
+        totalPracticeTime += time
+        
+        if wasPerfectScore {
+            perfectScoreStreak += 1
+        } else {
+            perfectScoreStreak = 0
+        }
+        
+        checkAchievements(wasPerfectScore: wasPerfectScore)
         saveToUserDefaults()
     }
     
-    // MARK: - Mode Stats Recording
-    
     func recordPractice(mode: PracticeMode, questions: Int, correct: Int, time: TimeInterval) {
+        // Update per-mode stats
         var stats = modeStats[mode] ?? ModeStatistics()
         stats.totalQuestions += questions
         stats.correctAnswers += correct
@@ -227,23 +286,140 @@ class PlayerProfile: ObservableObject {
         stats.sessionsCompleted += 1
         stats.lastPracticeDate = Date()
         modeStats[mode] = stats
+        
+        // Also update global totals
+        totalQuestionsAnswered += questions
+        totalCorrectAnswers += correct
+        totalPracticeTime += time
+        
+        let wasPerfect = questions > 0 && correct == questions
+        if wasPerfect {
+            perfectScoreStreak += 1
+        } else {
+            perfectScoreStreak = 0
+        }
+        
+        checkAchievements(wasPerfectScore: wasPerfect)
         saveToUserDefaults()
     }
     
-    // MARK: - Persistence
+    // MARK: - Streak Management
     
-    private let profileKey = "JazzHarmonyPlayerProfile"
-    
-    private init() {
-        loadFromUserDefaults()
+    func updateStreak() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        if let lastDate = lastPracticeDate {
+            let lastDay = calendar.startOfDay(for: lastDate)
+            let daysDiff = calendar.dateComponents([.day], from: lastDay, to: today).day ?? 0
+            
+            if daysDiff == 1 {
+                currentStreak += 1
+            } else if daysDiff > 1 {
+                currentStreak = 1
+            }
+        } else {
+            currentStreak = 1
+        }
+        
+        longestStreak = max(longestStreak, currentStreak)
+        lastPracticeDate = Date()
+        
+        saveToUserDefaults()
     }
+    
+    func completeDailyChallenge() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        if let lastCompleted = dailyChallengeLastCompleted {
+            let lastDay = calendar.startOfDay(for: lastCompleted)
+            let daysDiff = calendar.dateComponents([.day], from: lastDay, to: today).day ?? 0
+            
+            if daysDiff == 1 {
+                dailyChallengeStreak += 1
+            } else if daysDiff > 1 {
+                dailyChallengeStreak = 1
+            }
+        } else {
+            dailyChallengeStreak = 1
+        }
+        
+        dailyChallengeLastCompleted = Date()
+        saveToUserDefaults()
+    }
+    
+    // MARK: - Achievement System
+    
+    func hasAchievement(_ type: AchievementType) -> Bool {
+        return unlockedAchievements.contains { $0.type == type }
+    }
+    
+    func unlockAchievement(_ type: AchievementType) {
+        guard !hasAchievement(type) else { return }
+        let achievement = Achievement(type: type, unlockedDate: Date())
+        unlockedAchievements.append(achievement)
+        newlyUnlockedAchievements.append(achievement)
+        saveToUserDefaults()
+    }
+    
+    func clearNewAchievements() {
+        newlyUnlockedAchievements.removeAll()
+    }
+    
+    private func checkAchievements(wasPerfectScore: Bool) {
+        // Question milestones
+        if totalQuestionsAnswered >= 100 { unlockAchievement(.hundredChords) }
+        if totalQuestionsAnswered >= 500 { unlockAchievement(.fiveHundredChords) }
+        if totalQuestionsAnswered >= 1000 { unlockAchievement(.thousandChords) }
+        
+        // Perfect score tracking
+        if wasPerfectScore {
+            if !hasAchievement(.firstPerfect) { unlockAchievement(.firstPerfect) }
+            if perfectScoreStreak >= 3 { unlockAchievement(.perfectStreak3) }
+            if perfectScoreStreak >= 5 { unlockAchievement(.perfectStreak5) }
+        }
+        
+        // Accuracy achievement
+        if totalQuestionsAnswered >= 50 && overallAccuracy >= 0.9 {
+            unlockAchievement(.accuracy90)
+        }
+        
+        // Streak achievements
+        if currentStreak >= 3 { unlockAchievement(.streak3) }
+        if currentStreak >= 7 { unlockAchievement(.streak7) }
+        if currentStreak >= 14 { unlockAchievement(.streak14) }
+        if currentStreak >= 30 { unlockAchievement(.streak30) }
+        
+        // Daily challenge achievements
+        if dailyChallengeStreak >= 1 { unlockAchievement(.dailyFirst) }
+        if dailyChallengeStreak >= 7 { unlockAchievement(.dailyStreak7) }
+        
+        // Rank achievements
+        if currentRating >= 1001 { unlockAchievement(.rankGigging) }
+        if currentRating >= 1501 { unlockAchievement(.rankBebop) }
+        if currentRating >= 2001 { unlockAchievement(.rankWizard) }
+        if currentRating >= 2751 { unlockAchievement(.rankMaster) }
+    }
+    
+    // MARK: - Persistence
     
     func saveToUserDefaults() {
         let data = PlayerProfileData(
             playerName: playerName,
             avatar: avatar,
-            totalXP: totalXP,
-            peakXP: peakXP,
+            currentRating: currentRating,
+            peakRating: peakRating,
+            currentStreak: currentStreak,
+            longestStreak: longestStreak,
+            lastPracticeDate: lastPracticeDate,
+            totalQuestionsAnswered: totalQuestionsAnswered,
+            totalCorrectAnswers: totalCorrectAnswers,
+            totalPracticeTime: totalPracticeTime,
+            unlockedAchievements: unlockedAchievements,
+            dailyChallengeLastCompleted: dailyChallengeLastCompleted,
+            dailyChallengeStreak: dailyChallengeStreak,
+            perfectScoreStreak: perfectScoreStreak,
             modeStats: modeStats
         )
         
@@ -253,16 +429,65 @@ class PlayerProfile: ObservableObject {
     }
     
     func loadFromUserDefaults() {
-        guard let data = UserDefaults.standard.data(forKey: profileKey),
-              let decoded = try? JSONDecoder().decode(PlayerProfileData.self, from: data) else {
+        // Try to load new format first
+        if let data = UserDefaults.standard.data(forKey: profileKey),
+           let decoded = try? JSONDecoder().decode(PlayerProfileData.self, from: data) {
+            playerName = decoded.playerName
+            avatar = decoded.avatar
+            currentRating = decoded.currentRating
+            peakRating = decoded.peakRating
+            currentStreak = decoded.currentStreak
+            longestStreak = decoded.longestStreak
+            lastPracticeDate = decoded.lastPracticeDate
+            totalQuestionsAnswered = decoded.totalQuestionsAnswered
+            totalCorrectAnswers = decoded.totalCorrectAnswers
+            totalPracticeTime = decoded.totalPracticeTime
+            unlockedAchievements = decoded.unlockedAchievements
+            dailyChallengeLastCompleted = decoded.dailyChallengeLastCompleted
+            dailyChallengeStreak = decoded.dailyChallengeStreak
+            perfectScoreStreak = decoded.perfectScoreStreak
+            modeStats = decoded.modeStats
+        } else {
+            // Try to migrate from old PlayerStats format
+            migrateFromOldPlayerStats()
+        }
+        
+        // Check if streak should be reset
+        if let lastDate = lastPracticeDate {
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            let lastDay = calendar.startOfDay(for: lastDate)
+            let daysDiff = calendar.dateComponents([.day], from: lastDay, to: today).day ?? 0
+            if daysDiff > 1 {
+                currentStreak = 0
+            }
+        }
+    }
+    
+    private func migrateFromOldPlayerStats() {
+        // Try to load from old PlayerStats key
+        let oldKey = "JazzHarmonyUnifiedPlayerStats"
+        guard let data = UserDefaults.standard.data(forKey: oldKey),
+              let decoded = try? JSONDecoder().decode(OldPlayerStatsData.self, from: data) else {
             return
         }
         
-        playerName = decoded.playerName
-        avatar = decoded.avatar
-        totalXP = decoded.totalXP
-        peakXP = decoded.peakXP
-        modeStats = decoded.modeStats
+        // Migrate data
+        currentRating = decoded.currentRating
+        peakRating = decoded.peakRating
+        currentStreak = decoded.currentStreak
+        longestStreak = decoded.longestStreak
+        lastPracticeDate = decoded.lastPracticeDate
+        totalQuestionsAnswered = decoded.totalQuestionsAnswered
+        totalCorrectAnswers = decoded.totalCorrectAnswers
+        totalPracticeTime = decoded.totalPracticeTime
+        unlockedAchievements = decoded.unlockedAchievements
+        dailyChallengeLastCompleted = decoded.dailyChallengeLastCompleted
+        dailyChallengeStreak = decoded.dailyChallengeStreak
+        perfectScoreStreak = decoded.perfectScoreStreak
+        
+        // Save in new format
+        saveToUserDefaults()
     }
 }
 
@@ -274,7 +499,7 @@ struct ModeStatistics: Codable {
     var totalTime: TimeInterval = 0
     var sessionsCompleted: Int = 0
     var lastPracticeDate: Date?
-    var highScores: [ScoreEntry] = []  // Top 10 scores for this mode
+    var highScores: [ScoreEntry] = []
     
     var accuracy: Double {
         guard totalQuestions > 0 else { return 0 }
@@ -315,7 +540,37 @@ struct ScoreEntry: Codable, Identifiable {
 private struct PlayerProfileData: Codable {
     let playerName: String
     let avatar: PlayerAvatar
-    let totalXP: Int
-    let peakXP: Int
+    let currentRating: Int
+    let peakRating: Int
+    let currentStreak: Int
+    let longestStreak: Int
+    let lastPracticeDate: Date?
+    let totalQuestionsAnswered: Int
+    let totalCorrectAnswers: Int
+    let totalPracticeTime: TimeInterval
+    let unlockedAchievements: [Achievement]
+    let dailyChallengeLastCompleted: Date?
+    let dailyChallengeStreak: Int
+    let perfectScoreStreak: Int
     let modeStats: [PracticeMode: ModeStatistics]
 }
+
+// For migration from old format
+private struct OldPlayerStatsData: Codable {
+    let currentRating: Int
+    let peakRating: Int
+    let currentStreak: Int
+    let longestStreak: Int
+    let lastPracticeDate: Date?
+    let totalQuestionsAnswered: Int
+    let totalCorrectAnswers: Int
+    let totalPracticeTime: TimeInterval
+    let unlockedAchievements: [Achievement]
+    let dailyChallengeLastCompleted: Date?
+    let dailyChallengeStreak: Int
+    let perfectScoreStreak: Int
+}
+
+// MARK: - Type Alias for Backward Compatibility
+
+typealias PlayerStats = PlayerProfile
