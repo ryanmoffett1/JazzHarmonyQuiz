@@ -724,14 +724,35 @@ struct ActiveScaleQuizView: View {
     
     /// Sort notes in scale order starting from the root
     /// This ensures D E F G A B C sorts correctly for a D scale (not C D E F G A B)
-    /// Also handles octave duplicates by sorting by actual MIDI number within same pitch class
+    /// Octave notes (same pitch class as root but higher octave) go at the END
     private func sortNotesForScale(_ notes: [Note], rootPitchClass: Int) -> [Note] {
+        // Find the lowest MIDI number for the root pitch class (the "base" root)
+        let rootNotes = notes.filter { $0.pitchClass == rootPitchClass }
+        let baseRootMidi = rootNotes.map { $0.midiNumber }.min() ?? 60
+        
         return notes.sorted { note1, note2 in
-            // Calculate semitones from root (0-11) with proper wrapping
+            // Check if either note is an octave of the root (same pitch class, higher MIDI)
+            let isNote1OctaveRoot = note1.pitchClass == rootPitchClass && note1.midiNumber > baseRootMidi
+            let isNote2OctaveRoot = note2.pitchClass == rootPitchClass && note2.midiNumber > baseRootMidi
+            
+            // Octave roots always go to the end
+            if isNote1OctaveRoot && !isNote2OctaveRoot {
+                return false  // note1 (octave) comes after note2
+            }
+            if isNote2OctaveRoot && !isNote1OctaveRoot {
+                return true   // note1 comes before note2 (octave)
+            }
+            
+            // If both are octave roots (multiple octaves), sort by MIDI
+            if isNote1OctaveRoot && isNote2OctaveRoot {
+                return note1.midiNumber < note2.midiNumber
+            }
+            
+            // For non-octave notes, sort by interval from root
             let interval1 = (note1.pitchClass - rootPitchClass + 12) % 12
             let interval2 = (note2.pitchClass - rootPitchClass + 12) % 12
             
-            // If same interval (same pitch class), sort by actual MIDI number
+            // If same interval, sort by MIDI number
             if interval1 == interval2 {
                 return note1.midiNumber < note2.midiNumber
             }
