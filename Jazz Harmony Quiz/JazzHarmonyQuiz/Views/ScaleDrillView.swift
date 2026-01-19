@@ -1139,12 +1139,12 @@ struct ScaleDrillResultsView: View {
                         }
                         .font(.subheadline)
                         
-                        // Rating Change
+                        // XP Change
                         if scaleGame.lastRatingChange != 0 {
                             Divider()
                             
                             HStack {
-                                Text("Rating")
+                                Text("XP")
                                 Spacer()
                                 HStack(spacing: 4) {
                                     Text(scaleGame.lastRatingChange > 0 ? "+" : "")

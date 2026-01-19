@@ -1040,7 +1040,7 @@ struct ChordDrillResultsView: View {
                             .font(.headline)
                             .foregroundColor(.secondary)
                         
-                        // Rating Change
+                        // XP Change
                         HStack(spacing: 16) {
                             VStack {
                                 HStack(spacing: 4) {
@@ -1051,7 +1051,7 @@ struct ChordDrillResultsView: View {
                                 .fontWeight(.bold)
                                 .foregroundColor(quizGame.lastRatingChange >= 0 ? .green : .red)
                                 
-                                Text("Rating")
+                                Text("XP")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }

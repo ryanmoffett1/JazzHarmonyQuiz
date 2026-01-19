@@ -1367,7 +1367,7 @@ struct CadenceResultsView: View {
                         
                         Divider()
                         
-                        // Rating Change Display
+                        // XP Change Display
                         HStack(spacing: 16) {
                             VStack {
                                 HStack(spacing: 4) {
@@ -1378,7 +1378,7 @@ struct CadenceResultsView: View {
                                 .fontWeight(.bold)
                                 .foregroundColor(cadenceGame.lastRatingChange >= 0 ? .green : .red)
                                 
-                                Text("Rating")
+                                Text("XP")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }

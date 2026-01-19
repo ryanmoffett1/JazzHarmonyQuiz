@@ -839,9 +839,9 @@ struct IntervalResultsView: View {
                 }
                 .padding(.top)
                 
-                // Rating Change
+                // XP Change
                 HStack {
-                    Text("Rating:")
+                    Text("XP:")
                         .foregroundColor(.secondary)
                     Text(intervalGame.lastRatingChange >= 0 ? "+\(intervalGame.lastRatingChange)" : "\(intervalGame.lastRatingChange)")
                         .font(.headline)
@@ -885,6 +885,19 @@ struct IntervalResultsView: View {
                         }
                         .font(.headline)
                         .foregroundColor(.green)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                    }
+                    
+                    NavigationLink(destination: IntervalScoreboardView().environmentObject(intervalGame)) {
+                        HStack {
+                            Image(systemName: "trophy")
+                            Text("View Scoreboard")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.yellow)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color(.systemGray6))
@@ -990,31 +1003,36 @@ struct IntervalScoreboardPreview: View {
     @EnvironmentObject var intervalGame: IntervalGame
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "trophy")
-                    .foregroundColor(.yellow)
-                Text("Best Scores")
-                    .font(.headline)
-                Spacer()
-            }
-            
-            ForEach(intervalGame.scoreboard.prefix(3).indices, id: \.self) { index in
-                let result = intervalGame.scoreboard[index]
+        NavigationLink(destination: IntervalScoreboardView().environmentObject(intervalGame)) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text(medalEmoji(for: index))
-                    Text("\(Int(result.accuracy))%")
-                        .fontWeight(.semibold)
+                    Image(systemName: "trophy")
+                        .foregroundColor(.yellow)
+                    Text("Best Scores")
+                        .font(.headline)
                     Spacer()
-                    Text(formatTime(result.totalTime))
+                    Image(systemName: "chevron.right")
                         .foregroundColor(.secondary)
                 }
-                .font(.subheadline)
+                
+                ForEach(intervalGame.scoreboard.prefix(3).indices, id: \.self) { index in
+                    let result = intervalGame.scoreboard[index]
+                    HStack {
+                        Text(medalEmoji(for: index))
+                        Text("\(Int(result.accuracy))%")
+                            .fontWeight(.semibold)
+                        Spacer()
+                        Text(formatTime(result.totalTime))
+                            .foregroundColor(.secondary)
+                    }
+                    .font(.subheadline)
+                }
             }
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .buttonStyle(.plain)
     }
     
     private func medalEmoji(for index: Int) -> String {
@@ -1078,5 +1096,132 @@ extension AudioManager {
         IntervalDrillView()
             .environmentObject(IntervalGame())
             .environmentObject(SettingsManager.shared)
+    }
+}
+
+// MARK: - Interval Scoreboard View
+
+struct IntervalScoreboardView: View {
+    @EnvironmentObject var intervalGame: IntervalGame
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            if intervalGame.scoreboard.isEmpty {
+                emptyState
+            } else {
+                scoreboardList
+            }
+        }
+        .navigationTitle("Interval Scoreboard")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "trophy")
+                .font(.system(size: 60))
+                .foregroundColor(.gray)
+            Text("No scores yet")
+                .font(.title2)
+                .foregroundColor(.secondary)
+            Text("Complete an interval quiz to see your scores here!")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private var scoreboardList: some View {
+        List {
+            ForEach(Array(intervalGame.scoreboard.enumerated()), id: \.element.id) { index, result in
+                ScoreboardRow(index: index, result: result)
+            }
+        }
+        .listStyle(.plain)
+    }
+}
+
+fileprivate struct ScoreboardRow: View {
+    let index: Int
+    let result: IntervalQuizResult
+    
+    private var medalEmoji: String {
+        switch index {
+        case 0: return "🥇"
+        case 1: return "🥈"
+        case 2: return "🥉"
+        default: return "\(index + 1)"
+        }
+    }
+    
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter.string(from: result.date)
+    }
+    
+    private var formattedTime: String {
+        let minutes = Int(result.totalTime) / 60
+        let seconds = Int(result.totalTime) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Rank/Medal
+            Text(medalEmoji)
+                .font(index < 3 ? .title2 : .body)
+                .frame(width: 36)
+            
+            // Score info
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("\(Int(result.accuracy))%")
+                        .font(.headline)
+                        .foregroundColor(accuracyColor)
+                    
+                    Text("•")
+                        .foregroundColor(.secondary)
+                    
+                    Text("\(result.correctAnswers)/\(result.totalQuestions)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack {
+                    Image(systemName: "clock")
+                        .font(.caption)
+                    Text(formattedTime)
+                        .font(.caption)
+                    
+                    Text("•")
+                        .font(.caption)
+                    
+                    Text(result.difficulty.rawValue)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            // Date
+            Text(formattedDate)
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 4)
+    }
+    
+    private var accuracyColor: Color {
+        if result.accuracy >= 90 { return .green }
+        if result.accuracy >= 70 { return .yellow }
+        if result.accuracy >= 50 { return .orange }
+        return .red
     }
 }
