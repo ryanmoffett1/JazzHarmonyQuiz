@@ -54,7 +54,17 @@ struct ScaleType: Identifiable, Hashable, Codable {
         case beginner = "Beginner"
         case intermediate = "Intermediate"
         case advanced = "Advanced"
-        case expert = "Expert"
+        
+        var description: String {
+            switch self {
+            case .beginner:
+                return "Major, Minor, Pentatonic"
+            case .intermediate:
+                return "Modes, Blues, Melodic Minor"
+            case .advanced:
+                return "All scale types"
+            }
+        }
     }
 }
 
@@ -159,7 +169,6 @@ struct Scale: Identifiable, Hashable, Codable {
 enum ScaleQuestionType: String, CaseIterable, Codable {
     case singleDegree = "Single Degree"
     case allDegrees = "All Scale Tones"
-    case scaleSpelling = "Scale Spelling"
     
     var description: String {
         switch self {
@@ -167,8 +176,6 @@ enum ScaleQuestionType: String, CaseIterable, Codable {
             return "Identify one specific scale degree"
         case .allDegrees:
             return "Select all notes in the scale"
-        case .scaleSpelling:
-            return "Name all the notes in the scale"
         }
     }
 }
@@ -194,7 +201,7 @@ struct ScaleQuestion: Identifiable, Codable, Hashable {
             } else {
                 self.correctNotes = []
             }
-        case .allDegrees, .scaleSpelling:
+        case .allDegrees:
             // Exclude octave for "all tones" - just want the unique pitch classes
             self.correctNotes = Array(scale.scaleNotes.dropLast())
         }
@@ -209,8 +216,6 @@ struct ScaleQuestion: Identifiable, Codable, Hashable {
             return "Find the note in \(scale.displayName)"
         case .allDegrees:
             return "Select all notes in \(scale.displayName)"
-        case .scaleSpelling:
-            return "Spell the \(scale.displayName) scale"
         }
     }
     

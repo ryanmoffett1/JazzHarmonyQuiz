@@ -165,7 +165,7 @@ class JazzScaleDatabase {
                 degrees: [
                     .root, .flatTwo, .sharpTwo, .third, .flatFive, .sharpFive, .flatSeven, .octave
                 ],
-                difficulty: .expert,
+                difficulty: .advanced,
                 description: "7th mode of melodic minor. Maximum tension on dominant chords."
             ),
             
@@ -175,7 +175,7 @@ class JazzScaleDatabase {
                 degrees: [
                     .root, .flatTwo, .flatThird, .third, .sharpFour, .fifth, .sixth, .flatSeven, .octave
                 ],
-                difficulty: .expert,
+                difficulty: .advanced,
                 description: "Symmetrical 8-note scale. Used over dominant 7b9 chords."
             ),
             
@@ -185,7 +185,7 @@ class JazzScaleDatabase {
                 degrees: [
                     .root, .second, .flatThird, .fourth, .flatFive, .flatSix, .sixth, .seventh, .octave
                 ],
-                difficulty: .expert,
+                difficulty: .advanced,
                 description: "Symmetrical 8-note scale. Used over diminished 7th chords."
             ),
             
@@ -195,7 +195,7 @@ class JazzScaleDatabase {
                 degrees: [
                     .root, .second, .third, .sharpFour, .sharpFive, .flatSeven, .octave
                 ],
-                difficulty: .expert,
+                difficulty: .advanced,
                 description: "All whole steps. Dreamy, ambiguous quality. Used over aug chords."
             ),
             
@@ -205,7 +205,7 @@ class JazzScaleDatabase {
                 degrees: [
                     .root, .second, .third, .fourth, .fifth, .sixth, .flatSeven, .seventh, .octave
                 ],
-                difficulty: .expert,
+                difficulty: .advanced,
                 description: "Mixolydian with added natural 7. Keeps chord tones on downbeats."
             ),
             
@@ -215,7 +215,7 @@ class JazzScaleDatabase {
                 degrees: [
                     .root, .second, .third, .fourth, .fifth, .sharpFive, .sixth, .seventh, .octave
                 ],
-                difficulty: .expert,
+                difficulty: .advanced,
                 description: "Major scale with added #5. Classic bebop sound."
             ),
             
@@ -225,7 +225,7 @@ class JazzScaleDatabase {
                 degrees: [
                     .root, .second, .flatThird, .third, .fourth, .fifth, .sixth, .flatSeven, .octave
                 ],
-                difficulty: .expert,
+                difficulty: .advanced,
                 description: "Dorian with added natural 3rd. For minor 7th chord improvisation."
             ),
             
@@ -235,7 +235,7 @@ class JazzScaleDatabase {
                 degrees: [
                     .root, .second, .flatThird, .fourth, .flatFive, .flatSix, .flatSeven, .octave
                 ],
-                difficulty: .expert,
+                difficulty: .advanced,
                 description: "6th mode of melodic minor. Less harsh than pure Locrian."
             ),
             
@@ -245,7 +245,7 @@ class JazzScaleDatabase {
                 degrees: [
                     .root, .second, .third, .sharpFour, .sharpFive, .sixth, .seventh, .octave
                 ],
-                difficulty: .expert,
+                difficulty: .advanced,
                 description: "3rd mode of melodic minor. For maj7#5 chords."
             ),
             
@@ -255,7 +255,7 @@ class JazzScaleDatabase {
                 degrees: [
                     .root, .flatTwo, .flatThird, .flatFour, .flatFive, .flatSix, .flatSeven, .octave
                 ],
-                difficulty: .expert,
+                difficulty: .advanced,
                 description: "Also called the Altered scale or Diminished Whole Tone."
             )
         ]
@@ -268,7 +268,7 @@ class JazzScaleDatabase {
     }
     
     func getScales(upToDifficulty difficulty: ScaleType.ScaleDifficulty) -> [ScaleType] {
-        let difficultyOrder: [ScaleType.ScaleDifficulty] = [.beginner, .intermediate, .advanced, .expert]
+        let difficultyOrder: [ScaleType.ScaleDifficulty] = [.beginner, .intermediate, .advanced]
         guard let maxIndex = difficultyOrder.firstIndex(of: difficulty) else { return [] }
         let allowedDifficulties = Set(difficultyOrder[0...maxIndex])
         return scaleTypes.filter { allowedDifficulties.contains($0.difficulty) }

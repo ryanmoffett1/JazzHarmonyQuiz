@@ -190,6 +190,16 @@ struct ScaleSetupView: View {
                             }
                         }
                         .pickerStyle(SegmentedPickerStyle())
+                        
+                        Text(selectedDifficulty.description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .onChange(of: selectedDifficulty) { _, newValue in
+                        // Clear scale type filter when changing difficulty (unless Advanced)
+                        if newValue != .advanced {
+                            selectedScaleSymbols.removeAll()
+                        }
                     }
                     
                     // Key Difficulty
@@ -244,38 +254,44 @@ struct ScaleSetupView: View {
                         }
                     }
                     
-                    // Scale Type Filter
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text("Scale Types")
-                                .font(.headline)
-                            Spacer()
-                            Text(selectedScaleSymbols.isEmpty ? "All" : "\(selectedScaleSymbols.count) selected")
+                    // Scale Type Filter (only for Advanced difficulty)
+                    if selectedDifficulty == .advanced {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Text("Scale Types Filter")
+                                    .font(.headline)
+                                Spacer()
+                                Text(selectedScaleSymbols.isEmpty ? "All" : "\(selectedScaleSymbols.count) selected")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Text("Customize which scale types to include")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                        }
-                        
-                        Button(action: { showScaleTypeFilter.toggle() }) {
-                            HStack {
-                                Image(systemName: "slider.horizontal.3")
-                                Text(selectedScaleSymbols.isEmpty ? "Filter by scale type..." : scaleFilterSummary)
-                                    .lineLimit(1)
-                                Spacer()
-                                Image(systemName: showScaleTypeFilter ? "chevron.up" : "chevron.down")
+                            
+                            Button(action: { showScaleTypeFilter.toggle() }) {
+                                HStack {
+                                    Image(systemName: "slider.horizontal.3")
+                                    Text(selectedScaleSymbols.isEmpty ? "Filter by scale type..." : scaleFilterSummary)
+                                        .lineLimit(1)
+                                    Spacer()
+                                    Image(systemName: showScaleTypeFilter ? "chevron.up" : "chevron.down")
+                                }
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                                .padding()
+                                .background(Color(.systemGray5))
+                                .cornerRadius(8)
                             }
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                            .padding()
-                            .background(Color(.systemGray5))
-                            .cornerRadius(8)
+                            
+                            if showScaleTypeFilter {
+                                ScaleTypeFilterView(selectedSymbols: $selectedScaleSymbols)
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                            }
                         }
-                        
-                        if showScaleTypeFilter {
-                            ScaleTypeFilterView(selectedSymbols: $selectedScaleSymbols)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                        }
+                        .animation(.easeInOut(duration: 0.2), value: showScaleTypeFilter)
                     }
-                    .animation(.easeInOut(duration: 0.2), value: showScaleTypeFilter)
                 }
                 .padding()
                 .background(Color(.systemGray6))
@@ -1390,7 +1406,6 @@ struct ScaleLeaderboardRow: View {
         case .beginner: return .green
         case .intermediate: return .blue
         case .advanced: return .orange
-        case .expert: return .red
         }
     }
     

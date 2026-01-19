@@ -333,8 +333,7 @@ class ScaleGame: ObservableObject {
         switch selectedDifficulty {
         case .beginner: basePoints = 8
         case .intermediate: basePoints = 12
-        case .advanced: basePoints = 16
-        case .expert: basePoints = 20
+        case .advanced: basePoints = 18
         }
         
         // Scale by number of questions (more questions = more potential change)
