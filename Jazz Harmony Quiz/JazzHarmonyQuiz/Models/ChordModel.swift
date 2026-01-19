@@ -955,6 +955,39 @@ struct ChordSelection: Codable, Equatable {
         return rootMatches && qualityMatches
     }
     
+
+    /// Convert this selection to an array of Notes for audio playback
+    func toNotes() -> [Note]? {
+        guard let root = selectedRoot, let quality = selectedQuality else {
+            return nil
+        }
+        
+        // Get semitone offsets based on quality
+        let semitones: [Int]
+        switch quality {
+        case "m7":
+            semitones = [0, 3, 7, 10]  // root, m3, 5, m7
+        case "7":
+            semitones = [0, 4, 7, 10]  // root, M3, 5, m7
+        case "maj7":
+            semitones = [0, 4, 7, 11]  // root, M3, 5, M7
+        case "ø7", "m7b5":
+            semitones = [0, 3, 6, 10]  // root, m3, b5, m7
+        case "7b9":
+            semitones = [0, 4, 7, 10, 13]  // root, M3, 5, m7, b9
+        case "dim7", "o7":
+            semitones = [0, 3, 6, 9]  // root, m3, b5, dim7
+        default:
+            semitones = [0, 4, 7]  // default to major triad
+        }
+        
+        // Build notes from root
+        let rootMidi = root.midiNumber
+        return semitones.compactMap { offset in
+            Note.noteFromMidi(rootMidi + offset)
+        }
+    }
+
     /// Reset the selection
     mutating func reset() {
         selectedRoot = nil

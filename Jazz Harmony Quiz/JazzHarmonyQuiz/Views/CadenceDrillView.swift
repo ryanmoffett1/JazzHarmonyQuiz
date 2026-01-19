@@ -1997,17 +1997,44 @@ struct ActiveChordIdentificationView: View {
             isCorrect: allCorrect
         )
         
-        // Haptic feedback
+        // Haptic feedback and audio
         if allCorrect {
             HapticFeedback.success()
-            if settings.playChordOnCorrect {
-                AudioManager.shared.playSuccessSound()
-            }
+            // Play the correct progression
+            playUserProgression()
         } else {
             HapticFeedback.error()
+            // Play user's wrong answer first, then correct answer
+            playUserProgression()
+            
+            // After a pause, play the correct progression
+            let userProgressionDuration = Double(expectedChords.count) * 0.8 + 1.0
+            DispatchQueue.main.asyncAfter(deadline: .now() + userProgressionDuration) {
+                self.playCorrectProgression()
+            }
         }
         
         showingFeedback = true
+    }
+    
+    private func playUserProgression() {
+        // Convert user's chord selections to notes
+        let userChords: [[Note]] = chordSelections.prefix(expectedChords.count).compactMap { selection in
+            selection.toNotes()
+        }
+        
+        if !userChords.isEmpty {
+            AudioManager.shared.playProgression(userChords, tempoMS: 800)
+        }
+    }
+    
+    private func playCorrectProgression() {
+        // Play the correct chord progression
+        let correctChords: [[Note]] = expectedChords.map { chord in
+            chord.chordTones
+        }
+        
+        AudioManager.shared.playProgression(correctChords, tempoMS: 800)
     }
     
     private func nextQuestion() {
