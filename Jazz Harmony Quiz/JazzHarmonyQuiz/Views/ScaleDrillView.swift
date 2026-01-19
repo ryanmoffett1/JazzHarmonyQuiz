@@ -551,15 +551,26 @@ struct ActiveScaleQuizView: View {
                     let isNoteCorrect = correctPitchClasses.contains(note.pitchClass)
                     let isHighlighted = highlightedNoteIndex == index
                     
-                    Text(displayNoteName(note, for: question.scale))
-                        .font(.headline)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(noteBackgroundColor(isCorrect: isNoteCorrect, isHighlighted: isHighlighted, isAllCorrect: isCorrect))
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                        .scaleEffect(isHighlighted ? 1.15 : 1.0)
-                        .animation(.easeInOut(duration: 0.15), value: isHighlighted)
+                    // Check if this is an octave duplicate (higher octave of same pitch class)
+                    let isOctaveNote = note.midiNumber >= 72 && sortedNotes.contains(where: { 
+                        $0.pitchClass == note.pitchClass && $0.midiNumber < note.midiNumber 
+                    })
+                    
+                    VStack(spacing: 2) {
+                        Text(displayNoteName(note, for: question.scale))
+                            .font(.headline)
+                        if isOctaveNote {
+                            Text("8va")
+                                .font(.caption2)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, isOctaveNote ? 6 : 8)
+                    .background(noteBackgroundColor(isCorrect: isNoteCorrect, isHighlighted: isHighlighted, isAllCorrect: isCorrect))
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                    .scaleEffect(isHighlighted ? 1.15 : 1.0)
+                    .animation(.easeInOut(duration: 0.15), value: isHighlighted)
                 }
             }
             .padding(.horizontal)
@@ -713,11 +724,17 @@ struct ActiveScaleQuizView: View {
     
     /// Sort notes in scale order starting from the root
     /// This ensures D E F G A B C sorts correctly for a D scale (not C D E F G A B)
+    /// Also handles octave duplicates by sorting by actual MIDI number within same pitch class
     private func sortNotesForScale(_ notes: [Note], rootPitchClass: Int) -> [Note] {
         return notes.sorted { note1, note2 in
             // Calculate semitones from root (0-11) with proper wrapping
             let interval1 = (note1.pitchClass - rootPitchClass + 12) % 12
             let interval2 = (note2.pitchClass - rootPitchClass + 12) % 12
+            
+            // If same interval (same pitch class), sort by actual MIDI number
+            if interval1 == interval2 {
+                return note1.midiNumber < note2.midiNumber
+            }
             return interval1 < interval2
         }
     }
@@ -761,7 +778,6 @@ struct ActiveScaleQuizView: View {
         guard let question = scaleGame.currentQuestion else { return }
         
         let rootPitchClass = question.scale.root.pitchClass
-        let rootMidi = question.scale.root.midiNumber
         let sortedNotes = sortNotesForScale(userAnswerNotes, rootPitchClass: rootPitchClass)
         let tempoMS = 250  // Fast tempo for scale playback
         
@@ -774,9 +790,9 @@ struct ActiveScaleQuizView: View {
                     self.highlightedNoteIndex = index
                 }
                 
-                // Play the note with correct octave relative to scale root
+                // Play the actual MIDI note the user selected
                 if settings.audioEnabled {
-                    let midiToPlay = getMidiForScaleNote(note, index: index, rootMidi: rootMidi, rootPitchClass: rootPitchClass)
+                    let midiToPlay = UInt8(note.midiNumber)
                     audioManager.playNote(midiToPlay, velocity: 80)
                     
                     // Stop note after duration
