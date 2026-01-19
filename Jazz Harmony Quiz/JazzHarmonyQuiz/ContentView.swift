@@ -105,6 +105,9 @@ struct StatsDashboardCard: View {
                             .fontWeight(.medium)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
+                        Text("Rank")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity)
                     
@@ -482,15 +485,22 @@ struct ProgressCardsSection: View {
             // Weak areas hint
             let weakChords = quizGame.getWeakChordTypes(limit: 2)
             if !weakChords.isEmpty {
-                HStack {
-                    Image(systemName: "lightbulb.fill")
-                        .foregroundColor(.yellow)
-                    Text("Focus on: \(weakChords.map { $0.symbol }.joined(separator: ", "))")
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Image(systemName: "lightbulb.fill")
+                            .foregroundColor(.yellow)
+                        Text("Practice Suggestion")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                    }
+                    Text("Based on your recent scores, try focusing on \(weakChords.map { $0.symbol }.joined(separator: " and ")) chords to improve your accuracy.")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.yellow.opacity(0.1))
                 .cornerRadius(8)
             }
