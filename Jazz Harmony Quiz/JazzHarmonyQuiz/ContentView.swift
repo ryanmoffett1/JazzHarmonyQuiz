@@ -11,18 +11,12 @@ struct ContentView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ScrollView {
-                VStack(spacing: 24) {
-                    // Header with Title
-                    VStack(spacing: 8) {
-                        Text("Jazz Harmony Quiz")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                        
-                        Text("Master jazz chord theory")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.top)
+                VStack(spacing: 20) {
+                    // Compact Header
+                    Text("Jazz Harmony Quiz")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .padding(.top, 8)
                     
                     // Stats Dashboard Card (tap to view profile)
                     StatsDashboardCard(navigationPath: $navigationPath)
@@ -77,22 +71,21 @@ struct StatsDashboardCard: View {
     @EnvironmentObject var quizGame: QuizGame
     @Binding var navigationPath: NavigationPath
     
-    private var playerStats: PlayerStats { PlayerStats.shared }
     private var playerProfile: PlayerProfile { PlayerProfile.shared }
     
     var body: some View {
         Button(action: {
             navigationPath.append("profile")
         }) {
-            VStack(spacing: 16) {
-                // Avatar and Rank Row
-                HStack(spacing: 20) {
-                    // Avatar
-                    VStack(spacing: 4) {
+            VStack(spacing: 12) {
+                // Main stats row - more compact
+                HStack(spacing: 0) {
+                    // Avatar + Name
+                    VStack(spacing: 2) {
                         Text(playerProfile.avatar.rawValue)
-                            .font(.system(size: 40))
+                            .font(.system(size: 32))
                         Text(playerProfile.playerName)
-                            .font(.caption)
+                            .font(.caption2)
                             .fontWeight(.medium)
                             .lineLimit(1)
                     }
@@ -101,96 +94,118 @@ struct StatsDashboardCard: View {
                     // Divider
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .frame(width: 1, height: 60)
+                        .frame(width: 1, height: 50)
                     
-                    // Rank Badge
-                    VStack(spacing: 4) {
-                        Text(playerStats.currentRank.emoji)
-                            .font(.system(size: 36))
-                        Text(playerStats.currentRank.title)
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .multilineTextAlignment(.center)
+                    // Rank
+                    VStack(spacing: 2) {
+                        Text(playerProfile.currentRank.emoji)
+                            .font(.system(size: 28))
+                        Text(playerProfile.currentRank.title)
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                     }
                     .frame(maxWidth: .infinity)
-                
-                // Divider
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 1, height: 60)
-                
-                // Rating
-                VStack(spacing: 4) {
-                    Text("\(playerStats.currentRating)")
-                        .font(.system(size: 36, weight: .bold))
-                        .foregroundColor(.blue)
-                    Text("Rating")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                     
-                    // Progress to next rank
-                    if let pointsNeeded = playerStats.pointsToNextRank {
-                        Text("\(pointsNeeded) to next rank")
+                    // Divider
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 1, height: 50)
+                    
+                    // XP - smaller
+                    VStack(spacing: 2) {
+                        Text("\(playerProfile.currentRating)")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundColor(.blue)
+                        Text("XP")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
-                }
-                .frame(maxWidth: .infinity)
-                
-                // Divider
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 1, height: 60)
-                
-                // Streak
-                VStack(spacing: 4) {
-                    HStack(spacing: 2) {
-                        Text("🔥")
-                            .font(.title)
-                        Text("\(playerStats.currentStreak)")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.orange)
+                    .frame(maxWidth: .infinity)
+                    
+                    // Divider
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 1, height: 50)
+                    
+                    // Streak - smaller
+                    VStack(spacing: 2) {
+                        HStack(spacing: 1) {
+                            Text("🔥")
+                                .font(.system(size: 18))
+                            Text("\(playerProfile.currentStreak)")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.orange)
+                        }
+                        Text("Streak")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
                     }
-                    Text("Day Streak")
+                    .frame(maxWidth: .infinity)
+                }
+                
+                // Progress to next rank - compact
+                if let pointsNeeded = playerProfile.pointsToNextRank {
+                    HStack(spacing: 4) {
+                        ProgressView(value: progressToNextRank)
+                            .progressViewStyle(LinearProgressViewStyle(tint: .blue))
+                            .frame(height: 4)
+                        Text("\(pointsNeeded) to rank up")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .fixedSize()
+                    }
+                }
+                
+                Divider()
+                
+                // Today's Stats - compact
+                let today = quizGame.stats.todaysPractice()
+                HStack {
+                    TodayStatItem(
+                        icon: "checkmark.circle",
+                        value: "\(today.chords)",
+                        label: "Today"
+                    )
+                    
+                    Spacer()
+                    
+                    TodayStatItem(
+                        icon: "percent",
+                        value: today.chords > 0 ? "\(Int(Double(today.correct) / Double(today.chords) * 100))%" : "-",
+                        label: "Accuracy"
+                    )
+                    
+                    Spacer()
+                    
+                    TodayStatItem(
+                        icon: "clock",
+                        value: formatTime(today.time),
+                        label: "Time"
+                    )
+                    
+                    Spacer()
+                    
+                    // Chevron to indicate tappable
+                    Image(systemName: "chevron.right")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                .frame(maxWidth: .infinity)
-            }
-            
-            Divider()
-            
-            // Today's Stats
-            let today = quizGame.stats.todaysPractice()
-            HStack {
-                TodayStatItem(
-                    icon: "checkmark.circle",
-                    value: "\(today.chords)",
-                    label: "Chords Today"
-                )
-                
-                Spacer()
-                
-                TodayStatItem(
-                    icon: "percent",
-                    value: today.chords > 0 ? "\(Int(Double(today.correct) / Double(today.chords) * 100))%" : "-",
-                    label: "Accuracy"
-                )
-                
-                Spacer()
-                
-                TodayStatItem(
-                    icon: "clock",
-                    value: formatTime(today.time),
-                    label: "Time"
-                )
-            }
             }
         }
         .buttonStyle(PlainButtonStyle())
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(16)
+    }
+    
+    private var progressToNextRank: Double {
+        guard let pointsNeeded = playerProfile.pointsToNextRank else { return 1.0 }
+        let currentRankMin = playerProfile.currentRank.minRating
+        let totalRange = Double(pointsNeeded) + Double(playerProfile.currentRating - currentRankMin)
+        let progress = Double(playerProfile.currentRating - currentRankMin)
+        return progress / totalRange
     }
     
     private func formatTime(_ time: TimeInterval) -> String {
@@ -209,13 +224,13 @@ struct TodayStatItem: View {
     let label: String
     
     var body: some View {
-        VStack(spacing: 4) {
-            HStack(spacing: 4) {
+        VStack(spacing: 2) {
+            HStack(spacing: 2) {
                 Image(systemName: icon)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundColor(.blue)
                 Text(value)
-                    .font(.subheadline)
+                    .font(.caption)
                     .fontWeight(.semibold)
             }
             Text(label)
@@ -231,7 +246,7 @@ struct QuickActionsSection: View {
     @EnvironmentObject var quizGame: QuizGame
     @Binding var navigationPath: NavigationPath
     
-    private var playerStats: PlayerStats { PlayerStats.shared }
+    private var playerProfile: PlayerProfile { PlayerProfile.shared }
     
     var body: some View {
         VStack(spacing: 12) {
@@ -245,13 +260,13 @@ struct QuickActionsSection: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Daily Challenge")
                             .font(.headline)
-                        Text(playerStats.isDailyChallengeCompletedToday ? "Completed! ✓" : "Same challenge for everyone")
+                        Text(playerProfile.isDailyChallengeCompletedToday ? "Completed! ✓" : "Same challenge for everyone")
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                     }
                     Spacer()
-                    if playerStats.dailyChallengeStreak > 0 {
-                        Text("🔥 \(playerStats.dailyChallengeStreak)")
+                    if playerProfile.dailyChallengeStreak > 0 {
+                        Text("🔥 \(playerProfile.dailyChallengeStreak)")
                             .font(.subheadline)
                             .fontWeight(.bold)
                     }
@@ -261,7 +276,7 @@ struct QuickActionsSection: View {
                 .padding()
                 .background(
                     LinearGradient(
-                        colors: playerStats.isDailyChallengeCompletedToday ? [.green, .mint] : [.orange, .red],
+                        colors: playerProfile.isDailyChallengeCompletedToday ? [.green, .mint] : [.orange, .red],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -306,6 +321,8 @@ struct QuickActionsSection: View {
 struct DrillOptionsSection: View {
     @EnvironmentObject var quizGame: QuizGame
     @Binding var navigationPath: NavigationPath
+    
+    private var playerProfile: PlayerProfile { PlayerProfile.shared }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -361,18 +378,6 @@ struct DrillOptionsSection: View {
                 )
             }
             
-            // Leaderboard
-            Button(action: {
-                navigationPath.append("leaderboard")
-            }) {
-                DrillOptionCard(
-                    icon: "trophy",
-                    title: "Leaderboard",
-                    subtitle: "View your best scores",
-                    color: .orange
-                )
-            }
-            
             // Achievements
             Button(action: {
                 navigationPath.append("achievements")
@@ -380,7 +385,7 @@ struct DrillOptionsSection: View {
                 DrillOptionCard(
                     icon: "star.fill",
                     title: "Achievements",
-                    subtitle: "\(PlayerStats.shared.unlockedAchievements.count)/\(AchievementType.allCases.count) unlocked",
+                    subtitle: "\(playerProfile.unlockedAchievements.count)/\(AchievementType.allCases.count) unlocked",
                     color: .yellow
                 )
             }
@@ -523,15 +528,15 @@ struct AchievementsView: View {
     @EnvironmentObject var quizGame: QuizGame
     @Environment(\.colorScheme) var colorScheme
     
-    private var playerStats: PlayerStats { PlayerStats.shared }
+    private var playerProfile: PlayerProfile { PlayerProfile.shared }
     
     var unlockedAchievements: [Achievement] {
-        playerStats.unlockedAchievements.sorted { $0.unlockedDate > $1.unlockedDate }
+        playerProfile.unlockedAchievements.sorted { $0.unlockedDate > $1.unlockedDate }
     }
     
     var lockedAchievements: [AchievementType] {
         AchievementType.allCases.filter { type in
-            !playerStats.hasAchievement(type)
+            !playerProfile.hasAchievement(type)
         }
     }
     
