@@ -16,6 +16,16 @@ class AudioManager: ObservableObject {
     }
     
     private func setupAudioEngine() {
+        // Configure audio session for playback
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try audioSession.setActive(true)
+            print("Audio session configured successfully")
+        } catch {
+            print("Failed to configure audio session: \(error)")
+        }
+        
         audioEngine = AVAudioEngine()
         sampler = AVAudioUnitSampler()
         
@@ -26,6 +36,7 @@ class AudioManager: ObservableObject {
         
         do {
             try engine.start()
+            print("Audio engine started successfully")
         } catch {
             print("Failed to start audio engine: \(error)")
         }
@@ -74,6 +85,21 @@ class AudioManager: ObservableObject {
         }
     }
     
+
+    /// Ensure the audio engine is running (restart if needed)
+    private func ensureAudioEngineRunning() {
+        guard let engine = audioEngine else { return }
+        
+        if !engine.isRunning {
+            do {
+                try engine.start()
+                print("Audio engine restarted")
+            } catch {
+                print("Failed to restart audio engine: \(error)")
+            }
+        }
+    }
+
     /// Play a single note
     func playNote(_ midiNote: UInt8, velocity: UInt8 = 80) {
         guard isEnabled, let sampler = sampler else { return }
@@ -93,7 +119,13 @@ class AudioManager: ObservableObject {
     
     /// Play a chord (multiple notes simultaneously)
     func playChord(_ notes: [Note], velocity: UInt8 = 80, duration: TimeInterval = 1.0) {
-        guard isEnabled, let sampler = sampler else { return }
+        guard isEnabled, let sampler = sampler else { 
+            print("playChord: isEnabled=\(isEnabled), sampler=\(self.sampler != nil ? "exists" : "nil")")
+            return 
+        }
+        
+        // Ensure audio engine is running
+        ensureAudioEngineRunning()
         
         // Normalize notes to middle C octave (MIDI 60-71)
         let normalizedMidiNotes = notes.map { note -> UInt8 in
