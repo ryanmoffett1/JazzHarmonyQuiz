@@ -114,7 +114,7 @@ class JazzChordDatabase {
                     ChordTone.allTones[0], // Root
                     ChordTone.allTones[2], // 3rd
                     ChordTone(degree: 5, name: "#5", semitonesFromRoot: 8, isAltered: true), // #5
-                    ChordTone.allTones[6]  // b7
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true)  // b7
                 ],
                 difficulty: .intermediate
             ),

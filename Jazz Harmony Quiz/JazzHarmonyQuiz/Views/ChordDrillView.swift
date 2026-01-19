@@ -755,7 +755,8 @@ struct ActiveQuizView: View {
     
     @ViewBuilder
     private func notesDisplay(notes: [Note], allCorrect: Bool) -> some View {
-        let sortedNotes = notes.sorted { $0.midiNumber < $1.midiNumber }
+        // Keep notes in chord tone order (Root, 3rd, 5th, 7th, etc.) - don't sort by pitch
+        let sortedNotes = notes
         
         FlowLayout(spacing: 8) {
             ForEach(sortedNotes, id: \.midiNumber) { note in
@@ -911,7 +912,8 @@ struct ActiveQuizView: View {
         // Determine tonality preference based on the chord root
         let preferSharps = question.chord.root.isSharp || ["B", "E", "A", "D", "G"].contains(question.chord.root.name)
         
-        let sortedNotes = notes.sorted { $0.midiNumber < $1.midiNumber }
+        // Keep notes in chord tone order (Root, 3rd, 5th, 7th, etc.) - don't sort by pitch
+        let sortedNotes = notes
         return sortedNotes.map { note in
             // Convert note to match the chord's tonality
             let displayNote = Note.noteFromMidi(note.midiNumber, preferSharps: preferSharps) ?? note
