@@ -850,10 +850,10 @@ struct IntervalResultsView: View {
                 
                 // Stats Grid
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                    StatCard(title: "Time", value: formatTime(intervalGame.elapsedTime), icon: "clock")
-                    StatCard(title: "Difficulty", value: intervalGame.selectedDifficulty.rawValue, icon: "speedometer")
-                    StatCard(title: "Avg/Question", value: formatTime(intervalGame.elapsedTime / Double(intervalGame.totalQuestions)), icon: "timer")
-                    StatCard(title: "Direction", value: intervalGame.selectedDirection.rawValue, icon: "arrow.up.arrow.down")
+                    IntervalStatCard(title: "Time", value: formatTime(intervalGame.elapsedTime), icon: "clock")
+                    IntervalStatCard(title: "Difficulty", value: intervalGame.selectedDifficulty.rawValue, icon: "speedometer")
+                    IntervalStatCard(title: "Avg/Question", value: formatTime(intervalGame.elapsedTime / Double(intervalGame.totalQuestions)), icon: "timer")
+                    IntervalStatCard(title: "Direction", value: intervalGame.selectedDirection.rawValue, icon: "arrow.up.arrow.down")
                 }
                 .padding(.horizontal)
                 
@@ -931,7 +931,7 @@ struct IntervalResultsView: View {
     }
 }
 
-fileprivate struct StatCard: View {
+fileprivate struct IntervalStatCard: View {
     let title: String
     let value: String
     let icon: String
