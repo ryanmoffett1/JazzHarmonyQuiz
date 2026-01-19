@@ -449,12 +449,18 @@ struct ActiveScaleQuizView: View {
                 .cornerRadius(16)
                 .padding(.horizontal)
                 
-                // Question Text
-                Text(question.questionText)
-                    .font(.title3)
-                    .fontWeight(.medium)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                // Question Text with tone count hint
+                VStack(spacing: 4) {
+                    Text(question.questionText)
+                        .font(.title3)
+                        .fontWeight(.medium)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("\(question.correctNotes.count) tones")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
                 
                 // Selected Notes Display or Feedback
                 if showingFeedback {
@@ -610,22 +616,45 @@ struct ActiveScaleQuizView: View {
     private func correctNotesDisplay(question: ScaleQuestion) -> some View {
         let rootPitchClass = question.scale.root.pitchClass
         let sortedNotes = sortNotesForScale(question.correctNotes, rootPitchClass: rootPitchClass)
+        let totalNotesForPlayback = sortedNotes.count + 1 + (sortedNotes.count - 1) // ascending + octave + descending (minus root)
         
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
+                // Display the scale notes
                 ForEach(Array(sortedNotes.enumerated()), id: \.offset) { index, note in
                     let isHighlighted = highlightedNoteIndex == index
+                    // For descending, highlight indices map back to the notes in reverse
+                    let descendingIndex = sortedNotes.count + 1 + (sortedNotes.count - 2 - index)
+                    let isHighlightedDescending = highlightedNoteIndex != nil && 
+                        highlightedNoteIndex! > sortedNotes.count && 
+                        highlightedNoteIndex! == descendingIndex
+                    let showHighlight = isHighlighted || isHighlightedDescending
                     
                     Text(displayNoteName(note, for: question.scale))
                         .font(.headline)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(isHighlighted ? Color.green : Color.green.opacity(0.7))
+                        .background(showHighlight ? Color.green : Color.green.opacity(0.7))
                         .foregroundColor(.white)
                         .cornerRadius(8)
-                        .scaleEffect(isHighlighted ? 1.15 : 1.0)
-                        .animation(.easeInOut(duration: 0.15), value: isHighlighted)
+                        .scaleEffect(showHighlight ? 1.15 : 1.0)
+                        .animation(.easeInOut(duration: 0.15), value: highlightedNoteIndex)
                 }
+                
+                // Ghosted 8va note at the end
+                VStack(spacing: 2) {
+                    Text(displayNoteName(sortedNotes.first ?? question.scale.root, for: question.scale))
+                        .font(.headline)
+                    Text("8va")
+                        .font(.caption2)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(highlightedNoteIndex == sortedNotes.count ? Color.green : Color.green.opacity(0.3))
+                .foregroundColor(highlightedNoteIndex == sortedNotes.count ? .white : .white.opacity(0.6))
+                .cornerRadius(8)
+                .scaleEffect(highlightedNoteIndex == sortedNotes.count ? 1.15 : 1.0)
+                .animation(.easeInOut(duration: 0.15), value: highlightedNoteIndex)
             }
             .padding(.horizontal)
         }
@@ -850,20 +879,45 @@ struct ActiveScaleQuizView: View {
         let rootPitchClass = question.scale.root.pitchClass
         let rootMidi = question.scale.root.midiNumber
         let sortedNotes = sortNotesForScale(notes, rootPitchClass: rootPitchClass)
-        let tempoMS = 250
+        let tempoMS = 200  // Slightly faster for ascending/descending
         
-        // Play and highlight each note
+        // Build the full sequence: ascending + octave + descending (without repeating root at bottom)
+        // Indices: 0..<sortedNotes.count (ascending), sortedNotes.count (octave), then descending
+        var playbackSequence: [(midi: Int, highlightIndex: Int)] = []
+        
+        // Ascending: play each note from root up
         for (index, note) in sortedNotes.enumerated() {
+            let interval = (note.pitchClass - rootPitchClass + 12) % 12
+            let midi = rootMidi + interval
+            playbackSequence.append((midi: midi, highlightIndex: index))
+        }
+        
+        // Octave (8va) - highlight index is sortedNotes.count
+        playbackSequence.append((midi: rootMidi + 12, highlightIndex: sortedNotes.count))
+        
+        // Descending: go back down from 7th to root (skip the octave, it was just played)
+        // Indices for descending highlight: sortedNotes.count + 1 + (position in descending)
+        for i in stride(from: sortedNotes.count - 1, through: 0, by: -1) {
+            let note = sortedNotes[i]
+            let interval = (note.pitchClass - rootPitchClass + 12) % 12
+            let midi = rootMidi + interval
+            // Descending highlight index maps back to the visual note
+            let descendingPosition = sortedNotes.count - 1 - i
+            playbackSequence.append((midi: midi, highlightIndex: sortedNotes.count + 1 + descendingPosition))
+        }
+        
+        // Play the sequence
+        for (index, item) in playbackSequence.enumerated() {
             let delay = Double(index) * Double(tempoMS) / 1000.0
             
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 withAnimation(.easeInOut(duration: 0.1)) {
-                    self.highlightedNoteIndex = index
+                    self.highlightedNoteIndex = item.highlightIndex
                 }
                 
-                // Play the note with correct octave relative to scale root
+                // Play the note
                 if settings.audioEnabled {
-                    let midiToPlay = getMidiForScaleNote(note, index: index, rootMidi: rootMidi, rootPitchClass: rootPitchClass)
+                    let midiToPlay = UInt8(item.midi)
                     audioManager.playNote(midiToPlay, velocity: 80)
                     
                     // Stop note after duration
@@ -875,7 +929,7 @@ struct ActiveScaleQuizView: View {
         }
         
         // After all notes played, clear highlight
-        let totalDuration = Double(sortedNotes.count) * Double(tempoMS) / 1000.0 + 0.3
+        let totalDuration = Double(playbackSequence.count) * Double(tempoMS) / 1000.0 + 0.3
         DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
             withAnimation {
                 self.highlightedNoteIndex = nil
