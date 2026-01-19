@@ -223,10 +223,10 @@ class JazzScaleDatabase {
                 name: "Bebop Dorian",
                 symbol: "Bebop Dor",
                 degrees: [
-                    .root, .second, .flatThird, .third, .fourth, .fifth, .sixth, .flatSeven, .octave
+                    .root, .second, .flatThird, .fourth, .fifth, .sixth, .flatSeven, .seventh, .octave
                 ],
                 difficulty: .advanced,
-                description: "Dorian with added natural 3rd. For minor 7th chord improvisation."
+                description: "Dorian with added major 7th passing tone. For minor 7th chord improvisation."
             ),
             
             ScaleType(
