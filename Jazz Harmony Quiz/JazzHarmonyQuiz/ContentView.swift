@@ -24,8 +24,8 @@ struct ContentView: View {
                     }
                     .padding(.top)
                     
-                    // Stats Dashboard Card
-                    StatsDashboardCard()
+                    // Stats Dashboard Card (tap to view profile)
+                    StatsDashboardCard(navigationPath: $navigationPath)
                     
                     // Quick Actions
                     QuickActionsSection(navigationPath: $navigationPath)
@@ -51,8 +51,10 @@ struct ContentView: View {
                     ScaleDrillView()
                 case "intervalDrill":
                     IntervalDrillView()
-                case "leaderboard":
-                    LeaderboardView()
+                case "scoreboard":
+                    ScoreboardView()
+                case "profile":
+                    PlayerProfileView()
                 case "dailyChallenge":
                     ChordDrillView(startDailyChallenge: true)
                 case "quickPractice":
@@ -73,23 +75,44 @@ struct ContentView: View {
 
 struct StatsDashboardCard: View {
     @EnvironmentObject var quizGame: QuizGame
+    @Binding var navigationPath: NavigationPath
     
     private var playerStats: PlayerStats { PlayerStats.shared }
+    private var playerProfile: PlayerProfile { PlayerProfile.shared }
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Rank and Rating Row
-            HStack(spacing: 20) {
-                // Rank Badge
-                VStack(spacing: 4) {
-                    Text(playerStats.currentRank.emoji)
-                        .font(.system(size: 44))
-                    Text(playerStats.currentRank.title)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
+        Button(action: {
+            navigationPath.append("profile")
+        }) {
+            VStack(spacing: 16) {
+                // Avatar and Rank Row
+                HStack(spacing: 20) {
+                    // Avatar
+                    VStack(spacing: 4) {
+                        Text(playerProfile.avatar.rawValue)
+                            .font(.system(size: 40))
+                        Text(playerProfile.playerName)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity)
+                    
+                    // Divider
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 1, height: 60)
+                    
+                    // Rank Badge
+                    VStack(spacing: 4) {
+                        Text(playerStats.currentRank.emoji)
+                            .font(.system(size: 36))
+                        Text(playerStats.currentRank.title)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
                 
                 // Divider
                 Rectangle()
@@ -162,7 +185,9 @@ struct StatsDashboardCard: View {
                     label: "Time"
                 )
             }
+            }
         }
+        .buttonStyle(PlainButtonStyle())
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(16)

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CadenceLeaderboardView: View {
+struct CadenceScoreboardView: View {
     @EnvironmentObject var cadenceGame: CadenceGame
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
@@ -27,8 +27,8 @@ struct CadenceLeaderboardView: View {
 
     var body: some View {
         VStack {
-            if cadenceGame.leaderboard.isEmpty {
-                EmptyCadenceLeaderboardView()
+            if cadenceGame.scoreboard.isEmpty {
+                EmptyCadenceScoreboardView()
             } else {
                 VStack(spacing: 0) {
                     // Sort Options
@@ -44,29 +44,29 @@ struct CadenceLeaderboardView: View {
                     .pickerStyle(SegmentedPickerStyle())
                     .padding()
                     .onChange(of: selectedSortOption) { newOption in
-                        sortLeaderboard(by: newOption)
+                        sortScoreboard(by: newOption)
                     }
 
-                    // Leaderboard List
+                    // Scoreboard List
                     List(sortedResults, id: \.id) { result in
-                        CadenceLeaderboardRowView(result: result, rank: sortedResults.firstIndex(of: result)! + 1)
+                        CadenceScoreboardRowView(result: result, rank: sortedResults.firstIndex(of: result)! + 1)
                     }
                     .listStyle(PlainListStyle())
                 }
             }
         }
-        .navigationTitle("Cadence Leaderboard")
+        .navigationTitle("Cadence Scoreboard")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
-            cadenceGame.loadLeaderboardFromUserDefaults()
-            sortLeaderboard(by: selectedSortOption)
+            cadenceGame.loadScoreboardFromUserDefaults()
+            sortScoreboard(by: selectedSortOption)
         }
-        .onChange(of: cadenceGame.leaderboard) { _ in
-            sortLeaderboard(by: selectedSortOption)
+        .onChange(of: cadenceGame.scoreboard) { _ in
+            sortScoreboard(by: selectedSortOption)
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                if !cadenceGame.leaderboard.isEmpty {
+                if !cadenceGame.scoreboard.isEmpty {
                     Button("Clear") {
                         showingClearConfirmation = true
                     }
@@ -74,50 +74,50 @@ struct CadenceLeaderboardView: View {
                 }
             }
         }
-        .alert("Clear Leaderboard", isPresented: $showingClearConfirmation) {
+        .alert("Clear Scoreboard", isPresented: $showingClearConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Clear All", role: .destructive) {
-                clearLeaderboard()
+                clearScoreboard()
             }
         } message: {
-            Text("Are you sure you want to clear all cadence leaderboard entries? This action cannot be undone.")
+            Text("Are you sure you want to clear all cadence scoreboard entries? This action cannot be undone.")
         }
     }
 
     private var sortedResults: [CadenceResult] {
-        return cadenceGame.leaderboard
+        return cadenceGame.scoreboard
     }
 
-    private func sortLeaderboard(by option: SortOption) {
+    private func sortScoreboard(by option: SortOption) {
         switch option {
         case .score:
-            cadenceGame.leaderboard.sort { first, second in
+            cadenceGame.scoreboard.sort { first, second in
                 if first.score != second.score {
                     return first.score > second.score
                 }
                 return first.totalTime < second.totalTime
             }
         case .time:
-            cadenceGame.leaderboard.sort { first, second in
+            cadenceGame.scoreboard.sort { first, second in
                 if first.totalTime != second.totalTime {
                     return first.totalTime < second.totalTime
                 }
                 return first.score > second.score
             }
         case .recent:
-            cadenceGame.leaderboard.sort { first, second in
+            cadenceGame.scoreboard.sort { first, second in
                 return first.date > second.date
             }
         }
     }
 
-    private func clearLeaderboard() {
-        cadenceGame.leaderboard.removeAll()
-        cadenceGame.saveLeaderboardToUserDefaults()
+    private func clearScoreboard() {
+        cadenceGame.scoreboard.removeAll()
+        cadenceGame.saveScoreboardToUserDefaults()
     }
 }
 
-struct EmptyCadenceLeaderboardView: View {
+struct EmptyCadenceScoreboardView: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) private var dismiss
@@ -157,7 +157,7 @@ struct EmptyCadenceLeaderboardView: View {
     }
 }
 
-struct CadenceLeaderboardRowView: View {
+struct CadenceScoreboardRowView: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     let result: CadenceResult
@@ -260,7 +260,7 @@ struct CadenceLeaderboardRowView: View {
 // MARK: - Preview
 #Preview {
     NavigationView {
-        CadenceLeaderboardView()
+        CadenceScoreboardView()
             .environmentObject(CadenceGame())
             .environmentObject(SettingsManager.shared)
     }

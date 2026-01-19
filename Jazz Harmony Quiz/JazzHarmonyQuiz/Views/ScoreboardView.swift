@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct LeaderboardView: View {
+struct ScoreboardView: View {
     @EnvironmentObject var quizGame: QuizGame
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
@@ -27,8 +27,8 @@ struct LeaderboardView: View {
     
     var body: some View {
         VStack {
-            if quizGame.leaderboard.isEmpty {
-                EmptyLeaderboardView()
+            if quizGame.scoreboard.isEmpty {
+                EmptyScoreboardView()
             } else {
                 VStack(spacing: 0) {
                     // Sort Options
@@ -44,31 +44,31 @@ struct LeaderboardView: View {
                     .pickerStyle(SegmentedPickerStyle())
                     .padding()
                     .onChange(of: selectedSortOption) { newOption in
-                        sortLeaderboard(by: newOption)
+                        sortScoreboard(by: newOption)
                     }
                     
-                    // Leaderboard List
+                    // Scoreboard List
                     List(sortedResults, id: \.id) { result in
-                        LeaderboardRowView(result: result, rank: sortedResults.firstIndex(of: result)! + 1)
+                        ScoreboardRowView(result: result, rank: sortedResults.firstIndex(of: result)! + 1)
                     }
                     .listStyle(PlainListStyle())
                 }
             }
         }
-        .navigationTitle("Leaderboard")
+        .navigationTitle("Scoreboard")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
-            quizGame.loadLeaderboardFromUserDefaults()
-            // Ensure the leaderboard is shown sorted according to the currently selected option
-            sortLeaderboard(by: selectedSortOption)
+            quizGame.loadScoreboardFromUserDefaults()
+            // Ensure the scoreboard is shown sorted according to the currently selected option
+            sortScoreboard(by: selectedSortOption)
         }
-        .onChange(of: quizGame.leaderboard) { _ in
-            // If the underlying leaderboard changes elsewhere, keep it sorted according to the selected option
-            sortLeaderboard(by: selectedSortOption)
+        .onChange(of: quizGame.scoreboard) { _ in
+            // If the underlying scoreboard changes elsewhere, keep it sorted according to the selected option
+            sortScoreboard(by: selectedSortOption)
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                if !quizGame.leaderboard.isEmpty {
+                if !quizGame.scoreboard.isEmpty {
                     Button("Clear") {
                         showingClearConfirmation = true
                     }
@@ -76,51 +76,51 @@ struct LeaderboardView: View {
                 }
             }
         }
-        .alert("Clear Leaderboard", isPresented: $showingClearConfirmation) {
+        .alert("Clear Scoreboard", isPresented: $showingClearConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Clear All", role: .destructive) {
-                clearLeaderboard()
+                clearScoreboard()
             }
         } message: {
-            Text("Are you sure you want to clear all leaderboard entries? This action cannot be undone.")
+            Text("Are you sure you want to clear all scoreboard entries? This action cannot be undone.")
         }
     }
     
-    // Now read directly from the model's leaderboard which we explicitly sort when the option changes
+    // Now read directly from the model's scoreboard which we explicitly sort when the option changes
     private var sortedResults: [QuizResult] {
-        return quizGame.leaderboard
+        return quizGame.scoreboard
     }
     
-    private func sortLeaderboard(by option: SortOption) {
+    private func sortScoreboard(by option: SortOption) {
         switch option {
         case .score:
-            quizGame.leaderboard.sort { first, second in
+            quizGame.scoreboard.sort { first, second in
                 if first.score != second.score {
                     return first.score > second.score
                 }
                 return first.totalTime < second.totalTime
             }
         case .time:
-            quizGame.leaderboard.sort { first, second in
+            quizGame.scoreboard.sort { first, second in
                 if first.totalTime != second.totalTime {
                     return first.totalTime < second.totalTime
                 }
                 return first.score > second.score
             }
         case .recent:
-            quizGame.leaderboard.sort { first, second in
+            quizGame.scoreboard.sort { first, second in
                 return first.date > second.date
             }
         }
     }
     
-    private func clearLeaderboard() {
-        quizGame.leaderboard.removeAll()
-        quizGame.saveLeaderboardToUserDefaults()
+    private func clearScoreboard() {
+        quizGame.scoreboard.removeAll()
+        quizGame.saveScoreboardToUserDefaults()
     }
 }
 
-struct EmptyLeaderboardView: View {
+struct EmptyScoreboardView: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) private var dismiss
@@ -160,7 +160,7 @@ struct EmptyLeaderboardView: View {
     }
 }
 
-struct LeaderboardRowView: View {
+struct ScoreboardRowView: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     let result: QuizResult
@@ -251,7 +251,7 @@ struct LeaderboardRowView: View {
 // MARK: - Preview
 #Preview {
     NavigationView {
-        LeaderboardView()
+        ScoreboardView()
             .environmentObject(QuizGame())
     }
 }

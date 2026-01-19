@@ -364,10 +364,10 @@ struct QuizSetupView: View {
                 .disabled(selectedQuestionTypes.isEmpty)
                 
                 // Leaderboard Button
-                NavigationLink(destination: LeaderboardView().environmentObject(quizGame)) {
+                NavigationLink(destination: ScoreboardView().environmentObject(quizGame)) {
                     HStack {
                         Image(systemName: "trophy.fill")
-                        Text("View Leaderboard")
+                        Text("View Scoreboard")
                     }
                     .font(.subheadline)
                     .foregroundColor(.orange)
@@ -1119,10 +1119,10 @@ struct ChordDrillResultsView: View {
                             .cornerRadius(12)
                         }
                         
-                        NavigationLink(destination: LeaderboardView()) {
+                        NavigationLink(destination: ScoreboardView()) {
                             HStack {
                                 Image(systemName: "trophy")
-                                Text("View Leaderboard")
+                                Text("View Scoreboard")
                             }
                             .font(.headline)
                             .foregroundColor(.white)

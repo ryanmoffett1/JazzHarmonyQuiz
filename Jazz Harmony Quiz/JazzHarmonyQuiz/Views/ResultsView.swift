@@ -122,10 +122,10 @@ struct ResultsView: View {
                                 .cornerRadius(12)
                             }
 
-                            NavigationLink(destination: LeaderboardView().environmentObject(quizGame).environmentObject(settings)) {
+                            NavigationLink(destination: ScoreboardView().environmentObject(quizGame).environmentObject(settings)) {
                                 HStack {
                                     Image(systemName: "trophy")
-                                    Text("View Leaderboard")
+                                    Text("View Scoreboard")
                                 }
                                 .font(.headline)
                                 .foregroundColor(.white)

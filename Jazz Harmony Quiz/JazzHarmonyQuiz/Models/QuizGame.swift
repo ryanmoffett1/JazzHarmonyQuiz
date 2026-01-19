@@ -672,9 +672,9 @@ class QuizGame: ObservableObject {
             isCorrect: questionResults
         )
         
-        // Save to leaderboard
+        // Save to scoreboard
         if let result = currentResult {
-            saveToLeaderboard(result)
+            saveToScoreboard(result)
         }
         
         // Calculate and apply rating change
@@ -709,6 +709,15 @@ class QuizGame: ObservableObject {
             time: totalQuizTime,
             wasPerfectScore: wasPerfectScore
         )
+        
+        // Record to PlayerProfile for RPG stats
+        PlayerProfile.shared.recordPractice(
+            mode: .chordDrill,
+            questions: totalQuestions,
+            correct: correctAnswers,
+            time: totalQuizTime
+        )
+        PlayerProfile.shared.addXP(ratingChange, from: .chordDrill)
         
         // Update per-chord and per-key stats (mode-specific)
         for question in questions {
@@ -828,13 +837,13 @@ class QuizGame: ObservableObject {
         return userPitchClasses == correctPitchClasses
     }
     
-    // MARK: - Leaderboard Management
+    // MARK: - Scoreboard Management
     
-    @Published var leaderboard: [QuizResult] = []
+    @Published var scoreboard: [QuizResult] = []
     
-    private func saveToLeaderboard(_ result: QuizResult) {
-        leaderboard.append(result)
-        leaderboard.sort { first, second in
+    private func saveToScoreboard(_ result: QuizResult) {
+        scoreboard.append(result)
+        scoreboard.sort { first, second in
             // Sort by accuracy first, then by time
             if first.accuracy != second.accuracy {
                 return first.accuracy > second.accuracy
@@ -843,24 +852,24 @@ class QuizGame: ObservableObject {
         }
         
         // Keep only top 10
-        if leaderboard.count > 10 {
-            leaderboard = Array(leaderboard.prefix(10))
+        if scoreboard.count > 10 {
+            scoreboard = Array(scoreboard.prefix(10))
         }
         
         // Save to UserDefaults
-        saveLeaderboardToUserDefaults()
+        saveScoreboardToUserDefaults()
     }
     
-    func saveLeaderboardToUserDefaults() {
-        if let encoded = try? JSONEncoder().encode(leaderboard) {
-            UserDefaults.standard.set(encoded, forKey: "JazzHarmonyLeaderboard")
+    func saveScoreboardToUserDefaults() {
+        if let encoded = try? JSONEncoder().encode(scoreboard) {
+            UserDefaults.standard.set(encoded, forKey: "JazzHarmonyScoreboard")
         }
     }
     
-    func loadLeaderboardFromUserDefaults() {
-        if let data = UserDefaults.standard.data(forKey: "JazzHarmonyLeaderboard"),
+    func loadScoreboardFromUserDefaults() {
+        if let data = UserDefaults.standard.data(forKey: "JazzHarmonyScoreboard"),
            let decoded = try? JSONDecoder().decode([QuizResult].self, from: data) {
-            leaderboard = decoded
+            scoreboard = decoded
         }
     }
     
@@ -1013,7 +1022,7 @@ class QuizGame: ObservableObject {
     // MARK: - Initialization
     
     init() {
-        loadLeaderboardFromUserDefaults()
+        loadScoreboardFromUserDefaults()
         loadStatsFromUserDefaults()
         // Reset quiz state on app launch
         resetQuizState()

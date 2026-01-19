@@ -309,11 +309,11 @@ struct ScaleSetupView: View {
                 }
                 .disabled(selectedQuestionTypes.isEmpty)
                 
-                // Scale Leaderboard Button
-                NavigationLink(destination: ScaleLeaderboardView().environmentObject(scaleGame)) {
+                // Scale Scoreboard Button
+                NavigationLink(destination: ScaleScoreboardView().environmentObject(scaleGame)) {
                     HStack {
                         Image(systemName: "trophy.fill")
-                        Text("View Scale Leaderboard")
+                        Text("View Scale Scoreboard")
                     }
                     .font(.subheadline)
                     .foregroundColor(.orange)
@@ -1215,10 +1215,10 @@ struct ScaleDrillResultsView: View {
                         .cornerRadius(12)
                     }
                     
-                    NavigationLink(destination: ScaleLeaderboardView().environmentObject(scaleGame)) {
+                    NavigationLink(destination: ScaleScoreboardView().environmentObject(scaleGame)) {
                         HStack {
                             Image(systemName: "trophy.fill")
-                            Text("View Leaderboard")
+                            Text("View Scoreboard")
                         }
                         .font(.headline)
                         .foregroundColor(.orange)
@@ -1285,9 +1285,9 @@ struct ScaleDrillResultsView: View {
     }
 }
 
-// MARK: - Scale Leaderboard View
+// MARK: - Scale Scoreboard View
 
-struct ScaleLeaderboardView: View {
+struct ScaleScoreboardView: View {
     @EnvironmentObject var scaleGame: ScaleGame
     @State private var sortOption: SortOption = .accuracy
     
@@ -1300,11 +1300,11 @@ struct ScaleLeaderboardView: View {
     var sortedResults: [ScaleQuizResult] {
         switch sortOption {
         case .accuracy:
-            return scaleGame.leaderboard.sorted { $0.accuracy > $1.accuracy }
+            return scaleGame.scoreboard.sorted { $0.accuracy > $1.accuracy }
         case .time:
-            return scaleGame.leaderboard.sorted { $0.totalTime < $1.totalTime }
+            return scaleGame.scoreboard.sorted { $0.totalTime < $1.totalTime }
         case .date:
-            return scaleGame.leaderboard.sorted { $0.date > $1.date }
+            return scaleGame.scoreboard.sorted { $0.date > $1.date }
         }
     }
     
@@ -1319,7 +1319,7 @@ struct ScaleLeaderboardView: View {
             .pickerStyle(SegmentedPickerStyle())
             .padding()
             
-            if scaleGame.leaderboard.isEmpty {
+            if scaleGame.scoreboard.isEmpty {
                 VStack(spacing: 16) {
                     Image(systemName: "waveform.path")
                         .font(.system(size: 60))
@@ -1336,18 +1336,18 @@ struct ScaleLeaderboardView: View {
             } else {
                 List {
                     ForEach(Array(sortedResults.enumerated()), id: \.element.id) { index, result in
-                        ScaleLeaderboardRow(result: result, rank: index + 1)
+                        ScaleScoreboardRow(result: result, rank: index + 1)
                     }
                 }
                 .listStyle(PlainListStyle())
             }
         }
-        .navigationTitle("Scale Leaderboard")
+        .navigationTitle("Scale Scoreboard")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
-struct ScaleLeaderboardRow: View {
+struct ScaleScoreboardRow: View {
     let result: ScaleQuizResult
     let rank: Int
     

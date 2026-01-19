@@ -280,9 +280,9 @@ class CadenceGame: ObservableObject {
         // Stop speed round timer if active
         stopSpeedRoundTimer()
 
-        // Save to leaderboard
+        // Save to scoreboard
         if let result = currentResult {
-            saveToLeaderboard(result)
+            saveToScoreboard(result)
         }
         
         // Calculate rating change
@@ -298,6 +298,15 @@ class CadenceGame: ObservableObject {
             time: totalQuizTime,
             wasPerfectScore: wasPerfectScore
         )
+        
+        // Record to PlayerProfile for RPG stats
+        PlayerProfile.shared.recordPractice(
+            mode: .cadenceDrill,
+            questions: totalQuestions,
+            correct: correctAnswers,
+            time: totalQuizTime
+        )
+        PlayerProfile.shared.addXP(ratingChange, from: .cadenceDrill)
         
         // Store for UI
         lastRatingChange = ratingChange
@@ -494,13 +503,13 @@ class CadenceGame: ObservableObject {
         return true
     }
 
-    // MARK: - Leaderboard Management
+    // MARK: - Scoreboard Management
 
-    @Published var leaderboard: [CadenceResult] = []
+    @Published var scoreboard: [CadenceResult] = []
 
-    private func saveToLeaderboard(_ result: CadenceResult) {
-        leaderboard.append(result)
-        leaderboard.sort { first, second in
+    private func saveToScoreboard(_ result: CadenceResult) {
+        scoreboard.append(result)
+        scoreboard.sort { first, second in
             // Sort by accuracy first, then by time
             if first.accuracy != second.accuracy {
                 return first.accuracy > second.accuracy
@@ -509,24 +518,24 @@ class CadenceGame: ObservableObject {
         }
 
         // Keep only top 10
-        if leaderboard.count > 10 {
-            leaderboard = Array(leaderboard.prefix(10))
+        if scoreboard.count > 10 {
+            scoreboard = Array(scoreboard.prefix(10))
         }
 
         // Save to UserDefaults
-        saveLeaderboardToUserDefaults()
+        saveScoreboardToUserDefaults()
     }
 
-    func saveLeaderboardToUserDefaults() {
-        if let encoded = try? JSONEncoder().encode(leaderboard) {
-            UserDefaults.standard.set(encoded, forKey: "JazzHarmonyCadenceLeaderboard")
+    func saveScoreboardToUserDefaults() {
+        if let encoded = try? JSONEncoder().encode(scoreboard) {
+            UserDefaults.standard.set(encoded, forKey: "JazzHarmonyCadenceScoreboard")
         }
     }
 
-    func loadLeaderboardFromUserDefaults() {
-        if let data = UserDefaults.standard.data(forKey: "JazzHarmonyCadenceLeaderboard"),
+    func loadScoreboardFromUserDefaults() {
+        if let data = UserDefaults.standard.data(forKey: "JazzHarmonyCadenceScoreboard"),
            let decoded = try? JSONDecoder().decode([CadenceResult].self, from: data) {
-            leaderboard = decoded
+            scoreboard = decoded
         }
     }
 
@@ -995,7 +1004,7 @@ class CadenceGame: ObservableObject {
     // MARK: - Initialization
 
     init() {
-        loadLeaderboardFromUserDefaults()
+        loadScoreboardFromUserDefaults()
         loadStreakFromUserDefaults()
         loadLifetimeStats()
         loadLastQuizSettings()

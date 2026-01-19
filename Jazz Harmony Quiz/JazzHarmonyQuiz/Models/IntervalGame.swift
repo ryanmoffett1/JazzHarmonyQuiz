@@ -15,7 +15,7 @@ class IntervalGame: ObservableObject {
     @Published var elapsedTime: TimeInterval = 0
     @Published var isQuizActive: Bool = false
     @Published var showingResults: Bool = false
-    @Published var leaderboard: [IntervalQuizResult] = []
+    @Published var scoreboard: [IntervalQuizResult] = []
     @Published var lastRatingChange: Int = 0
     @Published var previousRank: Rank?
     @Published var newRank: Rank?
@@ -39,12 +39,12 @@ class IntervalGame: ObservableObject {
     
     // MARK: - Persistence Keys
     
-    private let leaderboardKey = "intervalLeaderboard"
+    private let scoreboardKey = "intervalScoreboard"
     
     // MARK: - Initialization
     
     init() {
-        loadLeaderboard()
+        loadScoreboard()
     }
     
     // MARK: - Quiz Management
@@ -216,6 +216,15 @@ class IntervalGame: ObservableObject {
             wasPerfectScore: wasPerfectScore
         )
         
+        // Record to PlayerProfile for RPG stats
+        PlayerProfile.shared.recordPractice(
+            mode: .intervalDrill,
+            questions: totalQuestions,
+            correct: correctAnswers,
+            time: elapsedTime
+        )
+        PlayerProfile.shared.addXP(ratingChange, from: .intervalDrill)
+        
         lastRatingChange = ratingChange
         didRankUp = ratingResult.didRankUp
         previousRank = ratingResult.previousRank
@@ -235,7 +244,7 @@ class IntervalGame: ObservableObject {
             ratingChange: ratingChange
         )
         
-        addToLeaderboard(result)
+        addToScoreboard(result)
     }
     
     /// Calculate rating change based on performance
@@ -288,30 +297,30 @@ class IntervalGame: ObservableObject {
         }
     }
     
-    // MARK: - Leaderboard
+    // MARK: - Scoreboard
     
-    private func addToLeaderboard(_ result: IntervalQuizResult) {
-        leaderboard.append(result)
-        leaderboard.sort {
+    private func addToScoreboard(_ result: IntervalQuizResult) {
+        scoreboard.append(result)
+        scoreboard.sort {
             $0.accuracy > $1.accuracy ||
             ($0.accuracy == $1.accuracy && $0.totalTime < $1.totalTime)
         }
-        leaderboard = Array(leaderboard.prefix(10))
-        saveLeaderboard()
+        scoreboard = Array(scoreboard.prefix(10))
+        saveScoreboard()
     }
     
     // MARK: - Persistence
     
-    private func loadLeaderboard() {
-        if let data = UserDefaults.standard.data(forKey: leaderboardKey),
+    private func loadScoreboard() {
+        if let data = UserDefaults.standard.data(forKey: scoreboardKey),
            let decoded = try? JSONDecoder().decode([IntervalQuizResult].self, from: data) {
-            leaderboard = decoded
+            scoreboard = decoded
         }
     }
     
-    private func saveLeaderboard() {
-        if let encoded = try? JSONEncoder().encode(leaderboard) {
-            UserDefaults.standard.set(encoded, forKey: leaderboardKey)
+    private func saveScoreboard() {
+        if let encoded = try? JSONEncoder().encode(scoreboard) {
+            UserDefaults.standard.set(encoded, forKey: scoreboardKey)
         }
     }
     

@@ -111,15 +111,15 @@ class ScaleGame: ObservableObject {
     @Published var selectedScaleSymbols: Set<String> = []  // Empty means all scale types
     @Published var selectedKeyDifficulty: KeyDifficulty = .all
     
-    // MARK: - Leaderboard
-    @Published var leaderboard: [ScaleQuizResult] = []
+    // MARK: - Scoreboard
+    @Published var scoreboard: [ScaleQuizResult] = []
     
     private let scaleDatabase = JazzScaleDatabase.shared
     private var quizStartTime: Date?
     
     // MARK: - UserDefaults Keys
     private let statsKey = "JazzHarmonyScaleDrillStats"
-    private let leaderboardKey = "JazzHarmonyScaleLeaderboard"
+    private let scoreboardKey = "JazzHarmonyScaleScoreboard"
     
     init() {
         loadFromUserDefaults()
@@ -264,6 +264,15 @@ class ScaleGame: ObservableObject {
             wasPerfectScore: wasPerfectScore
         )
         
+        // Record to PlayerProfile for RPG stats
+        PlayerProfile.shared.recordPractice(
+            mode: .scaleDrill,
+            questions: totalQuestions,
+            correct: correctCount,
+            time: totalQuizTime
+        )
+        PlayerProfile.shared.addXP(ratingChange, from: .scaleDrill)
+        
         // Update streak
         playerStats.updateStreak()
         
@@ -301,9 +310,9 @@ class ScaleGame: ObservableObject {
             stats.perfectScoreStreak = 0
         }
         
-        // Add to leaderboard
+        // Add to scoreboard
         if let result = currentResult {
-            addToLeaderboard(result)
+            addToScoreboard(result)
         }
         
         saveToUserDefaults()
@@ -360,15 +369,15 @@ class ScaleGame: ObservableObject {
         return change
     }
     
-    // MARK: - Leaderboard
+    // MARK: - Scoreboard
     
-    private func addToLeaderboard(_ result: ScaleQuizResult) {
-        leaderboard.append(result)
-        leaderboard.sort { 
+    private func addToScoreboard(_ result: ScaleQuizResult) {
+        scoreboard.append(result)
+        scoreboard.sort { 
             $0.accuracy > $1.accuracy || 
             ($0.accuracy == $1.accuracy && $0.totalTime < $1.totalTime) 
         }
-        leaderboard = Array(leaderboard.prefix(10))
+        scoreboard = Array(scoreboard.prefix(10))
     }
     
     // MARK: - Quiz State Management
@@ -418,9 +427,9 @@ class ScaleGame: ObservableObject {
             UserDefaults.standard.set(encodedStats, forKey: statsKey)
         }
         
-        // Save leaderboard
-        if let encodedLeaderboard = try? JSONEncoder().encode(leaderboard) {
-            UserDefaults.standard.set(encodedLeaderboard, forKey: leaderboardKey)
+        // Save scoreboard
+        if let encodedScoreboard = try? JSONEncoder().encode(scoreboard) {
+            UserDefaults.standard.set(encodedScoreboard, forKey: scoreboardKey)
         }
     }
     
@@ -431,10 +440,10 @@ class ScaleGame: ObservableObject {
             stats = decoded
         }
         
-        // Load leaderboard
-        if let data = UserDefaults.standard.data(forKey: leaderboardKey),
+        // Load scoreboard
+        if let data = UserDefaults.standard.data(forKey: scoreboardKey),
            let decoded = try? JSONDecoder().decode([ScaleQuizResult].self, from: data) {
-            leaderboard = decoded
+            scoreboard = decoded
         }
     }
 }

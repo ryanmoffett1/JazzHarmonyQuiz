@@ -304,9 +304,9 @@ struct IntervalSetupView: View {
                 .disabled(selectedQuestionTypes.isEmpty)
                 .padding(.horizontal)
                 
-                // Leaderboard Preview
-                if !intervalGame.leaderboard.isEmpty {
-                    IntervalLeaderboardPreview()
+                // Scoreboard Preview
+                if !intervalGame.scoreboard.isEmpty {
+                    IntervalScoreboardPreview()
                         .padding(.horizontal)
                 }
                 
@@ -984,9 +984,9 @@ fileprivate struct RankUpView: View {
     }
 }
 
-// MARK: - Leaderboard Preview
+// MARK: - Scoreboard Preview
 
-struct IntervalLeaderboardPreview: View {
+struct IntervalScoreboardPreview: View {
     @EnvironmentObject var intervalGame: IntervalGame
     
     var body: some View {
@@ -999,8 +999,8 @@ struct IntervalLeaderboardPreview: View {
                 Spacer()
             }
             
-            ForEach(intervalGame.leaderboard.prefix(3).indices, id: \.self) { index in
-                let result = intervalGame.leaderboard[index]
+            ForEach(intervalGame.scoreboard.prefix(3).indices, id: \.self) { index in
+                let result = intervalGame.scoreboard[index]
                 HStack {
                     Text(medalEmoji(for: index))
                     Text("\(Int(result.accuracy))%")

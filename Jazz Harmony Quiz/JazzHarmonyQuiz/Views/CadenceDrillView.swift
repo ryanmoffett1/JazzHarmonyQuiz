@@ -614,7 +614,7 @@ struct CadenceSetupView: View {
                 }
 
                 // Leaderboard Button
-                NavigationLink(destination: CadenceLeaderboardView()) {
+                NavigationLink(destination: CadenceScoreboardView()) {
                     HStack {
                         Image(systemName: "trophy.fill")
                         Text("View Cadence Leaderboard")
@@ -1489,10 +1489,10 @@ struct CadenceResultsView: View {
                             .cornerRadius(12)
                         }
 
-                        NavigationLink(destination: CadenceLeaderboardView()) {
+                        NavigationLink(destination: CadenceScoreboardView()) {
                             HStack {
                                 Image(systemName: "trophy")
-                                Text("View Leaderboard")
+                                Text("View Scoreboard")
                             }
                             .font(.headline)
                             .foregroundColor(.white)
