@@ -1800,7 +1800,8 @@ struct ActiveChordIdentificationView: View {
                         selection: $chordSelections[currentChordIndex],
                         availableQualities: availableQualities,
                         disabled: false,
-                        onComplete: nil
+                        onComplete: nil,
+                        keyContext: question.cadence.key
                     )
                     .padding(.horizontal)
                 }
