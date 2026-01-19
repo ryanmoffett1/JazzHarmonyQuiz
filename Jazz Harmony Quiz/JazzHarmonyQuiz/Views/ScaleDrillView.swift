@@ -592,7 +592,28 @@ struct ActiveScaleQuizView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
                     .scaleEffect(isHighlighted ? 1.15 : 1.0)
-                    .animation(.easeInOut(duration: 0.15), value: isHighlighted)
+                    .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
+                }
+                
+                // Ghosted 8va note at the end (for playback visualization)
+                // Only show if user entered the correct number of notes (complete scale)
+                if sortedNotes.count == question.correctNotes.count {
+                    let isOctaveHighlighted = highlightedNoteIndex == sortedNotes.count
+                    let rootNote = sortedNotes.first ?? question.scale.root
+                    
+                    VStack(spacing: 2) {
+                        Text(displayNoteName(rootNote, for: question.scale))
+                            .font(.headline)
+                        Text("8va")
+                            .font(.caption2)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(isOctaveHighlighted ? Color.blue : Color.gray.opacity(0.3))
+                    .foregroundColor(isOctaveHighlighted ? .white : .white.opacity(0.5))
+                    .cornerRadius(8)
+                    .scaleEffect(isOctaveHighlighted ? 1.15 : 1.0)
+                    .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
                 }
             }
             .padding(.horizontal)
@@ -880,38 +901,65 @@ struct ActiveScaleQuizView: View {
         guard let question = scaleGame.currentQuestion else { return }
         
         let rootPitchClass = question.scale.root.pitchClass
+        let rootMidi = question.scale.root.midiNumber
         let sortedNotes = sortNotesForScale(userAnswerNotes, rootPitchClass: rootPitchClass)
-        let tempoMS = 250  // Fast tempo for scale playback
+        let beatDuration: TimeInterval = 0.3  // 300ms per note
         
-        // Play and highlight each note
+        // Build the full sequence: ascending + octave + descending (like correct answer playback)
+        var playbackSequence: [(midi: Int, displayIndex: Int)] = []
+        
+        // Ascending: play each note from root up (indices 0 to count-1)
         for (index, note) in sortedNotes.enumerated() {
-            let delay = Double(index) * Double(tempoMS) / 1000.0
+            let interval = (note.pitchClass - rootPitchClass + 12) % 12
+            let midi = rootMidi + interval
+            playbackSequence.append((midi: midi, displayIndex: index))
+        }
+        
+        // Only add octave and descending if user entered correct number of notes
+        if sortedNotes.count == question.correctNotes.count {
+            // Octave (8va) - display index is sortedNotes.count
+            playbackSequence.append((midi: rootMidi + 12, displayIndex: sortedNotes.count))
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    self.highlightedNoteIndex = index
+            // Descending: go back down, highlighting the same display indices in reverse
+            for i in stride(from: sortedNotes.count - 1, through: 0, by: -1) {
+                let note = sortedNotes[i]
+                let interval = (note.pitchClass - rootPitchClass + 12) % 12
+                let midi = rootMidi + interval
+                playbackSequence.append((midi: midi, displayIndex: i))
+            }
+        }
+        
+        // Use pre-calculated absolute times for precise scheduling
+        let baseTime = DispatchTime.now()
+        let totalNotes = playbackSequence.count
+        
+        for (index, item) in playbackSequence.enumerated() {
+            let noteStartTime = baseTime + .milliseconds(Int(Double(index) * beatDuration * 1000))
+            let noteStopTime = baseTime + .milliseconds(Int((Double(index) + 0.8) * beatDuration * 1000))
+            
+            // Schedule highlight update
+            DispatchQueue.main.asyncAfter(deadline: noteStartTime) { [self] in
+                self.highlightedNoteIndex = item.displayIndex
+            }
+            
+            // Schedule note on
+            if settings.audioEnabled {
+                DispatchQueue.main.asyncAfter(deadline: noteStartTime) { [self] in
+                    audioManager.playNote(UInt8(item.midi), velocity: 80)
                 }
                 
-                // Play the actual MIDI note the user selected
-                if settings.audioEnabled {
-                    let midiToPlay = UInt8(note.midiNumber)
-                    audioManager.playNote(midiToPlay, velocity: 80)
-                    
-                    // Stop note after duration
-                    DispatchQueue.main.asyncAfter(deadline: .now() + Double(tempoMS) / 1000.0 * 0.8) {
-                        audioManager.stopNote(midiToPlay)
-                    }
+                // Schedule note off
+                DispatchQueue.main.asyncAfter(deadline: noteStopTime) { [self] in
+                    audioManager.stopNote(UInt8(item.midi))
                 }
             }
         }
         
         // After all notes played, clear highlight and show continue button
-        let totalDuration = Double(sortedNotes.count) * Double(tempoMS) / 1000.0 + 0.3
-        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
-            withAnimation {
-                self.highlightedNoteIndex = nil
-                self.showContinueButton = true
-            }
+        let endTime = baseTime + .milliseconds(Int(Double(totalNotes) * beatDuration * 1000 + 200))
+        DispatchQueue.main.asyncAfter(deadline: endTime) { [self] in
+            self.highlightedNoteIndex = nil
+            self.showContinueButton = true
         }
     }
     
