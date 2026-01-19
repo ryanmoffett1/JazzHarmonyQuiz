@@ -304,9 +304,9 @@ struct IntervalSetupView: View {
                 .disabled(selectedQuestionTypes.isEmpty)
                 .padding(.horizontal)
                 
-                // Leaderboard Preview
-                if !intervalGame.leaderboard.isEmpty {
-                    IntervalLeaderboardPreview()
+                // Scoreboard Preview
+                if !intervalGame.scoreboard.isEmpty {
+                    IntervalScoreboardPreview()
                         .padding(.horizontal)
                 }
                 
@@ -850,10 +850,10 @@ struct IntervalResultsView: View {
                 
                 // Stats Grid
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                    IntervalStatCard(title: "Time", value: formatTime(intervalGame.elapsedTime), icon: "clock")
-                    IntervalStatCard(title: "Difficulty", value: intervalGame.selectedDifficulty.rawValue, icon: "speedometer")
-                    IntervalStatCard(title: "Avg/Question", value: formatTime(intervalGame.elapsedTime / Double(intervalGame.totalQuestions)), icon: "timer")
-                    IntervalStatCard(title: "Direction", value: intervalGame.selectedDirection.rawValue, icon: "arrow.up.arrow.down")
+                    StatCard(title: "Time", value: formatTime(intervalGame.elapsedTime), icon: "clock")
+                    StatCard(title: "Difficulty", value: intervalGame.selectedDifficulty.rawValue, icon: "speedometer")
+                    StatCard(title: "Avg/Question", value: formatTime(intervalGame.elapsedTime / Double(intervalGame.totalQuestions)), icon: "timer")
+                    StatCard(title: "Direction", value: intervalGame.selectedDirection.rawValue, icon: "arrow.up.arrow.down")
                 }
                 .padding(.horizontal)
                 
@@ -931,7 +931,7 @@ struct IntervalResultsView: View {
     }
 }
 
-fileprivate struct IntervalStatCard: View {
+fileprivate struct StatCard: View {
     let title: String
     let value: String
     let icon: String
@@ -984,9 +984,9 @@ fileprivate struct RankUpView: View {
     }
 }
 
-// MARK: - Leaderboard Preview
+// MARK: - Scoreboard Preview
 
-struct IntervalLeaderboardPreview: View {
+struct IntervalScoreboardPreview: View {
     @EnvironmentObject var intervalGame: IntervalGame
     
     var body: some View {
@@ -999,8 +999,8 @@ struct IntervalLeaderboardPreview: View {
                 Spacer()
             }
             
-            ForEach(intervalGame.leaderboard.prefix(3).indices, id: \.self) { index in
-                let result = intervalGame.leaderboard[index]
+            ForEach(intervalGame.scoreboard.prefix(3).indices, id: \.self) { index in
+                let result = intervalGame.scoreboard[index]
                 HStack {
                     Text(medalEmoji(for: index))
                     Text("\(Int(result.accuracy))%")
