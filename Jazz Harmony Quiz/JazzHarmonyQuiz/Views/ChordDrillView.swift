@@ -520,10 +520,20 @@ struct ActiveQuizView: View {
     @State private var currentQuestionForFeedback: QuizQuestion?
     @State private var correctAnswerForFeedback: [Note] = []
     @State private var isLastQuestion = false
+    @State private var feedbackPhase: FeedbackPhase = .showingUserAnswer
+    @State private var userAnswerForFeedback: [Note] = []
+    
+    enum FeedbackPhase {
+        case showingUserAnswer
+        case showingCorrectAnswer
+    }
 
     var body: some View {
         VStack(spacing: 20) {
-            if let question = quizGame.currentQuestion {
+            if showingFeedback {
+                // Feedback View
+                feedbackView()
+            } else if let question = quizGame.currentQuestion {
                 // Question Display
                 VStack(spacing: 15) {
                     Text("Chord: \(question.chord.displayName)")
@@ -604,17 +614,202 @@ struct ActiveQuizView: View {
             }
         }
         .padding()
-        .alert("Answer Feedback", isPresented: $showingFeedback) {
-            Button("Continue") {
-                continueToNextQuestion()
+    }
+    
+    // MARK: - Feedback View
+    
+    @ViewBuilder
+    private func feedbackView() -> some View {
+        VStack(spacing: 24) {
+            if let question = currentQuestionForFeedback {
+                // Chord name header
+                Text("Chord: \(question.chord.displayName)")
+                    .font(settings.chordDisplayFont(size: 24, weight: .bold))
+                    .foregroundColor(settings.primaryText(for: colorScheme))
+                    .padding()
+                    .background(settings.chordDisplayBackground(for: colorScheme))
+                    .cornerRadius(8)
+                
+                if isCorrect {
+                    // Correct answer display
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.green)
+                    
+                    Text("Correct!")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.green)
+                    
+                    // Show correct notes (all green)
+                    notesDisplay(notes: correctAnswerForFeedback, allCorrect: true)
+                    
+                    continueButton()
+                    
+                } else {
+                    // Incorrect answer - two phases
+                    if feedbackPhase == .showingUserAnswer {
+                        // Phase 1: Show user's answer
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(.red)
+                        
+                        Text("Your answer:")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        // Show user's notes with correct/incorrect coloring
+                        userAnswerNotesDisplay()
+                        
+                        Button(action: showCorrectAnswer) {
+                            Text("See Correct Answer")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Color.blue)
+                                .cornerRadius(10)
+                        }
+                        .padding(.top, 8)
+                        
+                    } else {
+                        // Phase 2: Show correct answer
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(.green)
+                        
+                        Text("Correct answer:")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        // Show correct notes (all green)
+                        notesDisplay(notes: correctAnswerForFeedback, allCorrect: true)
+                        
+                        continueButton()
+                    }
+                }
             }
-        } message: {
-            if isCorrect {
-                Text("Correct! 🎉\n\nYou answered:\n\(formatAnswerWithLabels(Array(selectedNotes)))")
-            } else {
-                Text("Incorrect.\n\nYou answered:\n\(formatAnswerWithLabels(Array(selectedNotes)))\n\nCorrect answer:\n\(formatAnswerWithLabels(correctAnswerForFeedback))")
+            
+            Spacer()
+        }
+    }
+    
+    @ViewBuilder
+    private func userAnswerNotesDisplay() -> some View {
+        let sortedUserNotes = userAnswerForFeedback.sorted { $0.midiNumber < $1.midiNumber }
+        let correctPitchClasses = Set(correctAnswerForFeedback.map { pitchClass($0.midiNumber) })
+        
+        VStack(spacing: 12) {
+            FlowLayout(spacing: 8) {
+                ForEach(sortedUserNotes, id: \.midiNumber) { note in
+                    let isNoteCorrect = correctPitchClasses.contains(pitchClass(note.midiNumber))
+                    let label = getChordToneLabelForFeedback(for: note)
+                    
+                    VStack(spacing: 2) {
+                        Text(note.name)
+                            .font(settings.chordDisplayFont(size: 20, weight: .semibold))
+                        Text(label)
+                            .font(.caption)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(isNoteCorrect ? Color.green : Color.red)
+                    .cornerRadius(8)
+                }
+            }
+            
+            // Show missing notes if any
+            let userPitchClasses = Set(userAnswerForFeedback.map { pitchClass($0.midiNumber) })
+            let missingNotes = correctAnswerForFeedback.filter { !userPitchClasses.contains(pitchClass($0.midiNumber)) }
+            
+            if !missingNotes.isEmpty {
+                Text("Missing:")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 8)
+                
+                FlowLayout(spacing: 8) {
+                    ForEach(missingNotes.sorted { $0.midiNumber < $1.midiNumber }, id: \.midiNumber) { note in
+                        let label = getChordToneLabelForFeedback(for: note)
+                        
+                        VStack(spacing: 2) {
+                            Text(note.name)
+                                .font(settings.chordDisplayFont(size: 18, weight: .semibold))
+                            Text(label)
+                                .font(.caption2)
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.orange)
+                        .cornerRadius(8)
+                    }
+                }
             }
         }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+    
+    @ViewBuilder
+    private func notesDisplay(notes: [Note], allCorrect: Bool) -> some View {
+        let sortedNotes = notes.sorted { $0.midiNumber < $1.midiNumber }
+        
+        FlowLayout(spacing: 8) {
+            ForEach(sortedNotes, id: \.midiNumber) { note in
+                let label = getChordToneLabelForFeedback(for: note)
+                
+                VStack(spacing: 2) {
+                    Text(note.name)
+                        .font(settings.chordDisplayFont(size: 20, weight: .semibold))
+                    Text(label)
+                        .font(.caption)
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(Color.green)
+                .cornerRadius(8)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+    
+    @ViewBuilder
+    private func continueButton() -> some View {
+        Button(action: continueToNextQuestion) {
+            Text(isLastQuestion ? "See Results" : "Continue")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(12)
+        }
+        .padding(.horizontal)
+        .padding(.top, 8)
+    }
+    
+    private func showCorrectAnswer() {
+        feedbackPhase = .showingCorrectAnswer
+        
+        // Play the correct chord
+        if settings.audioEnabled {
+            AudioManager.shared.playChord(correctAnswerForFeedback, duration: 1.0)
+        }
+    }
+    
+    private func pitchClass(_ midiNumber: Int) -> Int {
+        return ((midiNumber - 60) % 12 + 12) % 12
+    }
+    
+    private func getChordToneLabelForFeedback(for note: Note) -> String {
+        guard let question = currentQuestionForFeedback else { return "?" }
+        return getChordToneLabel(for: note, in: question)
     }
     
     private func questionPrompt(for question: QuizQuestion) -> String {
@@ -632,9 +827,11 @@ struct ActiveQuizView: View {
         let userAnswer = Array(selectedNotes)
         let correctAnswer = question.correctAnswer
         
-        // Store current question and correct answer for feedback
+        // Store current question, user's answer, and correct answer for feedback
         currentQuestionForFeedback = question
         correctAnswerForFeedback = correctAnswer
+        userAnswerForFeedback = userAnswer
+        feedbackPhase = .showingUserAnswer
         
         // Check if this is the last question BEFORE submitting
         isLastQuestion = quizGame.currentQuestionIndex == quizGame.totalQuestions - 1
@@ -642,23 +839,25 @@ struct ActiveQuizView: View {
         // Check if answer is correct
         isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
         
-        // Haptic feedback
+        // Haptic feedback and audio
         if isCorrect {
             ChordDrillHaptics.success()
             
-            // Play chord audio if enabled
-            if settings.playChordOnCorrect && settings.audioEnabled {
+            // Play correct chord audio if enabled
+            if settings.audioEnabled {
                 AudioManager.shared.playChord(correctAnswer, duration: 1.0)
             }
         } else {
             ChordDrillHaptics.error()
+            
+            // Play the user's entered chord so they can hear it
+            if settings.audioEnabled && !userAnswer.isEmpty {
+                AudioManager.shared.playChord(userAnswer, duration: 1.0)
+            }
         }
         
-        // Show feedback FIRST (especially important for last question)
+        // Show feedback
         showingFeedback = true
-        
-        // Submit the answer (this will advance to next question or finish quiz)
-        // But we'll handle the actual submission in continueToNextQuestion()
     }
     
     private func isAnswerCorrect(userAnswer: [Note], question: QuizQuestion) -> Bool {
@@ -691,11 +890,14 @@ struct ActiveQuizView: View {
     private func continueToNextQuestion() {
         // Submit the answer to QuizGame now (after showing feedback)
         if currentQuestionForFeedback != nil {
-            let userAnswer = Array(selectedNotes)
-            quizGame.submitAnswer(userAnswer)
+            quizGame.submitAnswer(userAnswerForFeedback)
         }
         
+        // Reset state for next question
         selectedNotes.removeAll()
+        userAnswerForFeedback = []
+        feedbackPhase = .showingUserAnswer
+        showingFeedback = false
         
         // The viewState will automatically update to .results when isQuizCompleted changes
         // via the onChange handler in ChordDrillView
