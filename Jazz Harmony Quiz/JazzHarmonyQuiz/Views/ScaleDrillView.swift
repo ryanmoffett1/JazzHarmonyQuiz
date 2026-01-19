@@ -414,8 +414,17 @@ struct ActiveScaleQuizView: View {
     @State private var feedbackMessage: String = ""
     @State private var isCorrect: Bool = false
     @State private var hasSubmitted: Bool = false
+    @State private var feedbackPhase: FeedbackPhase = .showingUserAnswer
+    @State private var userAnswerNotes: [Note] = []
+    @State private var highlightedNoteIndex: Int? = nil
+    @State private var showContinueButton: Bool = false
     
     private let audioManager = AudioManager.shared
+    
+    enum FeedbackPhase {
+        case showingUserAnswer
+        case showingCorrectAnswer
+    }
     
     var body: some View {
         VStack(spacing: 16) {
@@ -447,12 +456,14 @@ struct ActiveScaleQuizView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
-                // Selected Notes Display
-                if !selectedNotes.isEmpty {
+                // Selected Notes Display or Feedback
+                if showingFeedback {
+                    feedbackNotesView(question: question)
+                } else if !selectedNotes.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(Array(selectedNotes).sorted { $0.midiNumber < $1.midiNumber }, id: \.midiNumber) { note in
-                                Text(note.name)
+                                Text(displayNoteName(note, for: question.scale))
                                     .font(.headline)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
@@ -471,22 +482,6 @@ struct ActiveScaleQuizView: View {
                         .frame(height: 44)
                 }
                 
-                // Feedback Message
-                if showingFeedback {
-                    HStack {
-                        Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        Text(feedbackMessage)
-                    }
-                    .font(.headline)
-                    .foregroundColor(isCorrect ? .green : .red)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(isCorrect ? Color.green.opacity(0.1) : Color.red.opacity(0.1))
-                    )
-                    .transition(.scale.combined(with: .opacity))
-                }
-                
                 Spacer()
                 
                 // Piano Keyboard
@@ -496,78 +491,225 @@ struct ActiveScaleQuizView: View {
                     .disabled(hasSubmitted)
                 
                 // Action Buttons
-                HStack(spacing: 16) {
-                    // Clear Button
-                    Button(action: {
-                        selectedNotes.removeAll()
-                        ScaleDrillHaptics.light()
-                    }) {
-                        Text("Clear")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.red.opacity(0.1))
-                            .cornerRadius(12)
-                    }
-                    .disabled(hasSubmitted)
-                    
-                    if hasSubmitted {
-                        // Play Scale Button (after correct answer)
-                        if isCorrect {
-                            Button(action: {
-                                audioManager.playScaleObject(question.scale, bpm: 160)
-                            }) {
-                                HStack {
-                                    Image(systemName: "play.fill")
-                                    Text("Play Scale")
-                                }
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.purple)
-                                .cornerRadius(12)
-                            }
-                        }
-                        
-                        // Next Button
-                        Button(action: {
-                            moveToNext()
-                        }) {
-                            Text(scaleGame.currentQuestionIndex < scaleGame.totalQuestions - 1 ? "Next" : "Finish")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.teal)
-                                .cornerRadius(12)
-                        }
-                    } else {
-                        // Submit Button
-                        Button(action: {
-                            submitAnswer()
-                        }) {
-                            Text("Submit")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(selectedNotes.isEmpty ? Color.gray : Color.teal)
-                                .cornerRadius(12)
-                        }
-                        .disabled(selectedNotes.isEmpty)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.bottom)
+                actionButtonsView(question: question)
             }
         }
         .animation(.easeInOut(duration: 0.3), value: showingFeedback)
     }
     
+    // MARK: - Feedback View
+    
+    @ViewBuilder
+    private func feedbackNotesView(question: ScaleQuestion) -> some View {
+        VStack(spacing: 16) {
+            // Header
+            HStack {
+                Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.title)
+                Text(isCorrect ? "Correct!" : (feedbackPhase == .showingUserAnswer ? "Your answer:" : "Correct answer:"))
+                    .font(.headline)
+            }
+            .foregroundColor(isCorrect ? .green : (feedbackPhase == .showingCorrectAnswer ? .green : .red))
+            
+            // Notes display
+            if feedbackPhase == .showingUserAnswer || isCorrect {
+                userNotesDisplay(question: question)
+            } else {
+                correctNotesDisplay(question: question)
+            }
+            
+            // Continue button for wrong answers in phase 1
+            if !isCorrect && feedbackPhase == .showingUserAnswer && showContinueButton {
+                Button(action: showCorrectAnswer) {
+                    Text("See Correct Answer")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isCorrect ? Color.green.opacity(0.1) : (feedbackPhase == .showingCorrectAnswer ? Color.green.opacity(0.1) : Color.red.opacity(0.1)))
+        )
+        .padding(.horizontal)
+    }
+    
+    @ViewBuilder
+    private func userNotesDisplay(question: ScaleQuestion) -> some View {
+        let sortedNotes = userAnswerNotes.sorted { $0.midiNumber < $1.midiNumber }
+        let correctPitchClasses = Set(question.correctNotes.map { $0.pitchClass })
+        
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(Array(sortedNotes.enumerated()), id: \.offset) { index, note in
+                    let isNoteCorrect = correctPitchClasses.contains(note.pitchClass)
+                    let isHighlighted = highlightedNoteIndex == index
+                    
+                    Text(displayNoteName(note, for: question.scale))
+                        .font(.headline)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(noteBackgroundColor(isCorrect: isNoteCorrect, isHighlighted: isHighlighted, isAllCorrect: isCorrect))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .scaleEffect(isHighlighted ? 1.15 : 1.0)
+                        .animation(.easeInOut(duration: 0.15), value: isHighlighted)
+                }
+            }
+            .padding(.horizontal)
+        }
+        
+        // Show missing notes
+        if !isCorrect && feedbackPhase == .showingUserAnswer {
+            let userPitchClasses = Set(userAnswerNotes.map { $0.pitchClass })
+            let missingNotes = question.correctNotes.filter { !userPitchClasses.contains($0.pitchClass) }
+            
+            if !missingNotes.isEmpty {
+                VStack(spacing: 4) {
+                    Text("Missing:")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 6) {
+                            ForEach(missingNotes.sorted { $0.midiNumber < $1.midiNumber }, id: \.midiNumber) { note in
+                                Text(displayNoteName(note, for: question.scale))
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(Color.orange)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(6)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func correctNotesDisplay(question: ScaleQuestion) -> some View {
+        let sortedNotes = question.correctNotes.sorted { $0.midiNumber < $1.midiNumber }
+        
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(Array(sortedNotes.enumerated()), id: \.offset) { index, note in
+                    let isHighlighted = highlightedNoteIndex == index
+                    
+                    Text(displayNoteName(note, for: question.scale))
+                        .font(.headline)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(isHighlighted ? Color.green : Color.green.opacity(0.7))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .scaleEffect(isHighlighted ? 1.15 : 1.0)
+                        .animation(.easeInOut(duration: 0.15), value: isHighlighted)
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    @ViewBuilder
+    private func actionButtonsView(question: ScaleQuestion) -> some View {
+        HStack(spacing: 16) {
+            if !hasSubmitted {
+                // Clear Button
+                Button(action: {
+                    selectedNotes.removeAll()
+                    ScaleDrillHaptics.light()
+                }) {
+                    Text("Clear")
+                        .font(.headline)
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(12)
+                }
+                
+                // Submit Button
+                Button(action: submitAnswer) {
+                    Text("Submit")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(selectedNotes.isEmpty ? Color.gray : Color.teal)
+                        .cornerRadius(12)
+                }
+                .disabled(selectedNotes.isEmpty)
+                
+            } else if isCorrect || feedbackPhase == .showingCorrectAnswer {
+                // Play Scale Button
+                Button(action: {
+                    playScaleWithHighlight(notes: question.correctNotes)
+                }) {
+                    HStack {
+                        Image(systemName: "play.fill")
+                        Text("Play Scale")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.purple)
+                    .cornerRadius(12)
+                }
+                
+                // Next Button
+                Button(action: moveToNext) {
+                    Text(scaleGame.currentQuestionIndex < scaleGame.totalQuestions - 1 ? "Next" : "Finish")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.teal)
+                        .cornerRadius(12)
+                }
+            }
+        }
+        .padding(.horizontal)
+        .padding(.bottom)
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func noteBackgroundColor(isCorrect: Bool, isHighlighted: Bool, isAllCorrect: Bool) -> Color {
+        if isAllCorrect {
+            return isHighlighted ? Color.green : Color.green.opacity(0.7)
+        }
+        if isHighlighted {
+            return isCorrect ? Color.green : Color.red
+        }
+        return isCorrect ? Color.green.opacity(0.7) : Color.red.opacity(0.7)
+    }
+    
+    private func displayNoteName(_ note: Note, for scale: Scale) -> String {
+        // Use the scale's root to determine sharp/flat preference
+        let preferSharps = scale.root.isSharp || ["B", "E", "A", "D", "G", "C"].contains(scale.root.name)
+        if let displayNote = Note.noteFromMidi(note.midiNumber, preferSharps: preferSharps) {
+            return displayNote.name
+        }
+        return note.name
+    }
+    
     private func submitAnswer() {
         guard let question = scaleGame.currentQuestion else { return }
+        
+        // Store user's answer for display
+        userAnswerNotes = Array(selectedNotes)
+        feedbackPhase = .showingUserAnswer
+        highlightedNoteIndex = nil
+        showContinueButton = false
         
         isCorrect = scaleGame.submitAnswer(selectedNotes)
         hasSubmitted = true
@@ -576,24 +718,104 @@ struct ActiveScaleQuizView: View {
         if isCorrect {
             feedbackMessage = "Correct! 🎉"
             ScaleDrillHaptics.success()
-            if settings.playChordOnCorrect {
-                audioManager.playScaleObject(question.scale, bpm: 160)
-            }
+            // Play with highlighting
+            playScaleWithHighlight(notes: question.correctNotes)
         } else {
-            let correctNoteNames = question.correctNotes.map { $0.name }.joined(separator: ", ")
-            feedbackMessage = "Incorrect. The answer is: \(correctNoteNames)"
+            feedbackMessage = "Incorrect"
             ScaleDrillHaptics.error()
-            if settings.audioEnabled {
-                audioManager.playErrorSound()
+            // Play user's answer with highlighting
+            playUserAnswerWithHighlight()
+        }
+    }
+    
+    private func playUserAnswerWithHighlight() {
+        let sortedNotes = userAnswerNotes.sorted { $0.midiNumber < $1.midiNumber }
+        let tempoMS = 250  // Fast tempo for scale playback
+        
+        // Play and highlight each note
+        for (index, note) in sortedNotes.enumerated() {
+            let delay = Double(index) * Double(tempoMS) / 1000.0
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    self.highlightedNoteIndex = index
+                }
+                
+                // Play the note
+                if settings.audioEnabled {
+                    audioManager.playNote(UInt8(note.midiNumber), velocity: 80)
+                    
+                    // Stop note after duration
+                    DispatchQueue.main.asyncAfter(deadline: .now() + Double(tempoMS) / 1000.0 * 0.8) {
+                        audioManager.stopNote(UInt8(note.midiNumber))
+                    }
+                }
+            }
+        }
+        
+        // After all notes played, clear highlight and show continue button
+        let totalDuration = Double(sortedNotes.count) * Double(tempoMS) / 1000.0 + 0.3
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
+            withAnimation {
+                self.highlightedNoteIndex = nil
+                self.showContinueButton = true
+            }
+        }
+    }
+    
+    private func showCorrectAnswer() {
+        guard let question = scaleGame.currentQuestion else { return }
+        
+        feedbackPhase = .showingCorrectAnswer
+        highlightedNoteIndex = nil
+        
+        // Play correct scale with highlighting
+        playScaleWithHighlight(notes: question.correctNotes)
+    }
+    
+    private func playScaleWithHighlight(notes: [Note]) {
+        let sortedNotes = notes.sorted { $0.midiNumber < $1.midiNumber }
+        let tempoMS = 250
+        
+        // Play and highlight each note
+        for (index, note) in sortedNotes.enumerated() {
+            let delay = Double(index) * Double(tempoMS) / 1000.0
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    self.highlightedNoteIndex = index
+                }
+                
+                // Play the note
+                if settings.audioEnabled {
+                    audioManager.playNote(UInt8(note.midiNumber), velocity: 80)
+                    
+                    // Stop note after duration
+                    DispatchQueue.main.asyncAfter(deadline: .now() + Double(tempoMS) / 1000.0 * 0.8) {
+                        audioManager.stopNote(UInt8(note.midiNumber))
+                    }
+                }
+            }
+        }
+        
+        // After all notes played, clear highlight
+        let totalDuration = Double(sortedNotes.count) * Double(tempoMS) / 1000.0 + 0.3
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
+            withAnimation {
+                self.highlightedNoteIndex = nil
             }
         }
     }
     
     private func moveToNext() {
         selectedNotes.removeAll()
+        userAnswerNotes = []
         showingFeedback = false
         hasSubmitted = false
         feedbackMessage = ""
+        feedbackPhase = .showingUserAnswer
+        highlightedNoteIndex = nil
+        showContinueButton = false
         scaleGame.moveToNextQuestion()
     }
 }
