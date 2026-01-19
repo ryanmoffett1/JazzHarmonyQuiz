@@ -531,10 +531,13 @@ struct ActiveScaleQuizView: View {
             .foregroundColor(isCorrect ? .green : (feedbackPhase == .showingCorrectAnswer ? .green : .red))
             
             // Notes display
-            if feedbackPhase == .showingUserAnswer || isCorrect {
-                userNotesDisplay(question: question)
-            } else {
+            // For correct answers or when showing correct answer, use correctNotesDisplay
+            // which includes the 8va visualization for playback
+            if isCorrect || feedbackPhase == .showingCorrectAnswer {
                 correctNotesDisplay(question: question)
+            } else {
+                // Phase 1 for wrong answers: show user's notes with color coding
+                userNotesDisplay(question: question)
             }
             
             // Continue button for wrong answers in phase 1
@@ -928,11 +931,9 @@ struct ActiveScaleQuizView: View {
         let rootPitchClass = question.scale.root.pitchClass
         let rootMidi = question.scale.root.midiNumber
         let sortedNotes = sortNotesForScale(notes, rootPitchClass: rootPitchClass)
-        let tempoMS = 280  // Comfortable tempo for scale playback
+        let beatDuration: TimeInterval = 0.3  // 300ms per note = 200 BPM eighth notes
         
         // Build the full sequence: ascending + octave + descending
-        // Display indices: 0..<sortedNotes.count are the scale notes, sortedNotes.count is 8va
-        // For descending, we highlight the SAME display indices in reverse order
         var playbackSequence: [(midi: Int, displayIndex: Int)] = []
         
         // Ascending: play each note from root up (indices 0 to count-1)
@@ -946,46 +947,46 @@ struct ActiveScaleQuizView: View {
         playbackSequence.append((midi: rootMidi + 12, displayIndex: sortedNotes.count))
         
         // Descending: go back down, highlighting the same display indices in reverse
-        // Skip the octave (just played), go from last scale note back to root
         for i in stride(from: sortedNotes.count - 1, through: 0, by: -1) {
             let note = sortedNotes[i]
             let interval = (note.pitchClass - rootPitchClass + 12) % 12
             let midi = rootMidi + interval
-            playbackSequence.append((midi: midi, displayIndex: i))  // Same display index!
+            playbackSequence.append((midi: midi, displayIndex: i))
         }
         
-        // Use a timer-based approach for more consistent timing
-        let startTime = Date()
+        // Use pre-calculated absolute times for precise scheduling
+        var currentNoteIndex = 0
+        let totalNotes = playbackSequence.count
         
-        for (sequenceIndex, item) in playbackSequence.enumerated() {
-            let targetTime = startTime.addingTimeInterval(Double(sequenceIndex) * Double(tempoMS) / 1000.0)
-            let delay = targetTime.timeIntervalSinceNow
+        // Schedule all notes at once using DispatchQueue with absolute deadline
+        let baseTime = DispatchTime.now()
+        
+        for (index, item) in playbackSequence.enumerated() {
+            let noteStartTime = baseTime + .milliseconds(Int(Double(index) * beatDuration * 1000))
+            let noteStopTime = baseTime + .milliseconds(Int((Double(index) + 0.8) * beatDuration * 1000))
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + max(0, delay)) {
-                withAnimation(.easeInOut(duration: 0.08)) {
-                    self.highlightedNoteIndex = item.displayIndex
+            // Schedule highlight update
+            DispatchQueue.main.asyncAfter(deadline: noteStartTime) { [self] in
+                self.highlightedNoteIndex = item.displayIndex
+            }
+            
+            // Schedule note on
+            if settings.audioEnabled {
+                DispatchQueue.main.asyncAfter(deadline: noteStartTime) { [self] in
+                    audioManager.playNote(UInt8(item.midi), velocity: 80)
                 }
                 
-                // Play the note
-                if settings.audioEnabled {
-                    let midiToPlay = UInt8(item.midi)
-                    audioManager.playNote(midiToPlay, velocity: 80)
-                    
-                    // Stop note slightly before next note for cleaner articulation
-                    let stopDelay = Double(tempoMS) / 1000.0 * 0.75
-                    DispatchQueue.main.asyncAfter(deadline: .now() + stopDelay) {
-                        audioManager.stopNote(midiToPlay)
-                    }
+                // Schedule note off
+                DispatchQueue.main.asyncAfter(deadline: noteStopTime) { [self] in
+                    audioManager.stopNote(UInt8(item.midi))
                 }
             }
         }
         
-        // After all notes played, clear highlight
-        let totalDuration = Double(playbackSequence.count) * Double(tempoMS) / 1000.0 + 0.3
-        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
-            withAnimation {
-                self.highlightedNoteIndex = nil
-            }
+        // Clear highlight after all notes
+        let endTime = baseTime + .milliseconds(Int(Double(totalNotes) * beatDuration * 1000 + 200))
+        DispatchQueue.main.asyncAfter(deadline: endTime) { [self] in
+            self.highlightedNoteIndex = nil
         }
     }
     
