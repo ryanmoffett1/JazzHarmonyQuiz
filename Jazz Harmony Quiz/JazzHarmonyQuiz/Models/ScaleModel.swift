@@ -78,8 +78,41 @@ struct Scale: Identifiable, Hashable, Codable {
         self.root = root
         self.scaleType = scaleType
         
-        // Determine tonality preference based on root note
-        let preferSharps = root.isSharp || ["B", "E", "A", "D", "G"].contains(root.name)
+        // Determine tonality preference based on root note and scale type
+        // For minor scales, consider the relative major's key signature
+        let preferSharps: Bool
+        
+        // Check if root note itself is a flat
+        if root.name.contains("b") {
+            preferSharps = false
+        } else if root.isSharp || root.name.contains("#") {
+            preferSharps = true
+        } else {
+            // Natural note roots - determine based on common key signatures
+            // Check if this is a minor-type scale (has flat third)
+            let isMinorType = scaleType.degrees.contains(where: { $0.semitonesFromRoot == 3 })
+            
+            if isMinorType {
+                // For minor scales, use the relative major's key signature
+                // Relative major is up a minor 3rd (3 semitones)
+                // Minor roots and their relative majors:
+                // A minor -> C major (no accidentals) - sharps OK
+                // E minor -> G major (1 sharp) - prefer sharps
+                // B minor -> D major (2 sharps) - prefer sharps
+                // F# minor -> A major (3 sharps) - prefer sharps
+                // D minor -> F major (1 flat) - prefer flats
+                // G minor -> Bb major (2 flats) - prefer flats
+                // C minor -> Eb major (3 flats) - prefer flats
+                // F minor -> Ab major (4 flats) - prefer flats
+                let flatMinorRoots = ["D", "G", "C", "F"]
+                preferSharps = !flatMinorRoots.contains(root.name)
+            } else {
+                // For major scales and modes, use standard key signature logic
+                // Sharp keys: G, D, A, E, B
+                let sharpRoots = ["G", "D", "A", "E", "B"]
+                preferSharps = sharpRoots.contains(root.name) || root.name == "C"
+            }
+        }
         
         // Calculate scale notes based on root and scale type
         var notes: [Note] = []

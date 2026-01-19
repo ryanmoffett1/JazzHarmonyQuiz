@@ -541,7 +541,8 @@ struct ActiveScaleQuizView: View {
     
     @ViewBuilder
     private func userNotesDisplay(question: ScaleQuestion) -> some View {
-        let sortedNotes = userAnswerNotes.sorted { $0.midiNumber < $1.midiNumber }
+        let rootPitchClass = question.scale.root.pitchClass
+        let sortedNotes = sortNotesForScale(userAnswerNotes, rootPitchClass: rootPitchClass)
         let correctPitchClasses = Set(question.correctNotes.map { $0.pitchClass })
         
         ScrollView(.horizontal, showsIndicators: false) {
@@ -596,7 +597,8 @@ struct ActiveScaleQuizView: View {
     
     @ViewBuilder
     private func correctNotesDisplay(question: ScaleQuestion) -> some View {
-        let sortedNotes = question.correctNotes.sorted { $0.midiNumber < $1.midiNumber }
+        let rootPitchClass = question.scale.root.pitchClass
+        let sortedNotes = sortNotesForScale(question.correctNotes, rootPitchClass: rootPitchClass)
         
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
@@ -694,12 +696,39 @@ struct ActiveScaleQuizView: View {
     }
     
     private func displayNoteName(_ note: Note, for scale: Scale) -> String {
-        // Use the scale's root to determine sharp/flat preference
-        let preferSharps = scale.root.isSharp || ["B", "E", "A", "D", "G", "C"].contains(scale.root.name)
+        // First, try to find this note's pitch class in the scale's own notes
+        // This ensures we use the same enharmonic spelling the scale uses
+        if let scaleNote = scale.scaleNotes.first(where: { $0.pitchClass == note.pitchClass }) {
+            return scaleNote.name
+        }
+        
+        // Fallback: use the scale's root to determine sharp/flat preference
+        // This matches the logic in Scale.init
+        let preferSharps = scale.root.isSharp || ["B", "E", "A", "D", "G"].contains(scale.root.name)
         if let displayNote = Note.noteFromMidi(note.midiNumber, preferSharps: preferSharps) {
             return displayNote.name
         }
         return note.name
+    }
+    
+    /// Sort notes in scale order starting from the root
+    /// This ensures D E F G A B C sorts correctly for a D scale (not C D E F G A B)
+    private func sortNotesForScale(_ notes: [Note], rootPitchClass: Int) -> [Note] {
+        return notes.sorted { note1, note2 in
+            // Calculate semitones from root (0-11) with proper wrapping
+            let interval1 = (note1.pitchClass - rootPitchClass + 12) % 12
+            let interval2 = (note2.pitchClass - rootPitchClass + 12) % 12
+            return interval1 < interval2
+        }
+    }
+    
+    /// Get the MIDI number to play for a note in a scale context
+    /// This handles octave wrapping so the scale plays ascending
+    private func getMidiForScaleNote(_ note: Note, index: Int, rootMidi: Int, rootPitchClass: Int) -> UInt8 {
+        // Calculate the interval from root (0-11)
+        let interval = (note.pitchClass - rootPitchClass + 12) % 12
+        // Add the interval to the root MIDI to get the actual pitch to play
+        return UInt8(rootMidi + interval)
     }
     
     private func submitAnswer() {
@@ -729,7 +758,11 @@ struct ActiveScaleQuizView: View {
     }
     
     private func playUserAnswerWithHighlight() {
-        let sortedNotes = userAnswerNotes.sorted { $0.midiNumber < $1.midiNumber }
+        guard let question = scaleGame.currentQuestion else { return }
+        
+        let rootPitchClass = question.scale.root.pitchClass
+        let rootMidi = question.scale.root.midiNumber
+        let sortedNotes = sortNotesForScale(userAnswerNotes, rootPitchClass: rootPitchClass)
         let tempoMS = 250  // Fast tempo for scale playback
         
         // Play and highlight each note
@@ -741,13 +774,14 @@ struct ActiveScaleQuizView: View {
                     self.highlightedNoteIndex = index
                 }
                 
-                // Play the note
+                // Play the note with correct octave relative to scale root
                 if settings.audioEnabled {
-                    audioManager.playNote(UInt8(note.midiNumber), velocity: 80)
+                    let midiToPlay = getMidiForScaleNote(note, index: index, rootMidi: rootMidi, rootPitchClass: rootPitchClass)
+                    audioManager.playNote(midiToPlay, velocity: 80)
                     
                     // Stop note after duration
                     DispatchQueue.main.asyncAfter(deadline: .now() + Double(tempoMS) / 1000.0 * 0.8) {
-                        audioManager.stopNote(UInt8(note.midiNumber))
+                        audioManager.stopNote(midiToPlay)
                     }
                 }
             }
@@ -774,7 +808,11 @@ struct ActiveScaleQuizView: View {
     }
     
     private func playScaleWithHighlight(notes: [Note]) {
-        let sortedNotes = notes.sorted { $0.midiNumber < $1.midiNumber }
+        guard let question = scaleGame.currentQuestion else { return }
+        
+        let rootPitchClass = question.scale.root.pitchClass
+        let rootMidi = question.scale.root.midiNumber
+        let sortedNotes = sortNotesForScale(notes, rootPitchClass: rootPitchClass)
         let tempoMS = 250
         
         // Play and highlight each note
@@ -786,13 +824,14 @@ struct ActiveScaleQuizView: View {
                     self.highlightedNoteIndex = index
                 }
                 
-                // Play the note
+                // Play the note with correct octave relative to scale root
                 if settings.audioEnabled {
-                    audioManager.playNote(UInt8(note.midiNumber), velocity: 80)
+                    let midiToPlay = getMidiForScaleNote(note, index: index, rootMidi: rootMidi, rootPitchClass: rootPitchClass)
+                    audioManager.playNote(midiToPlay, velocity: 80)
                     
                     // Stop note after duration
                     DispatchQueue.main.asyncAfter(deadline: .now() + Double(tempoMS) / 1000.0 * 0.8) {
-                        audioManager.stopNote(UInt8(note.midiNumber))
+                        audioManager.stopNote(midiToPlay)
                     }
                 }
             }
