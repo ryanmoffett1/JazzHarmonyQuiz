@@ -81,12 +81,14 @@ enum PracticeMode: String, CaseIterable, Codable {
     case scaleDrill = "Scale Drill"
     case intervalDrill = "Interval Drill"
     case cadenceDrill = "Cadence Drill"
-    
+    case progressionDrill = "Progression Drill"
+
     var emoji: String {
         switch self {
         case .chordDrill: return "🎹"
         case .scaleDrill: return "🎼"
         case .intervalDrill: return "👂"
+        case .progressionDrill: return "🔄"
         case .cadenceDrill: return "🔄"
         }
     }
