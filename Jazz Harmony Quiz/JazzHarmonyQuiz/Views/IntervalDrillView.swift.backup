@@ -702,6 +702,22 @@ struct NoteDisplay: View {
         }
     }
     
+    // MARK: - Audio Playback
+    
+    private func playInterval(_ interval: Interval) {
+        let audioManager = AudioManager.shared
+        let style = settings.defaultIntervalStyle
+        let tempo = settings.intervalTempo
+        
+        audioManager.playInterval(
+            rootNote: interval.rootNote,
+            targetNote: interval.targetNote,
+            style: style,
+            tempo: tempo
+        )
+    }
+}
+
 // MARK: - Interval Picker
 
 struct IntervalPicker: View {
@@ -849,10 +865,10 @@ struct IntervalResultsView: View {
                 
                 // Stats Grid
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                    IntervalStatCard(title: "Time", value: formatTime(intervalGame.elapsedTime), icon: "clock")
-                    IntervalStatCard(title: "Difficulty", value: intervalGame.selectedDifficulty.rawValue, icon: "speedometer")
-                    IntervalStatCard(title: "Avg/Question", value: formatTime(intervalGame.elapsedTime / Double(intervalGame.totalQuestions)), icon: "timer")
-                    IntervalStatCard(title: "Direction", value: intervalGame.selectedDirection.rawValue, icon: "arrow.up.arrow.down")
+                    StatCard(title: "Time", value: formatTime(intervalGame.elapsedTime), icon: "clock")
+                    StatCard(title: "Difficulty", value: intervalGame.selectedDifficulty.rawValue, icon: "speedometer")
+                    StatCard(title: "Avg/Question", value: formatTime(intervalGame.elapsedTime / Double(intervalGame.totalQuestions)), icon: "timer")
+                    StatCard(title: "Direction", value: intervalGame.selectedDirection.rawValue, icon: "arrow.up.arrow.down")
                 }
                 .padding(.horizontal)
                 
@@ -930,7 +946,7 @@ struct IntervalResultsView: View {
     }
 }
 
-fileprivate struct IntervalStatCard: View {
+fileprivate struct StatCard: View {
     let title: String
     let value: String
     let icon: String
