@@ -312,6 +312,105 @@ class AudioManager: ObservableObject {
         playScale(adjustedNotes, bpm: bpm, direction: .ascendingDescending)
     }
     
+    // MARK: - Interval Playback
+    
+    /// Style for playing intervals
+    enum IntervalPlaybackStyle: String, CaseIterable {
+        case harmonic = "Harmonic"              // Both notes simultaneously
+        case melodicAscending = "Melodic Up"    // Lower note, then higher note
+        case melodicDescending = "Melodic Down" // Higher note, then lower note
+        
+        var description: String {
+            switch self {
+            case .harmonic:
+                return "Both notes together"
+            case .melodicAscending:
+                return "Lower then higher"
+            case .melodicDescending:
+                return "Higher then lower"
+            }
+        }
+    }
+    
+    /// Play an interval between two notes
+    /// - Parameters:
+    ///   - rootNote: The lower note of the interval
+    ///   - targetNote: The higher note of the interval
+    ///   - style: How to play the interval (harmonic, melodic ascending, or melodic descending)
+    ///   - tempo: BPM for melodic playback (default 120 BPM = 0.5s per note)
+    ///   - completion: Called when playback completes
+    func playInterval(
+        rootNote: Note,
+        targetNote: Note,
+        style: IntervalPlaybackStyle = .harmonic,
+        tempo: Double = 120,
+        completion: (() -> Void)? = nil
+    ) {
+        guard isEnabled, let sampler = sampler else {
+            completion?()
+            return
+        }
+        
+        ensureAudioEngineRunning()
+        
+        let rootMidi = UInt8(rootNote.midiNumber)
+        let targetMidi = UInt8(targetNote.midiNumber)
+        let velocity: UInt8 = 80
+        
+        switch style {
+        case .harmonic:
+            playHarmonicInterval(rootMidi: rootMidi, targetMidi: targetMidi, velocity: velocity, completion: completion)
+            
+        case .melodicAscending:
+            playMelodicInterval(firstMidi: rootMidi, secondMidi: targetMidi, tempo: tempo, velocity: velocity, completion: completion)
+            
+        case .melodicDescending:
+            playMelodicInterval(firstMidi: targetMidi, secondMidi: rootMidi, tempo: tempo, velocity: velocity, completion: completion)
+        }
+    }
+    
+    /// Play both notes of an interval simultaneously
+    private func playHarmonicInterval(rootMidi: UInt8, targetMidi: UInt8, velocity: UInt8, completion: (() -> Void)?) {
+        guard let sampler = sampler else { return }
+        
+        // Start both notes
+        sampler.startNote(rootMidi, withVelocity: velocity, onChannel: 0)
+        sampler.startNote(targetMidi, withVelocity: velocity, onChannel: 0)
+        
+        // Hold for 1.5 seconds
+        let duration: TimeInterval = 1.5
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            sampler.stopNote(rootMidi, onChannel: 0)
+            sampler.stopNote(targetMidi, onChannel: 0)
+            completion?()
+        }
+    }
+    
+    /// Play two notes sequentially
+    private func playMelodicInterval(firstMidi: UInt8, secondMidi: UInt8, tempo: Double, velocity: UInt8, completion: (() -> Void)?) {
+        guard let sampler = sampler else { return }
+        
+        let secondsPerBeat = 60.0 / tempo
+        let noteDuration = secondsPerBeat * 2.0  // Each note lasts 2 beats
+        
+        // Play first note
+        sampler.startNote(firstMidi, withVelocity: velocity, onChannel: 0)
+        
+        // Stop first note after duration
+        DispatchQueue.main.asyncAfter(deadline: .now() + noteDuration) {
+            sampler.stopNote(firstMidi, onChannel: 0)
+            
+            // Play second note
+            sampler.startNote(secondMidi, withVelocity: velocity, onChannel: 0)
+            
+            // Stop second note after duration
+            DispatchQueue.main.asyncAfter(deadline: .now() + noteDuration) {
+                sampler.stopNote(secondMidi, onChannel: 0)
+                completion?()
+            }
+        }
+    }
+    
     deinit {
         audioEngine?.stop()
     }

@@ -65,6 +65,25 @@ class SettingsManager: ObservableObject {
         }
     }
     
+    // Interval Ear Training settings
+    @Published var autoPlayIntervals: Bool {
+        didSet {
+            UserDefaults.standard.set(autoPlayIntervals, forKey: "autoPlayIntervals")
+        }
+    }
+    
+    @Published var defaultIntervalStyle: AudioManager.IntervalPlaybackStyle {
+        didSet {
+            UserDefaults.standard.set(defaultIntervalStyle.rawValue, forKey: "defaultIntervalStyle")
+        }
+    }
+    
+    @Published var intervalTempo: Double {
+        didSet {
+            UserDefaults.standard.set(intervalTempo, forKey: "intervalTempo")
+        }
+    }
+    
     // MARK: - Audio Manager Helpers
     
     private func updateAudioManagerEnabled() {
@@ -100,6 +119,16 @@ class SettingsManager: ObservableObject {
         self.audioEnabled = UserDefaults.standard.object(forKey: "audioEnabled") as? Bool ?? true
         self.playChordOnCorrect = UserDefaults.standard.object(forKey: "playChordOnCorrect") as? Bool ?? true
         self.audioVolume = UserDefaults.standard.object(forKey: "audioVolume") as? Float ?? 0.7
+        
+        // Interval ear training settings
+        self.autoPlayIntervals = UserDefaults.standard.object(forKey: "autoPlayIntervals") as? Bool ?? true
+        if let savedStyle = UserDefaults.standard.string(forKey: "defaultIntervalStyle"),
+           let style = AudioManager.IntervalPlaybackStyle(rawValue: savedStyle) {
+            self.defaultIntervalStyle = style
+        } else {
+            self.defaultIntervalStyle = .harmonic
+        }
+        self.intervalTempo = UserDefaults.standard.object(forKey: "intervalTempo") as? Double ?? 120
         
         // Apply audio settings after a brief delay to ensure AudioManager is initialized
         DispatchQueue.main.async { [weak self] in
