@@ -749,6 +749,21 @@ struct ActiveCadenceQuizView: View {
     private var isEarTrainingMode: Bool {
         cadenceGame.selectedDrillMode == .auralIdentify
     }
+    
+    /// Whether we're in guide tones mode
+    private var isGuideTonesMode: Bool {
+        cadenceGame.selectedDrillMode == .guideTones
+    }
+    
+    /// Whether we're in resolution targets mode
+    private var isResolutionTargetsMode: Bool {
+        cadenceGame.selectedDrillMode == .resolutionTargets
+    }
+    
+    /// Whether we're in smooth voicing mode
+    private var isSmoothVoicingMode: Bool {
+        cadenceGame.selectedDrillMode == .smoothVoicing
+    }
 
     /// Whether we can submit ear training answer
     private var canSubmitEarTraining: Bool {
@@ -893,6 +908,148 @@ struct ActiveCadenceQuizView: View {
                                     .font(.title)
                                     .foregroundColor(.gray)
                             }
+                        } else if isGuideTonesMode {
+                            // Guide tones mode - display all three chords with guide tone emphasis
+                            VStack(spacing: 10) {
+                                Text("Play ONLY the guide tones (3rd and 7th)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.orange)
+                                    .padding(8)
+                                    .background(Color.orange.opacity(0.1))
+                                    .cornerRadius(8)
+                                
+                                HStack(spacing: 20) {
+                                    ForEach(0..<chordsToSpell.count, id: \.self) { index in
+                                        VStack(spacing: 6) {
+                                            Text(chordsToSpell[index].displayName)
+                                                .font(.title3)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(index == currentChordIndex ? .blue : .secondary)
+                                            
+                                            Text("3rd & 7th")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                            
+                                            // Show correct guide tones if answer submitted
+                                            if showingFeedback {
+                                                let guideTones = question.guideTonesForChord(index)
+                                                Text(guideTones.map { $0.name }.joined(separator: ", "))
+                                                    .font(.caption)
+                                                    .foregroundColor(.green)
+                                            }
+                                        }
+                                        .padding()
+                                        .background(index == currentChordIndex ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(index == currentChordIndex ? Color.blue : Color.clear, lineWidth: 2)
+                                        )
+                                    }
+                                }
+                            }
+                        } else if isResolutionTargetsMode {
+                            // Resolution targets mode - show source and target chords
+                            VStack(spacing: 15) {
+                                if let pairs = question.resolutionPairs,
+                                   let currentIndex = question.currentResolutionIndex,
+                                   currentIndex < pairs.count {
+                                    let pair = pairs[currentIndex]
+                                    let sourceChord = question.cadence.chords[pair.sourceChordIndex]
+                                    let targetChord = question.cadence.chords[pair.targetChordIndex]
+                                    
+                                    VStack(spacing: 10) {
+                                        Text("The \(pair.sourceRole.rawValue) of \(sourceChord.displayName) is \(pair.sourceNote.displayName)")
+                                            .font(.headline)
+                                            .foregroundColor(.blue)
+                                            .padding(12)
+                                            .background(Color.blue.opacity(0.1))
+                                            .cornerRadius(8)
+                                        
+                                        HStack(spacing: 30) {
+                                            VStack {
+                                                Text(sourceChord.displayName)
+                                                    .font(.title2)
+                                                    .fontWeight(.bold)
+                                                Text(pair.sourceNote.displayName)
+                                                    .font(.title)
+                                                    .foregroundColor(.blue)
+                                            }
+                                            .padding()
+                                            .background(Color.blue.opacity(0.1))
+                                            .cornerRadius(12)
+                                            
+                                            Image(systemName: "arrow.right")
+                                                .font(.title)
+                                                .foregroundColor(.orange)
+                                            
+                                            VStack {
+                                                Text(targetChord.displayName)
+                                                    .font(.title2)
+                                                    .fontWeight(.bold)
+                                                Text(showingFeedback && pair.targetNote != nil ? pair.targetNote!.displayName : "?")
+                                                    .font(.title)
+                                                    .foregroundColor(showingFeedback ? .green : .orange)
+                                            }
+                                            .padding()
+                                            .background(Color.orange.opacity(0.1))
+                                            .cornerRadius(12)
+                                        }
+                                        
+                                        Text("Where does this note resolve?")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                        } else if isSmoothVoicingMode {
+                            // Smooth voicing mode - display constraint and all chords
+                            VStack(spacing: 15) {
+                                if let constraint = question.voicingConstraint {
+                                    VStack(spacing: 8) {
+                                        Text("Voice with minimal motion")
+                                            .font(.headline)
+                                            .foregroundColor(.purple)
+                                        
+                                        Text("Top voice: \(constraint.topVoiceMotion.rawValue)  •  Max total motion: \(constraint.maxTotalMotion) semitones")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding(12)
+                                    .background(Color.purple.opacity(0.1))
+                                    .cornerRadius(8)
+                                }
+                                
+                                HStack(spacing: 15) {
+                                    ForEach(0..<chordsToSpell.count, id: \.self) { index in
+                                        VStack(spacing: 6) {
+                                            Text(chordsToSpell[index].displayName)
+                                                .font(.title3)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(index == currentChordIndex ? .purple : .secondary)
+                                            
+                                            // Show user's voicing if already selected
+                                            if !chordSpellings[index].isEmpty {
+                                                Text(chordSpellings[index].map { $0.name }.joined(separator: ", "))
+                                                    .font(.caption2)
+                                                    .foregroundColor(.green)
+                                            }
+                                        }
+                                        .padding()
+                                        .background(index == currentChordIndex ? Color.purple.opacity(0.1) : Color.gray.opacity(0.1))
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(index == currentChordIndex ? Color.purple : Color.clear, lineWidth: 2)
+                                        )
+                                        
+                                        if index < chordsToSpell.count - 1 {
+                                            Image(systemName: "arrow.right")
+                                                .foregroundColor(.gray)
+                                        }
+                                    }
+                                }
+                            }
                         } else {
                             // Display all chords for full progression or speed round
                             HStack(spacing: 20) {
@@ -913,6 +1070,18 @@ struct ActiveCadenceQuizView: View {
                             Text("Select the note(s) that appear in both chords")
                                 .font(.headline)
                                 .foregroundColor(settings.primaryAccent(for: colorScheme))
+                        } else if isGuideTonesMode {
+                            Text("Spell: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName) (3rd & 7th only)")
+                                .font(.headline)
+                                .foregroundColor(settings.primaryAccent(for: colorScheme))
+                        } else if isResolutionTargetsMode {
+                            Text("Select the resolution target")
+                                .font(.headline)
+                                .foregroundColor(settings.primaryAccent(for: colorScheme))
+                        } else if isSmoothVoicingMode {
+                            Text("Voice: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName)")
+                                .font(.headline)
+                                .foregroundColor(settings.primaryAccent(for: colorScheme))
                         } else {
                             Text("Spell: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName)")
                                 .font(.headline)
@@ -929,8 +1098,8 @@ struct ActiveCadenceQuizView: View {
                                 .cornerRadius(8)
                         }
                         
-                        // Hint button (not for common tones - it would give away the answer)
-                        if cadenceGame.canRequestHint && !isCommonTonesMode {
+                        // Hint button (not for modes where it would give away the answer)
+                        if cadenceGame.canRequestHint && !isCommonTonesMode && !isResolutionTargetsMode {
                             Button(action: requestHint) {
                                 HStack {
                                     Image(systemName: "lightbulb")
@@ -1034,6 +1203,43 @@ struct ActiveCadenceQuizView: View {
                                 .cornerRadius(12)
                         }
                         .disabled(selectedNotes.isEmpty)
+                    } else if isResolutionTargetsMode {
+                        // Resolution targets mode - single note submit
+                        Button(action: submitAnswer) {
+                            Text("Submit Resolution Target")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
+                                .cornerRadius(12)
+                        }
+                        .disabled(selectedNotes.isEmpty)
+                    } else if isGuideTonesMode || isSmoothVoicingMode {
+                        // Guide tones and smooth voicing modes - multi-chord submit
+                        if currentChordIndex < chordsToSpellCount - 1 {
+                            Button(action: moveToNextChord) {
+                                Text("Next Chord →")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(selectedNotes.isEmpty ? Color.gray : Color.blue)
+                                    .cornerRadius(12)
+                            }
+                            .disabled(selectedNotes.isEmpty)
+                        } else {
+                            Button(action: submitAnswer) {
+                                Text("Submit Answer")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
+                                    .cornerRadius(12)
+                            }
+                            .disabled(selectedNotes.isEmpty)
+                        }
                     } else if currentChordIndex < chordsToSpellCount - 1 {
                         Button(action: moveToNextChord) {
                             Text("Next Chord →")
@@ -1283,9 +1489,13 @@ struct ActiveCadenceQuizView: View {
 
         // Prepare the answer based on mode
         let answerToSubmit: [[Note]]
-        if isIsolatedMode || isCommonTonesMode {
-            // Both isolated and common tones submit just one set of notes
+        if isIsolatedMode || isCommonTonesMode || isResolutionTargetsMode {
+            // Isolated, common tones, and resolution targets all submit just one set of notes
             answerToSubmit = [Array(selectedNotes)]
+        } else if isGuideTonesMode || isSmoothVoicingMode {
+            // Guide tones and smooth voicing submit all chords
+            let numChords = chordsToSpellCount
+            answerToSubmit = Array(chordSpellings.prefix(numChords))
         } else {
             // Only submit the number of chords we actually need to spell
             // (not the full 5-element array which may have empty trailing arrays)

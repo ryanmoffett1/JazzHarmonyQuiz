@@ -371,6 +371,52 @@ struct ConceptualExplanations {
             usage: "Advanced modern jazz. Requires deep understanding of ii-V-I in multiple keys simultaneously.",
             voiceLeading: "The bass moves in a symmetrical pattern. Requires careful practice to navigate smoothly.",
             commonVariations: ["Countdown (applying same concept to different tunes)", "Using substitute changes over standard progressions"]
+        ),
+        
+        // Guide Tone Concepts
+        "guide_tones": ProgressionConcept(
+            name: "Guide Tones (3rds and 7ths)",
+            theory: "The 3rd and 7th are the 'guide tones' because they define chord quality (major/minor/dominant) and guide your ear through progressions. The root and 5th are structurally important but don't tell you as much about function.",
+            sound: "Guide tones reveal the harmonic skeleton. If you play only 3rds and 7ths, you can still hear the progression clearly. Everything else is decoration!",
+            usage: "Piano/guitar voicings often emphasize guide tones. Soloists target guide tones to outline changes. Arrangers use guide tone lines to create smooth horn parts.",
+            voiceLeading: "In ii-V-I: Dm7 (F-C) → G7 (B-F) → Cmaj7 (E-B). Notice: F stays as common tone, C moves down to B (half step). This smooth motion is the heart of jazz voice leading.",
+            commonVariations: ["Drop-2 voicings (guide tones on top)", "Guide tone lines (soprano voice connects guide tones)", "Shell voicings (root + guide tones only)"]
+        ),
+        
+        "ii_to_V_resolution": ProgressionConcept(
+            name: "ii → V Guide Tone Resolution",
+            theory: "In a ii-V progression, the guide tones move with elegant simplicity: The 3rd of ii moves UP a whole step to become the 7th of V. The 7th of ii moves DOWN a half step to become the 3rd of V.",
+            sound: "This half-step motion (7th of ii → 3rd of V) is crucial! It creates a smooth, inevitable pull toward the dominant. You can hear this even without the roots.",
+            usage: "When comping, keep the guide tones in the same register so the voice leading is obvious. When improvising, targeting the 3rd of V after the 7th of ii creates strong forward motion.",
+            voiceLeading: "Example in C: Dm7 (F=3rd, C=7th) → G7 (F=7th, B=3rd). The F is a common tone (stays), and C resolves down to B (half step). Memorize this motion in all keys!",
+            commonVariations: ["Tritone substitution (guide tones become common tones)", "Extended V chords (9th/13th added above guide tones)", "Sus4 V chords (3rd becomes 4th temporarily)"]
+        ),
+        
+        "V_to_I_resolution": ProgressionConcept(
+            name: "V → I Guide Tone Resolution",
+            theory: "The V→I resolution is the strongest in music because the tritone (3rd and 7th of V) resolves by contrary motion: 3rd moves UP a half step to the 7th of I, and 7th moves DOWN a half step to the 3rd of I.",
+            sound: "This is THE sound of resolution in tonal music. The tritone (very tense) resolves to a stable major 3rd. It's deeply satisfying because of the contrary motion.",
+            usage: "This resolution is so fundamental that it defines Western harmony. In jazz, we often delay or disguise it, but it's always there. Even on a deceptive cadence (V-vi), the guide tones still want to resolve to I.",
+            voiceLeading: "Example in C: G7 (B=3rd, F=7th) → Cmaj7 (B=7th, E=3rd). B stays as common tone! F resolves down to E (half step). This half-step descent of the 7th is the classic 'ti→do' resolution.",
+            commonVariations: ["Deceptive cadence (V-vi: guide tones resolve but bass doesn't)", "Half-diminished I (guide tones resolve to minor quality)", "Backdoor progression (♭VII-I: different guide tone motion)"]
+        ),
+        
+        "smooth_voicing": ProgressionConcept(
+            name: "Smooth Voice Leading",
+            theory: "Smooth voice leading means moving each note in a chord to the nearest note in the next chord. Minimize distance = maximize smoothness. Good voice leading often means keeping common tones and moving other voices by step.",
+            sound: "When voices move smoothly (mostly by half or whole steps), progressions sound connected and inevitable. When voices leap around, it sounds disjointed and harder to follow.",
+            usage: "Classical music obsesses over voice leading. Jazz pianists and guitarists voice chords for smooth motion. Big band arrangers create smooth horn lines by careful voice leading. It's the difference between amateur and professional sound.",
+            voiceLeading: "The secret: Focus on the guide tones first! If guide tones move smoothly, the progression will sound smooth. Then fill in roots and 5ths with minimal motion. Common tones should stay in the same voice.",
+            commonVariations: ["Drop-2 voicings (smooth motion in top 4 voices)", "Voice leading with altered dominants (chromatic motion)", "Contrary motion (top voice up, bottom voice down)"]
+        ),
+        
+        "common_tone_resolution": ProgressionConcept(
+            name: "Common Tone Retention",
+            theory: "When two chords share a note (common tone), keep it in the same voice! This creates a 'pivot point' around which other voices move. Common tones are like anchors that make voice leading smooth and logical.",
+            sound: "Holding a common tone while other voices move creates a sense of continuity and connection. It's like a thread running through the progression.",
+            usage: "In ii-V-I: The 3rd of ii = 7th of V (common tone). The 3rd of V = 7th of I (common tone). This creates two pivot points in the progression. Professional arrangers always identify and retain common tones.",
+            voiceLeading: "Example in C: Dm7 has F (3rd), G7 has F (7th) – COMMON TONE! Keep F in the same register. Similarly, G7 has B (3rd), Cmaj7 has B (7th) – COMMON TONE! The only moving guide tone is C→B (ii→V).",
+            commonVariations: ["Pedal tones (bass note held while harmony changes above)", "Drone notes (common tone throughout entire progression)", "Voice exchange (common tone switches between two voices)"]
         )
     ]
     

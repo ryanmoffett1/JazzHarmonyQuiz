@@ -206,6 +206,18 @@ class CadenceGame: ObservableObject {
                     pair = selectedCommonTonePair
                 }
                 question = CadenceQuestion(cadence: cadence, commonTonePair: pair)
+            } else if selectedDrillMode == .guideTones {
+                // For guide tones mode
+                question = CadenceQuestion(cadence: cadence, guideTonesMode: true)
+            } else if selectedDrillMode == .resolutionTargets {
+                // For resolution targets mode, generate resolution pairs
+                let pairs = generateResolutionPairs(for: cadence)
+                let randomIndex = Int.random(in: 0..<pairs.count)
+                question = CadenceQuestion(cadence: cadence, resolutionPairs: pairs, currentIndex: randomIndex)
+            } else if selectedDrillMode == .smoothVoicing {
+                // For smooth voicing mode, generate a voicing constraint
+                let constraint = generateVoicingConstraint()
+                question = CadenceQuestion(cadence: cadence, voicingConstraint: constraint)
             } else {
                 question = CadenceQuestion(
                     cadence: cadence,
@@ -470,6 +482,19 @@ class CadenceGame: ObservableObject {
     }
 
     func isAnswerCorrect(userAnswer: [[Note]], question: CadenceQuestion) -> Bool {
+        // Special handling for different drill modes
+        switch question.drillMode {
+        case .guideTones:
+            return isGuideToneAnswerCorrect(userAnswer: userAnswer, question: question)
+        case .resolutionTargets:
+            return isResolutionTargetCorrect(userAnswer: userAnswer, question: question)
+        case .smoothVoicing:
+            return isSmoothVoicingCorrect(userAnswer: userAnswer, question: question)
+        default:
+            // Standard answer checking for other modes
+            break
+        }
+        
         // Use expectedAnswers which handles both full progression and isolated chord modes
         let correctAnswers = question.expectedAnswers
 
@@ -503,6 +528,98 @@ class CadenceGame: ObservableObject {
         }
 
         return true
+    }
+    
+    /// Check if guide tone answer is correct (must play ONLY 3rd and 7th for each chord)
+    private func isGuideToneAnswerCorrect(userAnswer: [[Note]], question: CadenceQuestion) -> Bool {
+        guard userAnswer.count == question.cadence.chords.count else { return false }
+        
+        func pitchClass(_ midiNumber: Int) -> Int {
+            return midiNumber % 12
+        }
+        
+        for i in 0..<question.cadence.chords.count {
+            let userNotes = userAnswer[i]
+            let correctGuideTones = question.guideTonesForChord(i)
+            
+            let userPitchClasses = Set(userNotes.map { pitchClass($0.midiNumber) })
+            let correctPitchClasses = Set(correctGuideTones.map { pitchClass($0.midiNumber) })
+            
+            // Must match exactly (only 3rd and 7th, nothing else)
+            if userPitchClasses != correctPitchClasses {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    /// Check if resolution target answer is correct
+    private func isResolutionTargetCorrect(userAnswer: [[Note]], question: CadenceQuestion) -> Bool {
+        guard let pairs = question.resolutionPairs,
+              let currentIndex = question.currentResolutionIndex,
+              currentIndex < pairs.count,
+              userAnswer.count > 0,
+              userAnswer[0].count > 0 else { return false }
+        
+        let pair = pairs[currentIndex]
+        guard let targetNote = pair.targetNote else { return false }
+        
+        func pitchClass(_ midiNumber: Int) -> Int {
+            return midiNumber % 12
+        }
+        
+        // User should have played exactly one note
+        let userNote = userAnswer[0][0]
+        return pitchClass(userNote.midiNumber) == pitchClass(targetNote.midiNumber)
+    }
+    
+    /// Check if smooth voicing answer is correct (meets voicing constraint)
+    private func isSmoothVoicingCorrect(userAnswer: [[Note]], question: CadenceQuestion) -> Bool {
+        guard let constraint = question.voicingConstraint,
+              userAnswer.count == question.cadence.chords.count else { return false }
+        
+        func pitchClass(_ midiNumber: Int) -> Int {
+            return midiNumber % 12
+        }
+        
+        // Check each chord contains all chord tones
+        for i in 0..<question.cadence.chords.count {
+            let userNotes = userAnswer[i]
+            let correctNotes = question.cadence.chords[i].chordTones
+            
+            let userPitchClasses = Set(userNotes.map { pitchClass($0.midiNumber) })
+            let correctPitchClasses = Set(correctNotes.map { pitchClass($0.midiNumber) })
+            
+            // Must contain all chord tones (can have more, like doublings)
+            if !correctPitchClasses.isSubset(of: userPitchClasses) {
+                return false
+            }
+        }
+        
+        // Check top voice motion constraint
+        var totalMotion = 0
+        for i in 0..<userAnswer.count - 1 {
+            let currentChord = userAnswer[i].sorted { $0.midiNumber < $1.midiNumber }
+            let nextChord = userAnswer[i + 1].sorted { $0.midiNumber < $1.midiNumber }
+            
+            guard let currentTop = currentChord.last,
+                  let nextTop = nextChord.last else { return false }
+            
+            let motion = nextTop.midiNumber - currentTop.midiNumber
+            
+            // Check if first transition matches the constraint
+            if i == 0 {
+                if motion != constraint.topVoiceMotion.semitones {
+                    return false
+                }
+            }
+            
+            totalMotion += abs(motion)
+        }
+        
+        // Check total motion constraint
+        return totalMotion <= constraint.maxTotalMotion
     }
 
     // MARK: - Scoreboard Management
@@ -718,6 +835,81 @@ class CadenceGame: ObservableObject {
 
     // MARK: - State Management
 
+    // MARK: - Guide Tone Helper Methods
+    
+    /// Generate resolution pairs for a cadence (for resolution targets drill)
+    private func generateResolutionPairs(for cadence: CadenceProgression) -> [ResolutionPair] {
+        guard cadence.chords.count >= 3 else { return [] }
+        
+        var pairs: [ResolutionPair] = []
+        
+        // ii → V resolutions
+        let iiChord = cadence.chords[0]
+        let vChord = cadence.chords[1]
+        
+        // 3rd of ii resolves to 7th of V
+        if let iiThird = iiChord.third, let vSeventh = vChord.seventh {
+            pairs.append(ResolutionPair(
+                sourceNote: iiThird,
+                targetNote: vSeventh,
+                sourceChordIndex: 0,
+                targetChordIndex: 1,
+                sourceRole: .third
+            ))
+        }
+        
+        // 7th of ii resolves to 3rd of V
+        if let iiSeventh = iiChord.seventh, let vThird = vChord.third {
+            pairs.append(ResolutionPair(
+                sourceNote: iiSeventh,
+                targetNote: vThird,
+                sourceChordIndex: 0,
+                targetChordIndex: 1,
+                sourceRole: .seventh
+            ))
+        }
+        
+        // V → I resolutions
+        let iChord = cadence.chords[2]
+        
+        // 3rd of V resolves to 7th of I (or stays as common tone)
+        if let vThird = vChord.third, let iSeventh = iChord.seventh {
+            pairs.append(ResolutionPair(
+                sourceNote: vThird,
+                targetNote: iSeventh,
+                sourceChordIndex: 1,
+                targetChordIndex: 2,
+                sourceRole: .third
+            ))
+        }
+        
+        // 7th of V resolves to 3rd of I
+        if let vSeventh = vChord.seventh, let iThird = iChord.third {
+            pairs.append(ResolutionPair(
+                sourceNote: vSeventh,
+                targetNote: iThird,
+                sourceChordIndex: 1,
+                targetChordIndex: 2,
+                sourceRole: .seventh
+            ))
+        }
+        
+        return pairs
+    }
+    
+    /// Generate a voicing constraint for smooth voicing drill
+    private func generateVoicingConstraint() -> VoicingConstraint {
+        // Random top voice motion
+        let motions: [VoiceMotion] = [.halfStepUp, .halfStepDown, .wholeStepUp, .wholeStepDown, .common]
+        let motion = motions.randomElement() ?? .halfStepDown
+        
+        // Maximum total motion depends on difficulty
+        // Easier = more motion allowed, harder = less motion allowed
+        let maxMotion = Int.random(in: 4...8)
+        
+        return VoicingConstraint(topVoiceMotion: motion, maxTotalMotion: maxMotion)
+    }
+    
     func resetQuizState() {
         isQuizCompleted = false
         currentResult = nil

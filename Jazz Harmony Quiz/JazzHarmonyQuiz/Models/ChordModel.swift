@@ -194,6 +194,69 @@ struct Chord: Identifiable, Hashable, Codable {
         // Return the notes from this chord that have common pitch classes
         return myNotes.filter { commonPitchClasses.contains($0.pitchClass) }
     }
+    
+    /// Get the guide tones (3rd and 7th) of the chord
+    var guideTones: [Note] {
+        var tones: [Note] = []
+        if let third = third {
+            tones.append(third)
+        }
+        if let seventh = seventh {
+            tones.append(seventh)
+        }
+        return tones
+    }
+    
+    /// Get the third of the chord
+    var third: Note? {
+        return getChordTone(by: 3, isAltered: false)
+    }
+    
+    /// Get the seventh of the chord
+    var seventh: Note? {
+        return getChordTone(by: 7, isAltered: false)
+    }
+    
+    /// Find the role of a note in this chord
+    func roleOfNote(_ note: Note) -> ChordToneRole? {
+        // Compare by pitch class to handle enharmonic equivalents
+        let pitchClass = note.pitchClass
+        
+        // Check if it's the root
+        if root.pitchClass == pitchClass {
+            return .root
+        }
+        
+        // Check if it's the third
+        if let third = third, third.pitchClass == pitchClass {
+            return .third
+        }
+        
+        // Check if it's the fifth
+        if let fifth = getChordTone(by: 5, isAltered: false), fifth.pitchClass == pitchClass {
+            return .fifth
+        }
+        
+        // Check if it's the seventh
+        if let seventh = seventh, seventh.pitchClass == pitchClass {
+            return .seventh
+        }
+        
+        // Check extensions (9th, 11th, 13th)
+        if let ninth = getChordTone(by: 9, isAltered: false), ninth.pitchClass == pitchClass {
+            return .ninth
+        }
+        
+        if let eleventh = getChordTone(by: 11, isAltered: false), eleventh.pitchClass == pitchClass {
+            return .eleventh
+        }
+        
+        if let thirteenth = getChordTone(by: 13, isAltered: false), thirteenth.pitchClass == pitchClass {
+            return .thirteenth
+        }
+        
+        return nil
+    }
 }
 
 // MARK: - Question Types
@@ -282,6 +345,9 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
     case speedRound = "Speed Round"
     case commonTones = "Common Tones"
     case auralIdentify = "Ear Training"
+    case guideTones = "Guide Tones"
+    case resolutionTargets = "Resolution Targets"
+    case smoothVoicing = "Smooth Voicing"
 
     var description: String {
         switch self {
@@ -297,6 +363,12 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
             return "Identify notes shared between adjacent chords"
         case .auralIdentify:
             return "Identify cadence by ear"
+        case .guideTones:
+            return "Play only the guide tones (3rd and 7th) for each chord"
+        case .resolutionTargets:
+            return "Find where guide tones resolve in the next chord"
+        case .smoothVoicing:
+            return "Voice chords with minimal finger movement"
         }
     }
 
@@ -308,6 +380,9 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
         case .speedRound: return "timer"
         case .commonTones: return "link"
         case .auralIdentify: return "ear"
+        case .guideTones: return "circle.hexagongrid.fill"
+        case .resolutionTargets: return "arrow.triangle.branch"
+        case .smoothVoicing: return "slider.horizontal.3"
         }
     }
     
@@ -329,6 +404,9 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
         case .speedRound: return "timer"
         case .commonTones: return "link"
         case .auralIdentify: return "ear"
+        case .guideTones: return "circle.hexagongrid.fill"
+        case .resolutionTargets: return "arrow.triangle.branch"
+        case .smoothVoicing: return "slider.horizontal.3"
         }
     }
 
@@ -341,6 +419,9 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
         case .speedRound: return "Speed"
         case .commonTones: return "Common"
         case .auralIdentify: return "Ear"
+        case .guideTones: return "Guides"
+        case .resolutionTargets: return "Resolution"
+        case .smoothVoicing: return "Smooth"
         }
     }
 }
@@ -408,6 +489,86 @@ enum ExtendedVChordOption: String, CaseIterable, Codable, Equatable {
         case .thirteenth: return "Dominant with 9th and 13th"
         case .flatNine: return "Dominant with flat 9 (minor resolution)"
         case .sharpNine: return "Dominant with sharp 9 (Hendrix chord)"
+        }
+    }
+}
+
+/// Voice motion for smooth voicing drills
+enum VoiceMotion: String, CaseIterable, Codable, Equatable {
+    case halfStepUp = "↑½"
+    case halfStepDown = "↓½"
+    case wholeStepUp = "↑1"
+    case wholeStepDown = "↓1"
+    case common = "="  // stays on same note
+    
+    var description: String {
+        switch self {
+        case .halfStepUp: return "Half-step up"
+        case .halfStepDown: return "Half-step down"
+        case .wholeStepUp: return "Whole-step up"
+        case .wholeStepDown: return "Whole-step down"
+        case .common: return "Common tone (no movement)"
+        }
+    }
+    
+    var semitones: Int {
+        switch self {
+        case .halfStepUp: return 1
+        case .halfStepDown: return -1
+        case .wholeStepUp: return 2
+        case .wholeStepDown: return -2
+        case .common: return 0
+        }
+    }
+}
+
+/// Voicing constraint for smooth voicing drills
+struct VoicingConstraint: Codable, Equatable {
+    let topVoiceMotion: VoiceMotion
+    let maxTotalMotion: Int  // Maximum total semitones moved across all voices
+    
+    var description: String {
+        "Top voice: \(topVoiceMotion.rawValue), max motion: \(maxTotalMotion) semitones"
+    }
+}
+
+/// Represents a resolution pair for resolution target drills
+struct ResolutionPair: Codable, Equatable, Identifiable {
+    let id = UUID()
+    let sourceNote: Note
+    let targetNote: Note?  // nil if student needs to find it
+    let sourceChordIndex: Int  // 0=ii, 1=V, 2=I
+    let targetChordIndex: Int
+    let sourceRole: ChordToneRole  // Is it the 3rd or 7th?
+    
+    var description: String {
+        if let target = targetNote {
+            return "\(sourceNote.displayName) (\(sourceRole.rawValue)) → \(target.displayName)"
+        } else {
+            return "\(sourceNote.displayName) (\(sourceRole.rawValue)) → ?"
+        }
+    }
+}
+
+/// Role of a note within a chord (for guide tone identification)
+enum ChordToneRole: String, Codable, Equatable {
+    case root = "Root"
+    case third = "3rd"
+    case fifth = "5th"
+    case seventh = "7th"
+    case ninth = "9th"
+    case eleventh = "11th"
+    case thirteenth = "13th"
+    
+    var isGuideTone: Bool {
+        return self == .third || self == .seventh
+    }
+    
+    var color: String {
+        switch self {
+        case .third: return "blue"
+        case .seventh: return "green"
+        default: return "yellow"
         }
     }
 }
@@ -711,6 +872,11 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
     let isolatedPosition: IsolatedChordPosition?
     let commonTonePair: CommonTonePair?  // For common tones mode
     
+    // Guide tone drill properties
+    let resolutionPairs: [ResolutionPair]?  // For resolution target drills
+    let voicingConstraint: VoicingConstraint?  // For smooth voicing drills
+    let currentResolutionIndex: Int?  // Which resolution pair is being asked
+    
     /// The chord(s) the user needs to spell for this question
     var chordsToSpell: [Chord] {
         switch drillMode {
@@ -734,6 +900,19 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
         case .auralIdentify:
             // For ear training, return all chords
             return cadence.chords
+        case .guideTones:
+            // Return all three chords for guide tone spelling
+            return cadence.chords
+        case .resolutionTargets:
+            // Return the two chords involved in the current resolution
+            guard let pairs = resolutionPairs,
+                  let index = currentResolutionIndex,
+                  index < pairs.count else { return [] }
+            let pair = pairs[index]
+            return [cadence.chords[pair.sourceChordIndex], cadence.chords[pair.targetChordIndex]]
+        case .smoothVoicing:
+            // Return all chords for smooth voicing
+            return cadence.chords
         }
     }
     
@@ -751,6 +930,19 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
             return correctAnswers.isEmpty ? [[]] : [correctAnswers[0]]
         case .auralIdentify:
             // For ear training, return all chords
+            return correctAnswers
+        case .guideTones:
+            // For guide tones, correctAnswers contains guide tones for each chord
+            return correctAnswers
+        case .resolutionTargets:
+            // For resolution targets, correctAnswers contains the target note
+            guard let pairs = resolutionPairs,
+                  let index = currentResolutionIndex,
+                  index < pairs.count,
+                  let targetNote = pairs[index].targetNote else { return [[]] }
+            return [[targetNote]]
+        case .smoothVoicing:
+            // For smooth voicing, correctAnswers contains valid voicings
             return correctAnswers
         }
     }
@@ -772,6 +964,19 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
             return "Find the common tones between \(pair.rawValue)"
         case .auralIdentify:
             return "What cadence type did you hear?"
+        case .guideTones:
+            return "Play the guide tones (3rd and 7th) for each chord"
+        case .resolutionTargets:
+            guard let pairs = resolutionPairs,
+                  let index = currentResolutionIndex,
+                  index < pairs.count else { return "Find the resolution target" }
+            let pair = pairs[index]
+            let sourceChord = cadence.chords[pair.sourceChordIndex]
+            let targetChord = cadence.chords[pair.targetChordIndex]
+            return "The \(pair.sourceRole.rawValue) of \(sourceChord.displayName) is \(pair.sourceNote.displayName). Where does it resolve in \(targetChord.displayName)?"
+        case .smoothVoicing:
+            guard let constraint = voicingConstraint else { return "Voice with minimal motion" }
+            return "Voice \(cadence.chords[0].displayName) → \(cadence.chords[1].displayName) → \(cadence.chords[2].displayName) with top voice: \(constraint.topVoiceMotion.rawValue)"
         }
     }
 
@@ -782,6 +987,9 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
         self.drillMode = .fullProgression
         self.isolatedPosition = nil
         self.commonTonePair = nil
+        self.resolutionPairs = nil
+        self.voicingConstraint = nil
+        self.currentResolutionIndex = nil
     }
     
     init(cadence: CadenceProgression, drillMode: CadenceDrillMode, isolatedPosition: IsolatedChordPosition?) {
@@ -789,6 +997,9 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
         self.drillMode = drillMode
         self.isolatedPosition = isolatedPosition
         self.commonTonePair = nil
+        self.resolutionPairs = nil
+        self.voicingConstraint = nil
+        self.currentResolutionIndex = nil
         
         // Calculate correct answers based on mode
         self.correctAnswers = cadence.chords.map { $0.chordTones }
@@ -816,6 +1027,9 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
         self.isolatedPosition = nil
         self.commonTonePair = commonTonePair
         self.timeLimit = 30.0
+        self.resolutionPairs = nil
+        self.voicingConstraint = nil
+        self.currentResolutionIndex = nil
         
         // Calculate common tones between the chord pair
         guard cadence.chords.count >= 3 else {
@@ -838,6 +1052,94 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
             }
         }
         self.correctAnswers = [commonTones]
+    }
+    
+    /// Initializer for guide tones mode
+    init(cadence: CadenceProgression, guideTonesMode: Bool) {
+        self.cadence = cadence
+        self.drillMode = .guideTones
+        self.isolatedPosition = nil
+        self.commonTonePair = nil
+        self.timeLimit = 45.0
+        self.resolutionPairs = nil
+        self.voicingConstraint = nil
+        self.currentResolutionIndex = nil
+        
+        // Extract guide tones (3rd and 7th) for each chord
+        self.correctAnswers = cadence.chords.map { chord in
+            chord.guideTones
+        }
+    }
+    
+    /// Initializer for resolution targets mode
+    init(cadence: CadenceProgression, resolutionPairs: [ResolutionPair], currentIndex: Int = 0) {
+        self.cadence = cadence
+        self.drillMode = .resolutionTargets
+        self.isolatedPosition = nil
+        self.commonTonePair = nil
+        self.timeLimit = 30.0
+        self.resolutionPairs = resolutionPairs
+        self.voicingConstraint = nil
+        self.currentResolutionIndex = currentIndex
+        
+        // The correct answer is the target note of the current resolution pair
+        if currentIndex < resolutionPairs.count,
+           let targetNote = resolutionPairs[currentIndex].targetNote {
+            self.correctAnswers = [[targetNote]]
+        } else {
+            self.correctAnswers = [[]]
+        }
+    }
+    
+    /// Initializer for smooth voicing mode
+    init(cadence: CadenceProgression, voicingConstraint: VoicingConstraint) {
+        self.cadence = cadence
+        self.drillMode = .smoothVoicing
+        self.isolatedPosition = nil
+        self.commonTonePair = nil
+        self.timeLimit = 60.0
+        self.resolutionPairs = nil
+        self.voicingConstraint = voicingConstraint
+        self.currentResolutionIndex = nil
+        
+        // For smooth voicing, we don't have a single "correct" answer
+        // Instead, we validate based on constraints
+        // Store all chord tones as reference
+        self.correctAnswers = cadence.chords.map { $0.chordTones }
+    }
+    
+    /// Get all guide tones across all chords
+    func allGuideTones() -> [Note] {
+        return cadence.chords.flatMap { $0.guideTones }
+    }
+    
+    /// Get guide tones for a specific chord index
+    func guideTonesForChord(_ index: Int) -> [Note] {
+        guard index >= 0 && index < cadence.chords.count else { return [] }
+        return cadence.chords[index].guideTones
+    }
+    
+    /// Find the resolution target for a note from one chord to another
+    func resolutionTarget(for note: Note, fromChord fromIndex: Int, toChord toIndex: Int) -> Note? {
+        guard fromIndex >= 0 && fromIndex < cadence.chords.count,
+              toIndex >= 0 && toIndex < cadence.chords.count else { return nil }
+        
+        let sourceChord = cadence.chords[fromIndex]
+        let targetChord = cadence.chords[toIndex]
+        
+        // Find the role of the note in the source chord
+        guard let role = sourceChord.roleOfNote(note) else { return nil }
+        
+        // Apply voice leading rules for guide tones
+        if role == .third {
+            // 3rd typically moves to 7th of next chord (or stays as common tone)
+            return targetChord.seventh
+        } else if role == .seventh {
+            // 7th typically resolves down by half or whole step to 3rd
+            return targetChord.third
+        }
+        
+        return nil
     }
 }
 
