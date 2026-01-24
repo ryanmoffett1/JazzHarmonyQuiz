@@ -438,12 +438,15 @@ class ScaleGame: ObservableObject {
             // Determine variant based on question type
             let variant: String
             switch question.questionType {
-            case .ascending:
-                variant = "ascending"
-            case .descending:
-                variant = "descending"
-            case .spellingNotes:
-                variant = "spelling"
+            case .singleDegree:
+                // Include the specific degree being tested
+                if let degree = question.targetDegree {
+                    variant = "degree-\(degree.degree)"
+                } else {
+                    variant = "single"
+                }
+            case .allDegrees:
+                variant = "all-degrees"
             }
             
             let itemID = SRItemID(
