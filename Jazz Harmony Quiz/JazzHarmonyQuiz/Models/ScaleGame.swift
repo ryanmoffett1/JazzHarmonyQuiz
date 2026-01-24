@@ -98,6 +98,9 @@ class ScaleGame: ObservableObject {
     @Published var selectedDifficulty: ScaleType.ScaleDifficulty = .beginner
     @Published var selectedQuestionTypes: Set<ScaleQuestionType> = [.allDegrees]
     
+    // MARK: - Ear Training Answer Choices
+    @Published var currentAnswerChoices: [ScaleType] = []
+    
     // MARK: - Stats & Rating (uses shared PlayerStats for unified rating)
     @Published var stats: ScaleDrillStats = ScaleDrillStats()
     @Published var lastRatingChange: Int = 0
@@ -185,6 +188,87 @@ class ScaleGame: ObservableObject {
             )
             questions.append(question)
         }
+        
+        // Generate answer choices for first question if ear training
+        if let firstQuestion = questions.first, firstQuestion.questionType == .earTraining {
+            currentAnswerChoices = generateAnswerChoices(for: firstQuestion.scale.scaleType)
+        }
+    }
+    
+    // MARK: - Ear Training Answer Choices
+    
+    /// Generate answer choices for ear training (scale type recognition)
+    func generateAnswerChoices(for correctScale: ScaleType) -> [ScaleType] {
+        // Get all scale types for current difficulty
+        var pool = scaleDatabase.scaleTypes.filter { $0.difficulty == selectedDifficulty }
+        
+        // If not enough for variety, include adjacent difficulties
+        if pool.count < 6 {
+            if selectedDifficulty == .intermediate {
+                pool += scaleDatabase.scaleTypes.filter { $0.difficulty == .beginner || $0.difficulty == .advanced }
+            } else if selectedDifficulty == .beginner {
+                pool += scaleDatabase.scaleTypes.filter { $0.difficulty == .intermediate }
+            } else if selectedDifficulty == .advanced {
+                pool += scaleDatabase.scaleTypes.filter { $0.difficulty == .intermediate }
+            }
+        }
+        
+        // Remove the correct answer from pool
+        pool = pool.filter { $0.id != correctScale.id }
+        
+        // Calculate similarity scores for each scale type
+        let scoredChoices = pool.map { scaleType -> (ScaleType, Int) in
+            let similarity = calculateScaleSimilarity(correctScale, scaleType)
+            return (scaleType, similarity)
+        }
+        
+        // Sort by similarity (most similar first) and take top 3
+        let distractors = scoredChoices
+            .sorted { $0.1 > $1.1 }
+            .prefix(3)
+            .map { $0.0 }
+        
+        // Combine correct answer with distractors and shuffle
+        var choices = Array(distractors) + [correctScale]
+        choices.shuffle()
+        
+        return choices
+    }
+    
+    /// Calculate similarity between two scale types (higher = more similar)
+    private func calculateScaleSimilarity(_ scale1: ScaleType, _ scale2: ScaleType) -> Int {
+        var score = 0
+        
+        // Same number of notes = more similar
+        if scale1.degrees.count == scale2.degrees.count {
+            score += 3
+        }
+        
+        // Check for common intervals
+        let intervals1 = Set(scale1.degrees.map { $0.semitonesFromRoot })
+        let intervals2 = Set(scale2.degrees.map { $0.semitonesFromRoot })
+        let commonIntervals = intervals1.intersection(intervals2).count
+        score += commonIntervals * 2
+        
+        // Major vs minor quality (both have natural 3rd or both have b3)
+        let hasMajor3_1 = scale1.degrees.contains { $0.semitonesFromRoot == 4 }
+        let hasMajor3_2 = scale2.degrees.contains { $0.semitonesFromRoot == 4 }
+        let hasMinor3_1 = scale1.degrees.contains { $0.semitonesFromRoot == 3 }
+        let hasMinor3_2 = scale2.degrees.contains { $0.semitonesFromRoot == 3 }
+        if (hasMajor3_1 && hasMajor3_2) || (hasMinor3_1 && hasMinor3_2) {
+            score += 4
+        }
+        
+        // Same 7th type (major 7 vs minor 7)
+        let hasMajor7_1 = scale1.degrees.contains { $0.semitonesFromRoot == 11 }
+        let hasMajor7_2 = scale2.degrees.contains { $0.semitonesFromRoot == 11 }
+        let hasMinor7_1 = scale1.degrees.contains { $0.semitonesFromRoot == 10 }
+        let hasMinor7_2 = scale2.degrees.contains { $0.semitonesFromRoot == 10 }
+        if (hasMajor7_1 && hasMajor7_2) || (hasMinor7_1 && hasMinor7_2) {
+            score += 3
+        }
+        
+        return score
     }
     
     // MARK: - Answer Submission
@@ -215,6 +299,25 @@ class ScaleGame: ObservableObject {
         return isCorrect
     }
     
+    /// Record answer for ear training question (no notes, just scale type identification)
+    func recordEarTrainingAnswer(correct: Bool) {
+        guard let question = currentQuestion else { return }
+        
+        // Update stats for this scale type
+        let symbol = question.scale.scaleType.symbol
+        var scaleStats = stats.statsByScaleSymbol[symbol] ?? ScaleTypeStatistics()
+        scaleStats.questionsAnswered += 1
+        if correct { scaleStats.correctAnswers += 1 }
+        stats.statsByScaleSymbol[symbol] = scaleStats
+        
+        // Update stats for this key
+        let key = question.scale.root.name
+        var keyStats = stats.statsByKey[key] ?? KeyStatistics()
+        keyStats.questionsAnswered += 1
+        if correct { keyStats.correctAnswers += 1 }
+        stats.statsByKey[key] = keyStats
+    }
+    
     func moveToNextQuestion() {
         // Record time for current question
         if let startTime = questionStartTime {
@@ -226,6 +329,11 @@ class ScaleGame: ObservableObject {
         if currentQuestionIndex < questions.count {
             currentQuestion = questions[currentQuestionIndex]
             questionStartTime = Date()
+            
+            // Generate new answer choices if ear training
+            if let question = currentQuestion, question.questionType == .earTraining {
+                currentAnswerChoices = generateAnswerChoices(for: question.scale.scaleType)
+            }
         } else {
             finishQuiz()
         }
@@ -447,6 +555,8 @@ class ScaleGame: ObservableObject {
                 }
             case .allDegrees:
                 variant = "all-degrees"
+            case .earTraining:
+                variant = "ear-training"
             }
             
             let itemID = SRItemID(

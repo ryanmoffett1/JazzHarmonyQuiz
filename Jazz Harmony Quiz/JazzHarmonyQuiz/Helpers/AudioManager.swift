@@ -10,6 +10,23 @@ class AudioManager: ObservableObject {
     @Published var isEnabled: Bool = true
     @Published var volume: Float = 0.7
     
+    /// Track currently playing MIDI notes so we can stop them before new playback
+    private var activeNotes: Set<UInt8> = []
+    private let notesLock = NSLock()
+    
+    /// Generation counter for canceling scheduled progression playback
+    /// When a new playback starts, we increment this; scheduled plays check it before playing
+    private var playbackGeneration: Int = 0
+    private let generationLock = NSLock()
+    
+    // MARK: - Playback State Tracking (for UI highlighting)
+    
+    /// Which source is currently playing ("correct", "user", or nil if none)
+    @Published var playingSource: String? = nil
+    
+    /// Which chord index is currently playing (-1 if none)
+    @Published var playingChordIndex: Int = -1
+    
     private init() {
         setupAudioEngine()
         loadSoundFont()
@@ -100,13 +117,73 @@ class AudioManager: ObservableObject {
         }
     }
 
+    /// Stop all currently playing notes immediately and cancel scheduled playback
+    /// Call this before starting any new sound to prevent overlapping
+    func stopAllNotes() {
+        guard let sampler = sampler else { return }
+        
+        // Increment generation to cancel any scheduled chord plays
+        generationLock.lock()
+        playbackGeneration += 1
+        generationLock.unlock()
+        
+        // Clear playback state
+        DispatchQueue.main.async {
+            self.playingSource = nil
+            self.playingChordIndex = -1
+        }
+        
+        notesLock.lock()
+        let notesToStop = activeNotes
+        activeNotes.removeAll()
+        notesLock.unlock()
+        
+        // Send note-off for all tracked notes
+        for midiNote in notesToStop {
+            sampler.stopNote(midiNote, onChannel: 0)
+        }
+        
+        // Also send note-off for all possible notes in case any were missed
+        // This ensures clean cutoff even if tracking got out of sync
+        for midiNote: UInt8 in 0...127 {
+            sampler.stopNote(midiNote, onChannel: 0)
+        }
+    }
+    
+    /// Get the current playback generation (for checking if playback was canceled)
+    private func currentGeneration() -> Int {
+        generationLock.lock()
+        let gen = playbackGeneration
+        generationLock.unlock()
+        return gen
+    }
+    
+    /// Track a note as actively playing
+    private func trackNoteOn(_ midiNote: UInt8) {
+        notesLock.lock()
+        activeNotes.insert(midiNote)
+        notesLock.unlock()
+    }
+    
+    /// Track a note as stopped
+    private func trackNoteOff(_ midiNote: UInt8) {
+        notesLock.lock()
+        activeNotes.remove(midiNote)
+        notesLock.unlock()
+    }
+
     /// Play a single note
     func playNote(_ midiNote: UInt8, velocity: UInt8 = 80) {
         guard isEnabled, let sampler = sampler else { return }
+        
+        stopAllNotes()  // Stop any previous sounds
+        
+        trackNoteOn(midiNote)
         sampler.startNote(midiNote, withVelocity: velocity, onChannel: 0)
         
         // Stop note after a short duration
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.trackNoteOff(midiNote)
             sampler.stopNote(midiNote, onChannel: 0)
         }
     }
@@ -114,6 +191,7 @@ class AudioManager: ObservableObject {
     /// Stop a note
     func stopNote(_ midiNote: UInt8) {
         guard let sampler = sampler else { return }
+        trackNoteOff(midiNote)
         sampler.stopNote(midiNote, onChannel: 0)
     }
     
@@ -124,6 +202,9 @@ class AudioManager: ObservableObject {
             return
         }
 
+        // Stop any currently playing sounds first
+        stopAllNotes()
+        
         // Ensure audio engine is running
         ensureAudioEngineRunning()
 
@@ -135,12 +216,14 @@ class AudioManager: ObservableObject {
 
         // Start all notes
         for midiNote in normalizedMidiNotes {
+            trackNoteOn(midiNote)
             sampler.startNote(midiNote, withVelocity: velocity, onChannel: 0)
         }
 
         // Stop all notes after duration
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
             for midiNote in normalizedMidiNotes {
+                self?.trackNoteOff(midiNote)
                 sampler.stopNote(midiNote, onChannel: 0)
             }
         }
@@ -163,11 +246,14 @@ class AudioManager: ObservableObject {
             return
         }
 
+        // Stop any currently playing sounds first
+        stopAllNotes()
+        
         ensureAudioEngineRunning()
 
         switch style {
         case .block:
-            // Use existing playChord() method for block style
+            // Use existing playChord() method for block style (which also stops notes)
             playChord(notes, velocity: 80, duration: 1.5)
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 completion?()
@@ -180,12 +266,14 @@ class AudioManager: ObservableObject {
 
             for (index, note) in sortedNotes.enumerated() {
                 let playDelay = Double(index) * delayBetweenNotes
-                DispatchQueue.main.asyncAfter(deadline: .now() + playDelay) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + playDelay) { [weak self] in
                     let pitchClass = note.midiNumber % 12
                     let normalizedMidi = UInt8(60 + pitchClass)
+                    self?.trackNoteOn(normalizedMidi)
                     sampler.startNote(normalizedMidi, withVelocity: 80, onChannel: 0)
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + delayBetweenNotes * 0.8) {
+                        self?.trackNoteOff(normalizedMidi)
                         sampler.stopNote(normalizedMidi, onChannel: 0)
                     }
                 }
@@ -202,12 +290,14 @@ class AudioManager: ObservableObject {
 
             for (index, note) in sortedNotes.enumerated() {
                 let playDelay = Double(index) * delayBetweenNotes
-                DispatchQueue.main.asyncAfter(deadline: .now() + playDelay) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + playDelay) { [weak self] in
                     let pitchClass = note.midiNumber % 12
                     let normalizedMidi = UInt8(60 + pitchClass)
+                    self?.trackNoteOn(normalizedMidi)
                     sampler.startNote(normalizedMidi, withVelocity: 80, onChannel: 0)
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + delayBetweenNotes * 0.8) {
+                        self?.trackNoteOff(normalizedMidi)
                         sampler.stopNote(normalizedMidi, onChannel: 0)
                     }
                 }
@@ -245,8 +335,20 @@ class AudioManager: ObservableObject {
     ///   - chords: Array of chord note arrays (e.g., [[ii chord notes], [V chord notes], [I chord notes]])
     ///   - bpm: Tempo in beats per minute (default 90 BPM for a relaxed jazz feel)
     ///   - beatsPerChord: How many beats each chord rings (default 2 beats)
-    func playCadenceProgression(_ chords: [[Note]], bpm: Double = 90, beatsPerChord: Double = 2) {
+    ///   - source: Identifier for UI highlighting ("correct", "user", or nil)
+    func playCadenceProgression(_ chords: [[Note]], bpm: Double = 90, beatsPerChord: Double = 2, source: String? = nil) {
         guard isEnabled, let sampler = sampler else { return }
+        
+        // Stop any currently playing sounds first (this also increments generation)
+        stopAllNotes()
+        
+        // Set the playback source for UI highlighting
+        DispatchQueue.main.async {
+            self.playingSource = source
+        }
+        
+        // Capture the current generation - if it changes, we abort
+        let startGeneration = currentGeneration()
         
         let secondsPerBeat = 60.0 / bpm
         let chordDuration = secondsPerBeat * beatsPerChord
@@ -260,20 +362,43 @@ class AudioManager: ObservableObject {
                 return UInt8(60 + pitchClass)  // Octave 4 (middle C)
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                guard let self = self else { return }
+                // Check if playback was canceled
+                guard self.currentGeneration() == startGeneration else { return }
+                
+                // Update which chord is playing for UI highlighting
+                self.playingChordIndex = index
+                
                 // Start chord
                 for midiNote in normalizedMidiNotes {
+                    self.trackNoteOn(midiNote)
                     sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
                 }
             }
             
             // Stop chord slightly before next one (legato feel with small gap)
             let stopDelay = delay + (chordDuration * 0.9)
-            DispatchQueue.main.asyncAfter(deadline: .now() + stopDelay) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + stopDelay) { [weak self] in
+                guard let self = self else { return }
+                // Check if playback was canceled
+                guard self.currentGeneration() == startGeneration else { return }
+                
                 for midiNote in normalizedMidiNotes {
+                    self.trackNoteOff(midiNote)
                     sampler.stopNote(midiNote, onChannel: 0)
                 }
             }
+        }
+        
+        // Clear playback state after all chords finish
+        let totalDuration = Double(chords.count) * chordDuration
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) { [weak self] in
+            guard let self = self else { return }
+            // Only clear if this playback wasn't canceled
+            guard self.currentGeneration() == startGeneration else { return }
+            self.playingSource = nil
+            self.playingChordIndex = -1
         }
     }
     
@@ -281,9 +406,18 @@ class AudioManager: ObservableObject {
     func playProgression(_ chords: [[Note]], tempoMS: Int = 800) {
         guard isEnabled else { return }
         
+        // Stop any currently playing sounds first (this also increments generation)
+        stopAllNotes()
+        
+        // Capture the current generation - if it changes, we abort
+        let startGeneration = currentGeneration()
+        
         for (index, chord) in chords.enumerated() {
             let delay = Double(index) * Double(tempoMS) / 1000.0
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                guard let self = self else { return }
+                // Check if playback was canceled
+                guard self.currentGeneration() == startGeneration else { return }
                 self.playChord(chord, duration: Double(tempoMS) / 1000.0 * 0.9)
             }
         }
@@ -308,14 +442,6 @@ class AudioManager: ObservableObject {
         playNote(60, velocity: 60)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             self.playNote(61, velocity: 60)
-        }
-    }
-    
-    /// Stop all notes
-    func stopAllNotes() {
-        guard let sampler = sampler else { return }
-        for midiNote: UInt8 in 0...127 {
-            sampler.stopNote(midiNote, onChannel: 0)
         }
     }
     

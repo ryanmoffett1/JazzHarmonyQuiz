@@ -435,6 +435,7 @@ struct ActiveScaleQuizView: View {
     @State private var highlightedNoteIndex: Int? = nil
     @State private var showContinueButton: Bool = false
     @State private var showMaxNotesWarning: Bool = false
+    @State private var selectedScaleType: ScaleType? = nil  // For ear training
     
     private let audioManager = AudioManager.shared
     
@@ -446,69 +447,47 @@ struct ActiveScaleQuizView: View {
     var body: some View {
         VStack(spacing: 16) {
             if let question = scaleGame.currentQuestion {
-                // Scale Display
-                VStack(spacing: 8) {
-                    Text(question.scale.displayName)
-                        .font(settings.chordDisplayFont(size: 48, weight: .bold))
-                        .foregroundColor(settings.primaryText(for: colorScheme))
-                    
-                    if !question.scale.scaleType.description.isEmpty {
-                        Text(question.scale.scaleType.description)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(settings.chordDisplayBackground(for: colorScheme))
-                .cornerRadius(16)
-                .padding(.horizontal)
-                
-                // Question Text with tone count hint
-                VStack(spacing: 4) {
-                    Text(question.questionText)
-                        .font(.title3)
-                        .fontWeight(.medium)
-                        .multilineTextAlignment(.center)
-                    
-                    Text("\(question.correctNotes.count) tones")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal)
-                
-                // Selected Notes Display or Feedback
-                if showingFeedback {
-                    feedbackNotesView(question: question)
-                } else if !selectedNotes.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(Array(selectedNotes).sorted { $0.midiNumber < $1.midiNumber }, id: \.midiNumber) { note in
-                                Text(displayNoteName(note, for: question.scale))
-                                    .font(.headline)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.teal)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8)
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                    .frame(height: 44)
+                // Different display for ear training vs visual
+                if question.questionType == .earTraining {
+                    // Ear Training Display
+                    earTrainingDisplay(question: question)
                 } else {
-                    Text("Tap keys to select notes")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    // Visual Scale Display
+                    visualScaleDisplay(question: question)
+                }
+                
+                // Selected Notes Display or Feedback (for visual questions)
+                if question.questionType != .earTraining {
+                    if showingFeedback {
+                        feedbackNotesView(question: question)
+                    } else if !selectedNotes.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(Array(selectedNotes).sorted { $0.midiNumber < $1.midiNumber }, id: \.midiNumber) { note in
+                                    Text(displayNoteName(note, for: question.scale))
+                                        .font(.headline)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color.teal)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(8)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
                         .frame(height: 44)
+                    } else {
+                        Text("Tap keys to select notes")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .frame(height: 44)
+                    }
                 }
                 
                 Spacer()
                 
-                // Max notes warning
-                if showMaxNotesWarning {
+                // Max notes warning (visual questions only)
+                if question.questionType != .earTraining && showMaxNotesWarning {
                     Text("Maximum \(question.correctNotes.count) notes allowed!")
                         .font(.caption)
                         .foregroundColor(.orange)
@@ -519,17 +498,189 @@ struct ActiveScaleQuizView: View {
                         .transition(.scale.combined(with: .opacity))
                 }
                 
-                // Piano Keyboard with note limiting
-                PianoKeyboard(selectedNotes: limitedSelectedNotes(maxNotes: question.correctNotes.count))
-                    .frame(height: 180)
-                    .padding(.horizontal, 8)
-                    .disabled(hasSubmitted)
+                // Piano Keyboard (visual questions only)
+                if question.questionType != .earTraining {
+                    PianoKeyboard(selectedNotes: limitedSelectedNotes(maxNotes: question.correctNotes.count))
+                        .frame(height: 180)
+                        .padding(.horizontal, 8)
+                        .disabled(hasSubmitted)
+                }
                 
                 // Action Buttons
                 actionButtonsView(question: question)
             }
         }
         .animation(.easeInOut(duration: 0.3), value: showingFeedback)
+        .onChange(of: scaleGame.currentQuestionIndex) { _, _ in
+            // Auto-play scale for ear training questions
+            if let question = scaleGame.currentQuestion,
+               question.questionType == .earTraining {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    playCurrentScale()
+                }
+            }
+        }
+        .onAppear {
+            // Play on initial appear if ear training question
+            if let question = scaleGame.currentQuestion,
+               question.questionType == .earTraining {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    playCurrentScale()
+                }
+            }
+        }
+    }
+    
+    // MARK: - Ear Training Display
+    
+    @ViewBuilder
+    private func earTrainingDisplay(question: ScaleQuestion) -> some View {
+        VStack(spacing: 16) {
+            // Ear icon and instruction
+            VStack(spacing: 12) {
+                Image(systemName: "ear.fill")
+                    .font(.system(size: 50))
+                    .foregroundColor(.purple)
+                
+                Text("Listen to the scale")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                
+                Text("Root: \(question.scale.root.name)")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+            }
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(16)
+            .padding(.horizontal)
+            
+            // Play Scale Button
+            Button(action: playCurrentScale) {
+                HStack {
+                    Image(systemName: "speaker.wave.2.fill")
+                    Text("Play Scale")
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(
+                    LinearGradient(
+                        colors: [.purple, .blue],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(12)
+            }
+            .padding(.horizontal)
+            
+            Text("Select the scale type you hear")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            // Answer Choices
+            if !scaleGame.currentAnswerChoices.isEmpty {
+                VStack(spacing: 8) {
+                    ForEach(scaleGame.currentAnswerChoices, id: \.id) { scaleType in
+                        let isSelected = selectedScaleType?.id == scaleType.id
+                        let isCorrectChoice = showingFeedback && scaleType.id == question.scale.scaleType.id
+                        let isWrongChoice = showingFeedback && isSelected && scaleType.id != question.scale.scaleType.id
+                        
+                        Button(action: {
+                            if !showingFeedback {
+                                selectedScaleType = scaleType
+                                ScaleDrillHaptics.light()
+                            }
+                        }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(scaleType.name)
+                                        .font(.headline)
+                                    if !scaleType.description.isEmpty {
+                                        Text(scaleType.description)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                Spacer()
+                                
+                                if showingFeedback {
+                                    if isCorrectChoice {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                    } else if isWrongChoice {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.red)
+                                    }
+                                } else if isSelected {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.purple)
+                                }
+                            }
+                            .padding()
+                            .background(
+                                showingFeedback ?
+                                    (isCorrectChoice ? Color.green.opacity(0.2) :
+                                     isWrongChoice ? Color.red.opacity(0.2) :
+                                     Color(.systemGray6)) :
+                                    (isSelected ? Color.purple.opacity(0.2) : Color(.systemGray6))
+                            )
+                            .cornerRadius(10)
+                        }
+                        .disabled(showingFeedback)
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
+    }
+    
+    // MARK: - Visual Scale Display
+    
+    @ViewBuilder
+    private func visualScaleDisplay(question: ScaleQuestion) -> some View {
+        // Scale Display
+        VStack(spacing: 8) {
+            Text(question.scale.displayName)
+                .font(settings.chordDisplayFont(size: 48, weight: .bold))
+                .foregroundColor(settings.primaryText(for: colorScheme))
+            
+            if !question.scale.scaleType.description.isEmpty {
+                Text(question.scale.scaleType.description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(settings.chordDisplayBackground(for: colorScheme))
+        .cornerRadius(16)
+        .padding(.horizontal)
+        
+        // Question Text with tone count hint
+        VStack(spacing: 4) {
+            Text(question.questionText)
+                .font(.title3)
+                .fontWeight(.medium)
+                .multilineTextAlignment(.center)
+            
+            Text("\(question.correctNotes.count) tones")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal)
+    }
+    
+    // MARK: - Play Scale
+    
+    private func playCurrentScale() {
+        guard let question = scaleGame.currentQuestion else { return }
+        audioManager.playScaleObject(question.scale, bpm: 140)
     }
     
     // MARK: - Feedback View
@@ -714,40 +865,56 @@ struct ActiveScaleQuizView: View {
     private func actionButtonsView(question: ScaleQuestion) -> some View {
         HStack(spacing: 16) {
             if !hasSubmitted {
-                // Clear Button
-                Button(action: {
-                    selectedNotes.removeAll()
-                    ScaleDrillHaptics.light()
-                }) {
-                    Text("Clear")
-                        .font(.headline)
-                        .foregroundColor(.red)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red.opacity(0.1))
-                        .cornerRadius(12)
-                }
-                
-                // Submit Button - requires exact number of notes
-                let requiredCount = question.correctNotes.count
-                let hasCorrectCount = selectedNotes.count == requiredCount
-                
-                Button(action: submitAnswer) {
-                    VStack(spacing: 2) {
+                // For ear training
+                if question.questionType == .earTraining {
+                    // Submit Button - requires scale type selection
+                    Button(action: submitAnswer) {
                         Text("Submit")
                             .font(.headline)
-                        if !hasCorrectCount && !selectedNotes.isEmpty {
-                            Text("\(selectedNotes.count)/\(requiredCount) notes")
-                                .font(.caption)
-                        }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(selectedScaleType != nil ? Color.purple : Color.gray)
+                            .cornerRadius(12)
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(hasCorrectCount ? Color.teal : Color.gray)
-                    .cornerRadius(12)
+                    .disabled(selectedScaleType == nil)
+                } else {
+                    // Visual questions - Clear and Submit
+                    // Clear Button
+                    Button(action: {
+                        selectedNotes.removeAll()
+                        ScaleDrillHaptics.light()
+                    }) {
+                        Text("Clear")
+                            .font(.headline)
+                            .foregroundColor(.red)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.red.opacity(0.1))
+                            .cornerRadius(12)
+                    }
+                    
+                    // Submit Button - requires exact number of notes
+                    let requiredCount = question.correctNotes.count
+                    let hasCorrectCount = selectedNotes.count == requiredCount
+                    
+                    Button(action: submitAnswer) {
+                        VStack(spacing: 2) {
+                            Text("Submit")
+                                .font(.headline)
+                            if !hasCorrectCount && !selectedNotes.isEmpty {
+                                Text("\(selectedNotes.count)/\(requiredCount) notes")
+                                    .font(.caption)
+                            }
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(hasCorrectCount ? Color.teal : Color.gray)
+                        .cornerRadius(12)
+                    }
+                    .disabled(!hasCorrectCount)
                 }
-                .disabled(!hasCorrectCount)
                 
             } else if isCorrect || feedbackPhase == .showingCorrectAnswer {
                 // Play Scale Button
@@ -892,6 +1059,12 @@ struct ActiveScaleQuizView: View {
     private func submitAnswer() {
         guard let question = scaleGame.currentQuestion else { return }
         
+        // Handle ear training differently
+        if question.questionType == .earTraining {
+            submitEarTrainingAnswer()
+            return
+        }
+        
         // Store user's answer for display
         userAnswerNotes = Array(selectedNotes)
         feedbackPhase = .showingUserAnswer
@@ -912,6 +1085,28 @@ struct ActiveScaleQuizView: View {
             ScaleDrillHaptics.error()
             // Play user's answer with highlighting
             playUserAnswerWithHighlight()
+        }
+    }
+    
+    private func submitEarTrainingAnswer() {
+        guard let question = scaleGame.currentQuestion,
+              let selected = selectedScaleType else { return }
+        
+        let correctScaleType = question.scale.scaleType
+        isCorrect = selected.id == correctScaleType.id
+        hasSubmitted = true
+        showingFeedback = true
+        
+        if isCorrect {
+            feedbackMessage = "Correct! 🎉"
+            ScaleDrillHaptics.success()
+            // Record correct answer
+            scaleGame.recordEarTrainingAnswer(correct: true)
+        } else {
+            feedbackMessage = "Incorrect"
+            ScaleDrillHaptics.error()
+            // Record incorrect answer
+            scaleGame.recordEarTrainingAnswer(correct: false)
         }
     }
     
@@ -1058,6 +1253,7 @@ struct ActiveScaleQuizView: View {
     
     private func moveToNext() {
         selectedNotes.removeAll()
+        selectedScaleType = nil  // Reset ear training selection
         userAnswerNotes = []
         showingFeedback = false
         hasSubmitted = false

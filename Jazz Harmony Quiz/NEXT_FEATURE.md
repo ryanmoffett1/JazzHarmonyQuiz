@@ -1,9 +1,9 @@
-# Next Feature: Chord Ear Training
+# Next Feature: Progression Drills
 
-**Current Status:** Phase 1 (Spaced Repetition + Interval Ear Training) ✅ Complete  
-**Next Up:** Phase 2 Component - Chord Ear Training  
-**Priority:** High (critical ear training skill)  
-**Estimated Time:** 6-8 hours
+**Current Status:** Ear Training Suite ✅ Complete (Intervals, Chords, Cadences)  
+**Next Up:** Progression Drills (Turnarounds, Rhythm Changes, Blues, Standards)  
+**Priority:** High (apply ear training to real music)  
+**Estimated Time:** 8-10 hours
 
 ---
 

@@ -120,6 +120,42 @@ class JazzChordDatabase {
             ),
             
             ChordType(
+                name: "Major 6th",
+                symbol: "maj6",
+                chordTones: [
+                    ChordTone.allTones[0], // Root
+                    ChordTone.allTones[2], // 3rd
+                    ChordTone.allTones[4], // 5th
+                    ChordTone(degree: 6, name: "6", semitonesFromRoot: 9, isAltered: false) // 6
+                ],
+                difficulty: .intermediate
+            ),
+            
+            ChordType(
+                name: "Minor 6th",
+                symbol: "m6",
+                chordTones: [
+                    ChordTone.allTones[0], // Root
+                    ChordTone(degree: 3, name: "b3", semitonesFromRoot: 3, isAltered: true), // b3
+                    ChordTone.allTones[4], // 5th
+                    ChordTone(degree: 6, name: "6", semitonesFromRoot: 9, isAltered: false) // 6
+                ],
+                difficulty: .intermediate
+            ),
+            
+            ChordType(
+                name: "Major 7th #5",
+                symbol: "maj7#5",
+                chordTones: [
+                    ChordTone.allTones[0], // Root
+                    ChordTone.allTones[2], // 3rd
+                    ChordTone(degree: 5, name: "#5", semitonesFromRoot: 8, isAltered: true), // #5
+                    ChordTone.allTones[6]  // 7th
+                ],
+                difficulty: .intermediate
+            ),
+            
+            ChordType(
                 name: "Major 9th",
                 symbol: "maj9",
                 chordTones: [

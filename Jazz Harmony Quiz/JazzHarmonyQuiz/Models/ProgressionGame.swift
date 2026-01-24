@@ -61,6 +61,11 @@ class ProgressionGame: ObservableObject {
         userAnswers = [:]
         totalQuizTime = 0
         questionStartTime = Date()
+        
+        // Set the first question
+        if !questions.isEmpty {
+            currentQuestion = questions[0]
+        }
     }
 
     private func generateQuestions() {
@@ -89,7 +94,7 @@ class ProgressionGame: ObservableObject {
 
         for _ in 0..<totalQuestions {
             // Pick random key and template
-            let key = possibleRoots.randomElement() ?? Note.C
+            let key = possibleRoots.randomElement() ?? Note(name: "C", midiNumber: 60, isSharp: false)
             let template = availableTemplates.randomElement()!
 
             // Generate progression
@@ -125,6 +130,7 @@ class ProgressionGame: ObservableObject {
     func nextQuestion() {
         if currentQuestionIndex < questions.count - 1 {
             currentQuestionIndex += 1
+            currentQuestion = questions[currentQuestionIndex]
             questionStartTime = Date()
         } else {
             finishQuiz()
@@ -211,6 +217,7 @@ class ProgressionGame: ObservableObject {
         // Category multiplier
         let categoryMultiplier: Double
         switch selectedCategory {
+        case .cadences: categoryMultiplier = 0.9
         case .turnaround: categoryMultiplier = 1.0
         case .rhythmChanges: categoryMultiplier = 1.3
         case .secondaryDominants: categoryMultiplier = 1.2
@@ -228,7 +235,14 @@ class ProgressionGame: ObservableObject {
         }
 
         // Key difficulty multiplier
-        let keyMultiplier = selectedKeyDifficulty.difficultyMultiplier
+        let keyMultiplier: Double
+        switch selectedKeyDifficulty {
+        case .easy: keyMultiplier = 0.9
+        case .medium: keyMultiplier = 1.0
+        case .hard: keyMultiplier = 1.2
+        case .expert: keyMultiplier = 1.5
+        case .all: keyMultiplier = 1.1
+        }
 
         // Question count bonus
         let questionBonus = Double(totalQuestions) / 10.0

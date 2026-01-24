@@ -51,7 +51,7 @@ struct ProgressionProgression: Identifiable, Codable {
         let targetMidi = key.midiNumber + semitones
 
         // Determine if we should prefer sharps or flats based on key
-        let preferSharps = key.preferSharps
+        let preferSharps = key.isSharp
 
         return Note.noteFromMidi(targetMidi, preferSharps: preferSharps) ?? key
     }

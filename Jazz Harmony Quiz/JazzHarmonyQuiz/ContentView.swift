@@ -42,8 +42,8 @@ struct ContentView: View {
                 switch destination {
                 case "chordDrill":
                     ChordDrillView()
-                case "cadenceDrill":
-                    CadenceDrillView()
+                case "harmonyDrill":
+                    HarmonyDrillView()
                 case "scaleDrill":
                     ScaleDrillView()
                 case "intervalDrill":
@@ -370,14 +370,14 @@ struct DrillOptionsSection: View {
                 )
             }
             
-            // Cadence Mode
+            // Harmony Practice
             Button(action: {
-                navigationPath.append("cadenceDrill")
+                navigationPath.append("harmonyDrill")
             }) {
                 DrillOptionCard(
                     icon: "music.note.list",
-                    title: "Cadence Mode",
-                    subtitle: "Master ii-V-I progressions",
+                    title: "Harmony Practice",
+                    subtitle: "Master progressions, cadences, and jazz harmony",
                     color: .purple
                 )
             }

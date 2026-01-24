@@ -172,6 +172,7 @@ struct Scale: Identifiable, Hashable, Codable {
 enum ScaleQuestionType: String, CaseIterable, Codable {
     case singleDegree = "Single Degree"
     case allDegrees = "All Scale Tones"
+    case earTraining = "Ear Training"
     
     var description: String {
         switch self {
@@ -179,6 +180,16 @@ enum ScaleQuestionType: String, CaseIterable, Codable {
             return "Identify one specific scale degree"
         case .allDegrees:
             return "Select all notes in the scale"
+        case .earTraining:
+            return "Identify the scale type by ear"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .singleDegree: return "music.note"
+        case .allDegrees: return "pianokeys"
+        case .earTraining: return "ear"
         }
     }
 }
@@ -207,6 +218,9 @@ struct ScaleQuestion: Identifiable, Codable, Hashable {
         case .allDegrees:
             // Exclude octave for "all tones" - just want the unique pitch classes
             self.correctNotes = Array(scale.scaleNotes.dropLast())
+        case .earTraining:
+            // For ear training, correct notes are all scale tones (for playback reference)
+            self.correctNotes = scale.scaleNotes
         }
     }
     
@@ -219,6 +233,8 @@ struct ScaleQuestion: Identifiable, Codable, Hashable {
             return "Find the note in \(scale.displayName)"
         case .allDegrees:
             return "Select all notes in \(scale.displayName)"
+        case .earTraining:
+            return "What scale did you hear?"
         }
     }
     
