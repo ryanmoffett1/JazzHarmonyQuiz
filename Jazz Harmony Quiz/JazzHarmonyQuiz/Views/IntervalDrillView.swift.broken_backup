@@ -592,19 +592,6 @@ struct IntervalActiveView: View {
         AudioManager.shared.playInterval(interval)
     }
     
-    private func playInterval(_ interval: Interval) {
-        let audioManager = AudioManager.shared
-        let style = settings.defaultIntervalStyle
-        let tempo = settings.intervalTempo
-        
-        audioManager.playInterval(
-            rootNote: interval.rootNote,
-            targetNote: interval.targetNote,
-            style: style,
-            tempo: tempo
-        )
-    }
-    
     private func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
@@ -878,10 +865,10 @@ struct IntervalResultsView: View {
                 
                 // Stats Grid
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                    IntervalStatCard(title: "Time", value: formatTime(intervalGame.elapsedTime), icon: "clock")
-                    IntervalStatCard(title: "Difficulty", value: intervalGame.selectedDifficulty.rawValue, icon: "speedometer")
-                    IntervalStatCard(title: "Avg/Question", value: formatTime(intervalGame.elapsedTime / Double(intervalGame.totalQuestions)), icon: "timer")
-                    IntervalStatCard(title: "Direction", value: intervalGame.selectedDirection.rawValue, icon: "arrow.up.arrow.down")
+                    StatCard(title: "Time", value: formatTime(intervalGame.elapsedTime), icon: "clock")
+                    StatCard(title: "Difficulty", value: intervalGame.selectedDifficulty.rawValue, icon: "speedometer")
+                    StatCard(title: "Avg/Question", value: formatTime(intervalGame.elapsedTime / Double(intervalGame.totalQuestions)), icon: "timer")
+                    StatCard(title: "Direction", value: intervalGame.selectedDirection.rawValue, icon: "arrow.up.arrow.down")
                 }
                 .padding(.horizontal)
                 
@@ -952,19 +939,6 @@ struct IntervalResultsView: View {
         return "📚 Don't give up! Try an easier difficulty."
     }
     
-    private func playInterval(_ interval: Interval) {
-        let audioManager = AudioManager.shared
-        let style = settings.defaultIntervalStyle
-        let tempo = settings.intervalTempo
-        
-        audioManager.playInterval(
-            rootNote: interval.rootNote,
-            targetNote: interval.targetNote,
-            style: style,
-            tempo: tempo
-        )
-    }
-    
     private func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
@@ -972,7 +946,7 @@ struct IntervalResultsView: View {
     }
 }
 
-fileprivate struct IntervalStatCard: View {
+fileprivate struct StatCard: View {
     let title: String
     let value: String
     let icon: String
@@ -1034,6 +1008,40 @@ struct IntervalScoreboardPreview: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "trophy")
+                    .foregroundColor(.yellow)
+                Text("Best Scores")
+                    .font(.headline)
+                Spacer()
+            }
+            
+            ForEach(intervalGame.scoreboard.prefix(3).indices, id: \.self) { index in
+                let result = intervalGame.scoreboard[index]
+                HStack {
+                    Text(medalEmoji(for: index))
+                    Text("\(Int(result.accuracy))%")
+                        .fontWeight(.semibold)
+                    Spacer()
+                    Text(formatTime(result.totalTime))
+                        .foregroundColor(.secondary)
+                }
+                .font(.subheadline)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+    
+    private func medalEmoji(for index: Int) -> String {
+        switch index {
+        case 0: return "🥇"
+        case 1: return "🥈"
+        case 2: return "🥉"
+        default: return "  "
+        }
+    }
+    
+    private func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%d:%02d", minutes, seconds)
