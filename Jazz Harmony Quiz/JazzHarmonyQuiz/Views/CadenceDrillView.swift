@@ -367,9 +367,16 @@ struct CadenceSetupView: View {
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                             ForEach(CadenceDrillMode.allCases, id: \.self) { mode in
                                 Button(action: {
+                                    if mode == .auralIdentify {
+                                        // Auto-enable mixed cadences and set sensible defaults if empty
+                                        useMixedCadences = true
+                                        if selectedCadenceTypes.isEmpty {
+                                            selectedCadenceTypes = [.major, .minor, .tritoneSubstitution]
+                                        }
+                                    }
                                     selectedDrillMode = mode
                                 }) {
-                                    return VStack(spacing: 4) {
+                                    VStack(spacing: 4) {
                                         Image(systemName: mode.iconName)
                                             .font(.title2)
                                         Text(mode.shortName)
@@ -494,6 +501,12 @@ struct CadenceSetupView: View {
                             }
                         }
                         .tint(.purple)
+                        .onChange(of: useMixedCadences) { _, newValue in
+                            // If disabling mixed cadences while in ear training mode, switch to full progression
+                            if !newValue && selectedDrillMode == .auralIdentify {
+                                selectedDrillMode = .fullProgression
+                            }
+                        }
                     }
                     
                     // Cadence Type Selection
@@ -685,6 +698,8 @@ struct CadenceSetupView: View {
             return "Identify notes that are shared between two adjacent chords. This develops voice leading awareness - a key skill for smooth jazz improvisation and comping."
         case .chordIdentification:
             return "Identify each chord in the progression by selecting its root and quality. This tests your knowledge of chord symbols and their relationships in common jazz cadences."
+        case .auralIdentify:
+            return "Listen to the cadence and identify which type it is. This develops your ear for recognizing common chord progressions."
         }
     }
 }
@@ -703,6 +718,11 @@ struct ActiveCadenceQuizView: View {
     @State private var isCorrect = false
     @State private var correctAnswerForFeedback: [[Note]] = []
     @State private var currentHintText: String? = nil
+    
+    // Ear training feedback state - capture before question advances
+    @State private var feedbackCorrectCadenceType: CadenceType? = nil
+    @State private var feedbackUserSelectedType: CadenceType? = nil
+    @State private var currentQuestionCadenceChords: [[Note]] = []  // For audio playback
 
     /// Number of chords to spell based on drill mode
     private var chordsToSpellCount: Int {
@@ -810,8 +830,11 @@ struct ActiveCadenceQuizView: View {
 
                             CadenceTypePicker(
                                 selectedCadenceType: $userSelectedCadenceType,
-                                correctCadenceType: showingFeedback ? question.cadence.cadenceType : nil,
-                                disabled: showingFeedback
+                                correctCadenceType: showingFeedback ? feedbackCorrectCadenceType : nil,
+                                disabled: showingFeedback,
+                                availableTypes: cadenceGame.useMixedCadences && !cadenceGame.selectedCadenceTypes.isEmpty 
+                                    ? Array(cadenceGame.selectedCadenceTypes).sorted(by: { $0.rawValue < $1.rawValue })
+                                    : CadenceType.allCases
                             )
                             .padding(.horizontal)
                         }
@@ -1059,14 +1082,25 @@ struct ActiveCadenceQuizView: View {
             }
         }
         .onChange(of: cadenceGame.currentQuestionIndex) { _, _ in
+            // Store current question's cadence for playback (only if not showing feedback)
+            // If showing feedback, we want to keep the previous question's chords
+            if !showingFeedback, let question = cadenceGame.currentQuestion {
+                currentQuestionCadenceChords = question.cadence.chords.map { $0.chordTones }
+            }
+            
             // Auto-play for ear training questions
-            if isEarTrainingMode && settings.autoPlayCadences {
+            if isEarTrainingMode && settings.autoPlayCadences && !showingFeedback {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     playCurrentCadence()
                 }
             }
         }
         .onAppear {
+            // Store current question's cadence for playback
+            if let question = cadenceGame.currentQuestion {
+                currentQuestionCadenceChords = question.cadence.chords.map { $0.chordTones }
+            }
+            
             // Play on initial appear if ear training question
             if isEarTrainingMode && settings.autoPlayCadences {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -1211,19 +1245,26 @@ struct ActiveCadenceQuizView: View {
                 return
             }
 
+            // Capture feedback data BEFORE submitting (which advances the question)
+            feedbackCorrectCadenceType = question.cadence.cadenceType
+            feedbackUserSelectedType = userSelectedCadenceType
+            currentQuestionCadenceChords = question.cadence.chords.map { $0.chordTones }
+            
             // Check if selected cadence type matches
             isCorrect = userSelectedCadenceType == question.cadence.cadenceType
 
             // Haptic feedback
             if isCorrect {
-                CadenceDrillHaptics.success()
+                HapticFeedback.success()
             } else {
-                CadenceDrillHaptics.error()
+                HapticFeedback.error()
             }
 
-            // Play progression for feedback
+            // Play the correct progression for feedback (using stored chords - same key)
             if settings.audioEnabled {
-                playCurrentCadence()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self.playCurrentCadence()
+                }
             }
 
             // Submit dummy answer (game expects chord spellings)
@@ -1277,6 +1318,33 @@ struct ActiveCadenceQuizView: View {
     }
 
     private func continueToNextQuestion() {
+        // For ear training mode, we already submitted in submitAnswer()
+        // Just reset state and let the game continue
+        if isEarTrainingMode {
+            // Reset state for next question
+            currentChordIndex = 0
+            chordSpellings = [[], [], [], [], []]
+            selectedNotes.removeAll()
+            currentHintText = nil
+            userSelectedCadenceType = nil
+            feedbackCorrectCadenceType = nil
+            feedbackUserSelectedType = nil
+            showingFeedback = false
+            
+            // Store the new question's cadence chords and auto-play
+            if let question = cadenceGame.currentQuestion {
+                currentQuestionCadenceChords = question.cadence.chords.map { $0.chordTones }
+                
+                // Auto-play the new question
+                if settings.autoPlayCadences {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        self.playCurrentCadence()
+                    }
+                }
+            }
+            return
+        }
+        
         guard let question = cadenceGame.currentQuestion else { return }
 
         // Prepare the answer based on mode
@@ -1298,6 +1366,9 @@ struct ActiveCadenceQuizView: View {
         selectedNotes.removeAll()
         currentHintText = nil
         userSelectedCadenceType = nil  // Clear ear training selection
+        feedbackCorrectCadenceType = nil  // Clear ear training feedback
+        feedbackUserSelectedType = nil
+        currentQuestionCadenceChords = []  // Clear stored cadence
         showingFeedback = false
 
         // Start speed round timer for next question if still in quiz
@@ -1307,8 +1378,27 @@ struct ActiveCadenceQuizView: View {
     }
 
     private func playCurrentCadence() {
+        // For ear training mode, ALWAYS use stored cadence chords to ensure same voicing/key
+        // This is critical - never fall back to currentQuestion in ear training mode
+        if isEarTrainingMode {
+            guard !currentQuestionCadenceChords.isEmpty else {
+                print("Warning: No stored cadence chords for ear training playback")
+                return
+            }
+            let bpm = settings.cadenceBPM
+            let beatsPerChord = settings.cadenceBeatsPerChord
+            AudioManager.shared.playCadenceProgression(
+                currentQuestionCadenceChords,
+                bpm: bpm,
+                beatsPerChord: beatsPerChord
+            )
+            return
+        }
+        
+        // For other modes, use current question
         guard let question = cadenceGame.currentQuestion else { return }
         let chords = question.cadence.chords.map { $0.chordTones }
+        
         let bpm = settings.cadenceBPM
         let beatsPerChord = settings.cadenceBeatsPerChord
 
@@ -1321,6 +1411,20 @@ struct ActiveCadenceQuizView: View {
 
     private func formatFeedback() -> String {
         guard let question = cadenceGame.currentQuestion else { return "" }
+        
+        // Handle ear training mode differently
+        if isEarTrainingMode {
+            // Use captured feedback data (not current question which has advanced)
+            guard let correctType = feedbackCorrectCadenceType else { return "" }
+            let userType = feedbackUserSelectedType
+            
+            var feedback = ""
+            feedback += "Correct Cadence: \(correctType.rawValue)\n"
+            if let selected = userType, selected != correctType {
+                feedback += "You selected: \(selected.rawValue)\n"
+            }
+            return feedback
+        }
         
         let chordsToSpell = question.chordsToSpell
         let expectedAnswers = question.expectedAnswers
@@ -2409,14 +2513,15 @@ struct CadenceTypePicker: View {
     @Binding var selectedCadenceType: CadenceType?
     let correctCadenceType: CadenceType?
     let disabled: Bool
+    let availableTypes: [CadenceType]  // Filter to only show these types
 
     var body: some View {
         VStack(spacing: 8) {
-            ForEach(CadenceType.allCases, id: \.self) { cadenceType in
+            ForEach(availableTypes, id: \.self) { cadenceType in
                 Button(action: {
                     if !disabled {
                         selectedCadenceType = cadenceType
-                        CadenceDrillHaptics.light()
+                        HapticFeedback.light()
                     }
                 }) {
                     HStack {

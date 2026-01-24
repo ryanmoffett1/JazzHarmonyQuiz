@@ -609,7 +609,7 @@ struct ActiveQuizView: View {
                         ChordTypePicker(
                             difficulty: quizGame.selectedDifficulty,
                             selectedChordType: $selectedChordType,
-                            correctChord: showingFeedback ? question.chord.type : nil,
+                            correctChord: showingFeedback ? question.chord.chordType : nil,
                             disabled: showingFeedback
                         )
                         .padding(.horizontal)
@@ -936,7 +936,7 @@ struct ActiveQuizView: View {
         // Handle answer based on question type
         if question.questionType == .earTraining {
             // For ear training, check chord type selection
-            isCorrect = selectedChordType?.symbol == question.chord.type.symbol
+            isCorrect = selectedChordType?.symbol == question.chord.chordType.symbol
             userAnswer = question.chord.chordTones  // Use chord tones for quiz game
         } else {
             // For visual questions, use selected notes

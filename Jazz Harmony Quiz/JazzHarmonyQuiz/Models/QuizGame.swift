@@ -571,6 +571,8 @@ class QuizGame: ObservableObject {
                 question = QuizQuestion(chord: chord, questionType: .singleTone, targetTone: targetTone)
             case .allTones:
                 question = QuizQuestion(chord: chord, questionType: .allTones)
+            case .earTraining:
+                question = QuizQuestion(chord: chord, questionType: .earTraining)
             }
             questions.append(question)
         }
@@ -611,6 +613,9 @@ class QuizGame: ObservableObject {
                 
             case .allTones:
                 question = QuizQuestion(chord: chord, questionType: .allTones)
+                
+            case .earTraining:
+                question = QuizQuestion(chord: chord, questionType: .earTraining)
             }
             
             questions.append(question)
@@ -1035,6 +1040,8 @@ class QuizGame: ObservableObject {
                 }
             case .allTones:
                 variant = "all-tones"
+            case .earTraining:
+                variant = "ear-training"
             }
             
             let itemID = SRItemID(

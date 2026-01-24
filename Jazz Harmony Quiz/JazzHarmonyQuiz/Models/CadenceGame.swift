@@ -363,6 +363,8 @@ class CadenceGame: ObservableObject {
             modeMultiplier = 1.3  // Different skill
         case .chordIdentification:
             modeMultiplier = 1.2  // Chord symbol recognition
+        case .auralIdentify:
+            modeMultiplier = 1.8  // Ear training is harder
         }
         
         // Cadence type complexity bonus
@@ -1058,6 +1060,14 @@ class CadenceGame: ObservableObject {
                 itemID = SRItemID(
                     mode: .cadenceDrill,
                     topic: "chord-id",
+                    key: question.cadence.key.name,
+                    variant: selectedCadenceType.rawValue
+                )
+            case .auralIdentify:
+                // Record ear training practice
+                itemID = SRItemID(
+                    mode: .cadenceDrill,
+                    topic: "aural-identify",
                     key: question.cadence.key.name,
                     variant: selectedCadenceType.rawValue
                 )

@@ -100,6 +100,7 @@ enum PracticeMode: String, CaseIterable, Codable {
         case .scaleDrill: return [.theory, .precision]
         case .intervalDrill: return [.ear, .speed]
         case .cadenceDrill: return [.flow, .harmony]
+        case .progressionDrill: return [.flow, .harmony]
         }
     }
 }
@@ -576,3 +577,4 @@ private struct OldPlayerStatsData: Codable {
 // MARK: - Type Alias for Backward Compatibility
 
 typealias PlayerStats = PlayerProfile
+

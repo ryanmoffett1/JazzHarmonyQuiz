@@ -1,9 +1,9 @@
-# Next Feature: Interval Ear Training
+# Next Feature: Chord Ear Training
 
-**Current Status:** Phase 1 (Spaced Repetition) ✅ Complete  
-**Next Up:** Phase 1 Final Component - Interval Ear Training  
-**Priority:** High (completes Phase 1)  
-**Estimated Time:** 4-6 hours
+**Current Status:** Phase 1 (Spaced Repetition + Interval Ear Training) ✅ Complete  
+**Next Up:** Phase 2 Component - Chord Ear Training  
+**Priority:** High (critical ear training skill)  
+**Estimated Time:** 6-8 hours
 
 ---
 
@@ -11,398 +11,363 @@
 
 ### Pedagogical Reasoning
 
-1. **Completes Phase 1:** This was planned as part of the initial SR implementation phase
-2. **Foundation for all ear training:** Intervals are the building blocks of chords and progressions
-3. **Already 80% built:** You have `IntervalModel.swift`, `IntervalGame.swift`, and `AudioManager.swift`
-4. **High impact:** Ear training is the #1 missing skill in jazz students
-5. **Natural progression:** Students can already spell intervals visually; now they learn to hear them
+1. **Natural progression:** Students can now identify intervals by ear; next step is full chord qualities
+2. **Most impactful skill:** Recognizing chord types by ear is essential for comping, transcription, and improvisation
+3. **Builds on existing infrastructure:** AudioManager can already play chords, just need ear-first UI
+4. **High student demand:** "What chord is that?" is the #1 question on gigs
+5. **Bridges theory → music:** Students can spell chords visually; now they learn to hear them
 
 ### What Students Gain
 
-- **Hear intervals before seeing them** → critical for real-world playing
-- **Recognize chord extensions by ear** → hear a maj9 and know it's a maj9
-- **Better melodic dictation** → transcribe solos faster
-- **Improved intonation** → singing intervals develops internal pitch
-- **Transfer to all music** → intervals are universal across styles
+- **Recognize chord quality by ear** → hear maj7 vs dom7 vs m7
+- **Identify extensions instantly** → hear a 9, 11, or 13 in context
+- **Better transcription** → learn songs faster from recordings
+- **Improved comping** → match the pianist's voicings
+- **Transfer to all music** → chord recognition is universal
 
 ---
 
 ## What Already Exists
 
-✅ **IntervalModel.swift** - Complete data model:
-- `IntervalType` with semitones, quality, difficulty
-- `IntervalQuestionType` enum (includes `.auralIdentify`)
-- `IntervalQuestion` struct
-- `IntervalDatabase` with all common intervals
+✅ **ChordModel.swift** - Complete data model:
+- `ChordQuality` enum with all jazz chord types
+- `Chord` struct with voicing logic
+- `ChordDatabase` with beginner → expert progression
+- Extensions support (9, 11, 13, alterations)
 
-✅ **IntervalGame.swift** - Game logic:
+✅ **QuizGame.swift** - Game logic foundation:
 - Quiz state management
 - Question generation
 - Answer checking
 - Results tracking
-- SR integration (already added!)
+- SR integration
 
-✅ **IntervalDrillView.swift** - UI for visual interval practice
+✅ **ChordDrillView.swift** - UI for visual chord practice
 
-✅ **AudioManager.swift** - Audio playback infrastructure:
-- MIDI-based sound synthesis
-- Single note playback
+✅ **AudioManager.swift** - Complete audio infrastructure:
+- `playChord()` method with multiple notes
+- Block chord playback
+- Arpeggio support (already implemented)
+- Guide tone playback
 - Volume control
 - Settings integration
 
 ---
 
-## What Needs to Be Built
+## WhatChord Question Type Extension
 
-### 1. Audio Playback for Intervals (Primary Task)
-
-**Add to AudioManager.swift:**
+**Add to ChordModel.swift:**
 
 ```swift
-// Play two notes as an interval
-func playInterval(
-    _ interval: Interval,
-    style: IntervalPlaybackStyle,
-    completion: (() -> Void)? = nil
-)
-
-enum IntervalPlaybackStyle {
-    case harmonic          // Both notes at once
-    case melodicAscending  // First note, then second note (up)
-    case melodicDescending // First note, then second note (down)
+enum ChordQuestionType: String, Codable, CaseIterable {
+    case singleTone = "Identify Single Tone"
+    case allTones = "Spell All Tones"
+    case spelling = "Written Spelling"
+    case auralQuality = "Identify Quality by Ear"      // NEW
+    case auralSpelling = "Spell Chord by Ear"          // NEW
+    case auralExtension = "Identify Extension by Ear"  // NEW
 }
 ```
 
-**Implementation:**
-- Harmonic: Play both MIDI notes simultaneously
-- Melodic: Play first note, wait 0.5s, play second note
-- Use existing AVAudioEngine infrastructure
-- Add tempo control (for melodic intervals)
+### 2. Answer Generation for Ear Training
 
-### 2. Aural Question Flow in IntervalDrillView
+**Multiple Choice Quality Recognition:**
+- Generate 4-6 answer choices based on difficulty
+- Beginner: maj7, m7, 7, dim7
+- Intermediate: Add m7♭5, maj6, sus4
+- Advanced: Add alt, maj7#5, m(maj7), add9
+- Distractors should be sonically similar (maj7 vs maj6, m7 vs m7♭5)
+
+**Example:** If correct chord is Dm7:
+- Choices: Dmaj7, Dm7 ✓, D7, Dm7♭5
+
+### 3. Aural Question Flow in ChordDrillView
 
 **Current flow (visual):**
-1. Show two notes on keyboard
-2. User identifies the interval
+1. Show chord symbol (e.g., "Cmaj7")
+2. User selects notes on keyboard
 3. Check answer
 
-**New flow (aural):**
-1. Play interval audio (harmonic or melodic)
+**New flow (aural quality):**
+1. Play chord audio (block, arpeggio, or guide tones)
 2. Show "Play Again" button
-3. User identifies the interval (multiple choice or keyboard selection)
+3. User selects chord quality from multiple choice
 4. Check answer
-5. Show visual confirmation (highlight the interval on keyboard)
+5. Show visual confirmation (chord symbol + keyboard highlighting)
+
+**New flow (aural spelling):**
+1. Play chord audio
+2. Show "Play Again" button  
+3. User selects all notes on keyboard
+4. Check answer (can be partial credit)
+5. Show visual confirmation
 
 **UI Changes:**
 ```swift
-if question.questionType == .auralIdentify {
+if question.questionType.isAural {
     VStack {
-        // Play button
-        Button("🔊 Play Interval") {
-            playCurrentInterval()
+        // Play button with style options
+        Menu {
+            Button("Block Chord") { playChord(.block) }
+            Button("Arpeggio Up") { playChord(.arpeggioUp) }
+            Button("Guide Tones") { playChord(.guideTones) }
+        } label: {
+            Label("🔊 Play Chord", systemImage: "speaker.wave.2")
         }
         
-        // Multiple choice answers
-        ForEach(answerChoices) { choice in
-            Button(choice.name) {
-                submitAnswer(choice)
+        // For quality questions: multiple choice
+        if question.questionType == .auralQuality {
+            ForEach(qualityChoices) { choice in
+                Button(choice.name) {
+                    submitAnswer(choice)
+                }
             }
         }
         
-        // OR: Keyboard selection mode
-        PianoKeyboard(
-            selectedNotes: $selectedNotes,
-            onNoteTapped: { note in
-                // Select two notes to form interval
-            }
-        )
+        // For spelling questions: keyboard
+        if question.questionType == .auralSpelling {
+            PianoKeyboard(selectedNotes: $selectedNotes)
+        }
     }
 }
 ```
-
-### 3. Answer Generation for Aural Questions
-
-**Multiple Choice Mode:**
-- Generate 4 answer choices
-- Include correct interval
-- Add 3 plausible distractors (nearby intervals)
-- Example: If answer is "Major 3rd", distractors could be "Minor 3rd", "Perfect 4th", "Major 2nd"
-
-**Keyboard Selection Mode:**
-- User selects two notes on keyboard
-- App calculates interval between them
-- Compare to correct answer
 
 ### 4. Settings Integration
 
 **Add to SettingsView.swift:**
 
 ```swift
-Section("Interval Ear Training") {
-    Toggle("Play Intervals Automatically", isOn: $settings.autoPlayIntervals)
+Section("Chord Ear Training") {
+    Toggle("Auto-Play Chords", isOn: $settings.autoPlayChords)
     
-    Picker("Playback Style", selection: $settings.defaultIntervalStyle) {
-        Text("Harmonic").tag(IntervalPlaybackStyle.harmonic)
-        Text("Melodic Ascending").tag(.melodicAscending)
-        Text("Melodic Descending").tag(.melodicDescending)
+    Picker("Default Playback Style", selection: $settings.defaultChordStyle) {
+        Text("Block").tag(ChordPlaybackStyle.block)
+        Text("Arpeggio Up").tag(.arpeggioUp)
+        Text("Arpeggio Down").tag(.arpeggioDown)
+        Text("Guide Tones Only").tag(.guideTones)
     }
     
-    Slider(value: $settings.intervalTempo, in: 60...180) {
-        Text("Tempo: \(Int(settings.intervalTempo)) BPM")
+    Toggle("Allow Playback Style Choice", isOn: $settings.allowChordStyleChoice)
+    
+    Slider(value: $settings.arpeggioSpeed, in: 0.05...0.3) {
+        Text("Arpeggio Speed: \(Int(settings.arpeggioSpeed * 1000))ms")
     }
 }
 ```
 
 ### 5. Progressive Difficulty
 
-**Beginner (start here):**
-- Perfect 5th, Perfect 4th, Octave
-- Major/Minor 3rds, Major/Minor 2nds
-- Harmonic playback only (easier)
+**Beginner:**
+- Major 7th, Minor 7th, Dominant 7th
+- Block chord playback (easiest)
+- Only quality recognition (not spelling)
 
 **Intermediate:**
-- Major/Minor 6ths, Major/Minor 7ths
-- Tritone
-- Melodic playback
+- Add: m7♭5, diminished 7th, sus4, major 6th
+- Arpeggio playback
+- Both quality + spelling questions
 
 **Advanced:**
-- Compound intervals (9th, 10th, etc.)
+- All alterations: 7alt, maj7#5, m(maj7)
+- Extensions: 9ths, 11ths, 13ths
+- Guide tones only (hardest - just 3rd & 7th)
+- "Identify the extension" questionstc.)
 - Augmented/Diminished intervals
 - Faster tempo, single playthrough
+Extend Chord Model (1 hour)
 
----
+1. Add `.auralQuality`, `.auralSpelling`, `.auralExtension` to `ChordQuestionType`
+2. Add `isAural` computed property for convenience
+3. Update `QuizGame` to handle new question types
+4. Test compilation across all files
 
-## Implementation Steps (Recommended Order)
+### Step 2: Answer Generation Logic (2 hours)
 
-### Step 1: Audio Playback (2 hours)
+1. Create `generateQualityChoices()` in `QuizGame`
+2. Implement difficulty-based distractor selection
+3. Ensure sonic similarity (maj7 ≈ maj6, not maj7 ≈ dim7)
+4. Test with all chord qualities
 
-1. Add `playInterval()` method to `AudioManager.swift`
-2. Implement harmonic playback first (simplest)
-3. Add melodic ascending/descending
-4. Test with various intervals (M3, P5, m7, etc.)
+### Step 3: UI for Aural Mode (2 hours)
 
-### Step 2: UI for Aural Mode (1.5 hours)
+1. Detect aural question types in `ChordDrillView`
+2. Add "Play Chord" menu button with style options
+3. Implement auto-play on question load
+4. Add multiple choice UI for quality questions
+5. Add keyboard UI for spelling questions
 
-1. Detect `.auralIdentify` question type in `IntervalDrillView`
-2. Add "Play Interval" button
-3. Implement "Play Again" functionality
-4. Show answer choices (multiple choice first)
+### Step 4: Audio Playback Enhancement (1 hour)
 
-### Step 3: Answer Generation (1 hour)
+1. Test existing `playChord()` method with various voicings
+2. Add arpeggio timing control if needed
+3. Ensure guide tones work correctly (3rd + 7th only)
+4. Add completion callbacks for UI sync
 
-1. Create distractor generation logic
-2. Ensure correct answer is randomly positioned
-3. Test with various intervals
+### Step 5: Settings & Integration (1 hour)
 
-### Step 4: Settings & Preferences (0.5 hours)
+1. Add chord ear training settings
+2. Hook up auto-play toggle
+3. Add playback style preferences
+4. Persist to UserDefaults
 
-1. Add interval ear training settings
-2. Hook up to IntervalGame
-3. Persist to UserDefaults
+### Step 6: Polish & Testing (1 hour)
 
-### Step 5: Polish & Testing (1 hour)
-
-1. Add visual feedback after answer (show interval on keyboard)
+1. Add visual feedback after submission
 2. Test across all difficulty levels
-3. Verify SR integration works
-4. Add encouragement messages
+3. Verify SR integration captures ear training attempts
+4.Using existing AudioManager infrastructure:**
+- `playChord()` already supports multiple notes
+- Block chord: All notes simultaneously
+- Arpeggio: Already implemented with timing control
+- Guide tones: Filter to 3rd + 7th before playback
 
----
+**Voicing choices:**
+- Close voicing (within one octave): Easier to hear quality
+- Drop 2: More realistic jazz sound
+- Spread voicing: Harder challenge
 
-## Technical Details
-
-### Audio Playback Strategy
-
-**Option 1: AVAudioEngine + Sampler (Current approach)**
-- Use existing AudioManager setup
-- Play MIDI notes with slight delay for melodic
-- Pros: Already implemented for single notes
-- Cons: Synthesized sound quality varies
-
-**Option 2: Pre-recorded Audio Files**
-- Record real piano intervals
-- Bundle as .wav/.m4a files
-- Pros: Professional sound quality
-- Cons: Large file size, harder to transpose
-
-**Recommendation:** Start with Option 1 (MIDI/Sampler), can upgrade to Option 2 later.
+**Recommendation:** Start with close voicing for beginner/intermediate, add spread for advanced.
 
 ### Playback Timing
 
-**Harmonic:**
+**Block Chord:**
 ```swift
-func playHarmonic(note1: Int, note2: Int) {
-    audioEngine.play(midiNote: note1)
-    audioEngine.play(midiNote: note2)
-    // Both play simultaneously
-}
+// Already implemented
+audioManager.playChord(chord.notes, style: .block)
 ```
 
-**Melodic:**
+**Arpeggio:**
 ```swift
-func playMelodic(note1: Int, note2: Int, ascending: Bool) {
-    let (first, second) = ascending ? (note1, note2) : (note2, note1)
-    
-    audioEngine.play(midiNote: first, duration: 1.0)
-    
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-        audioEngine.play(midiNote: second, duration: 1.0)
+// Already implemented with customizable delay
+audioManager.playChord(chord.notes, style: .arpeggioUp)
+```
+
+**Guide Tones Only:**
+```swift
+let guideTones = chord.notes.filter { note in
+    // Keep only 3rd and 7th
+    let chordTone = chord.chordTone(for: note)
+    return chordTone == .third || chordTone == .seventh
+}
+audioManager.playChord(guideTones, style: .block)
+```
+```
+
+### Answer Distractor Strategy
+
+**Chord Quality Recognition:**
+Sonically similar chords work best as distractors:
+- For Cmaj7, use: Cmaj6 (similar brightness), C7 (same root + 3rd), Cm7 (same structure, different 3rd)
+- For Cm7, use: Cm7♭5 (same root + m3), Cmaj7 (same structure, different 3rd), C7 (similar function)
+- Avoid: Cmaj7 vs. Cdim7 (too obviously different)
+
+**Algorithm:**
+```swift
+func generateQualityDistractors(correctQuality: ChordQuality, difficulty: Difficulty) -> [ChordQuality] {
+    switch difficulty {
+    case .beginner:
+        return [.major7, .minor7, .dominant7, .diminished7]
+            .filter { $0 != correctQuality }
+            .shuffled()
+            .prefix(3)
+    case .intermediate:
+        return similarQualities(to: correctQuality, pool: intermediateQualities)
+    case .advanced:
+        return similarQualities(to: correctQuality, pool: allQualities)
     }
 }
-```
 
-### Answer Choice Generation
-
-```swift
-func generateDistractors(for correctInterval: IntervalType) -> [IntervalType] {
-    let allIntervals = IntervalDatabase.shared.allIntervals
-    let semitonesRange = (correctInterval.semitones - 2)...(correctInterval.semitones + 2)
-    
-    let distractors = allIntervals
-        .filter { $0.semitones != correctInterval.semitones }
-        .filter { semitonesRange.contains($0.semitones) }
-        .shuffled()
+func similarQualities(to target: ChordQuality, pool: [ChordQuality]) -> [ChordQuality] {
+    return pool
+        .filter { $0 != target }
+        .sorted { similarity($0, to: target) > similarity($1, to: target) }
         .prefix(3)
-    
-    return Array(distractors)
 }
 ```
 
 ---
 
-## Files to Create/Modify
+## Example User Flows
 
-### New Files
-None! (All infrastructure exists)
+### Beginner Chord Ear Training
 
-### Files to Modify
+**Setup:**
+- Difficulty: Beginner
+- Question Types: Aural Quality
+- Chord Types: maj7, m7, 7, dim7 only
+- Playback: Block chord
 
-1. **AudioManager.swift**
-   - Add `playInterval()` method
-   - Add `IntervalPlaybackStyle` enum
-   - Handle tempo control
-
-2. **IntervalDrillView.swift**
-   - Add aural question UI
-   - Add "Play Interval" button
-   - Add multiple choice layout
-   - Handle answer submission
-
-3. **IntervalGame.swift**
-   - Add distractor generation
-   - Hook up audio playback
-   - Handle aural question flow
-
-4. **SettingsManager.swift**
-   - Add ear training preferences
-   - Default playback style
-   - Auto-play toggle
-   - Tempo setting
-
-5. **IntervalModel.swift**
-   - Possibly add `generateDistractors()` method (optional)
+**Question 1:**
+1. Screen shows: "What chord quality do you hear?"
+2. Audio plays: C-E-G-B (Cmaj7, block voicing)
+3. Replay button with menu: "🔊 Play Chord" (tap for Block, Arpeggio, Guide Tones)
+4. Answer choices:
+   - Major 7 (maj7) ✓
+   - Minor 7 (m7)
+   - Dominant 7 (7)
+   - Diminished 7 (dim7)
+5. Student selects "Major 7"
+6. ✅ "Correct! That's a Major 7 chord"
+7. Piano keyboard shows C-E-G-B highlighted
+8. Chord symbol "Cmaj7" appears
+9. Click Next
 
 ---
 
-## Testing Plan
+## Success Metrics & Validation
 
-### Manual Testing
+### Quantitative Metrics
+- **70%+ accuracy** on beginner chord qualities (maj7, m7, 7) after 5 sessions
+- **60%+ accuracy** on intermediate qualities (m7♭5, dim7, sus4) after 10 sessions
+- **Average response time < 15 seconds** for common qualities
+- **Spaced repetition works:** Chords practiced 3+ times show 20%+ accuracy improvement
 
-1. **Audio Playback:**
-   - Play each interval type (P5, M3, m7, etc.)
-   - Verify harmonic sounds correct
-   - Verify melodic ascending/descending works
-   - Test at different tempos
-
-2. **Answer Choices:**
-   - Verify correct answer is included
-   - Verify distractors are plausible
-   - Verify choices are randomized
-
-3. **User Flow:**
-   - Start aural interval drill
-   - Play interval multiple times
-   - Select answer
-   - Verify feedback is clear
-   - Complete full quiz
-
-4. **SR Integration:**
-   - Complete aural interval quiz
-   - Check console for SR recording
-   - Verify items scheduled correctly
-
-### Edge Cases
-
-- What happens if user changes playback style mid-quiz?
-- Can user replay interval unlimited times?
-- What if user submits before playing interval?
-- Audio interruption (phone call, etc.)
+### Qualitative Feedback
+- Students report "I can hear the difference between maj7 and dom7 now"
+- Improved transcription speed (self-reported)
+- Better comping choices on gigs
 
 ---
 
-## Success Criteria
+## Future Enhancements (Post-MVP)
 
-✅ **Functional:**
-- Students can hear intervals and identify them
-- Multiple choice answers work correctly
-- Audio playback is clear and reliable
-- SR integration records aural practice
-
-✅ **Pedagogical:**
-- Students can distinguish M3 from m3 by ear
-- Students improve accuracy over time
-- Students report "hearing intervals in songs"
-
-✅ **UX:**
-- Audio plays quickly (<500ms delay)
-- "Play Again" button is obvious
-- Visual feedback confirms answer
-- Settings are intuitive
+### Phase 3 Additions
+- **Context mode:** Hear chord within a ii-V-I progression
+- **Comparison mode:** Hear two chords, identify the difference
+- **Real recordings:** Use actual jazz recordings instead of MIDI
 
 ---
 
-## After This Feature
+## Implementation Checklist
 
-Once Interval Ear Training is complete, Phase 1 will be 100% done. The next phases are:
+### Core Features
+- [ ] Add `.auralQuality`, `.auralSpelling`, `.auralExtension` to `ChordQuestionType`
+- [ ] Implement quality distractor generation in `QuizGame`
+- [ ] Update `ChordDrillView` for ear training UI
+- [ ] Add "Play Chord" menu button (Block, Arpeggio, Guide Tones)
+- [ ] Create multiple-choice quality selector
+- [ ] Add auto-play on question load (with toggle)
 
-**Phase 2 Options:**
-1. **Chord Ear Training** (hear chord → identify quality)
-2. **Cadence Ear Training** (hear progression → identify type)
+### Settings Integration
+- [ ] Add "Chord Ear Training" section to SettingsView
+- [ ] Toggle: Auto-play chords
+- [ ] Picker: Default playback style
+- [ ] Persist settings to UserDefaults
 
-**Phase 3 Option:**
-3. **Progression Drills** (turnarounds, rhythm changes)
-
-**Recommendation:** Complete Chord Ear Training next to build on the interval ear foundation.
-
----
-
-## Quick Start Command
-
-When you're ready to start, I can:
-
-1. Add `playInterval()` method to AudioManager
-2. Implement aural question UI in IntervalDrillView
-3. Add distractor generation logic
-4. Wire up all the connections
-5. Test and debug
-
-**Estimated time:** 4-6 hours total (can be done in 2-3 sessions)
+### Testing
+- [ ] Test all difficulty levels
+- [ ] Verify SR integration
+- [ ] Test on real device
 
 ---
 
-## Questions to Consider
+## Next Phase Preview
 
-1. **Multiple choice vs keyboard selection?**
-   - Multiple choice is faster/easier
-   - Keyboard selection is more challenging but builds stronger ear
-   - **Recommendation:** Start with multiple choice, add keyboard mode later
+After Chord Ear Training, continue with **Cadence Ear Training** (already partially implemented):
 
-2. **How many playbacks allowed?**
-   - Unlimited? (easier, less pressure)
-   - Limited (2-3 plays)? (more realistic, builds first-listen skills)
-   - **Recommendation:** Start unlimited, add timed/limited mode later
-
-3. **Scoring for aural vs visual?**
+- Fully implement hear ii–V–I → Identify cadence type (major/minor/tritone sub/backdoor)
+- Hear progression → Spell each chord
+- Real-world application combining interval + chord recognition skills
    - Same XP? Different XP?
    - **Recommendation:** 1.5x XP for aural (it's harder and more valuable)
 

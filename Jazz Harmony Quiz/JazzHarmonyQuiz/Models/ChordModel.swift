@@ -710,6 +710,9 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
             case .random:
                 return [cadence.chords[0], cadence.chords[1]] // Default to ii-V
             }
+        case .auralIdentify:
+            // For ear training, return all chords
+            return cadence.chords
         }
     }
     
@@ -725,6 +728,9 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
         case .commonTones:
             // For common tones, correctAnswers[0] contains the common tones
             return correctAnswers.isEmpty ? [[]] : [correctAnswers[0]]
+        case .auralIdentify:
+            // For ear training, return all chords
+            return correctAnswers
         }
     }
     
