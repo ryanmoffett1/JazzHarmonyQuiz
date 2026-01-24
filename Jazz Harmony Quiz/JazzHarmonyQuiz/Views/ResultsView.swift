@@ -476,6 +476,11 @@ struct QuestionReviewCard: View {
                 .background(settings.cardBackground(for: colorScheme))
                 .cornerRadius(12)
                 
+                // Conceptual Explanation (only show if answer was wrong)
+                if !isCorrect {
+                    ConceptualExplanationView(chord: question.chord)
+                }
+                
                 Spacer()
             }
             .padding()
@@ -551,7 +556,78 @@ struct QuestionReviewCard: View {
                 let note = question.chord.chordTones[index]
                 return "\(note.name) (\(chordTone.name))"
             }
-            return ""
+           Conceptual Explanation View
+
+struct ConceptualExplanationView: View {
+    @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
+    let chord: Chord
+    
+    var body: some View {
+        let concept = ConceptualExplanations.shared.chordExplanation(for: chord.chordType)
+        
+        VStack(alignment: .leading, spacing: 15) {
+            HStack {
+                Image(systemName: "lightbulb.fill")
+                    .foregroundColor(.yellow)
+                Text("Understanding \(concept.name)")
+                    .font(.headline)
+                    .foregroundColor(settings.primaryText(for: colorScheme))
+            }
+            
+            VStack(alignment: .leading, spacing: 12) {
+                ExplanationSection(title: "Theory", icon: "book.fill", text: concept.theory, colorScheme: colorScheme)
+                ExplanationSection(title: "Sound", icon: "waveform", text: concept.sound, colorScheme: colorScheme)
+                ExplanationSection(title: "Usage", icon: "music.note", text: concept.usage, colorScheme: colorScheme)
+                ExplanationSection(title: "Voicing Tip", icon: "hand.raised.fill", text: concept.voicingTip, colorScheme: colorScheme)
+            }
+        }
+        .padding()
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(colorScheme == .dark ? 0.2 : 0.1),
+                    Color.purple.opacity(colorScheme == .dark ? 0.2 : 0.1)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+        )
+    }
+}
+
+struct ExplanationSection: View {
+    let title: String
+    let icon: String
+    let text: String
+    let colorScheme: ColorScheme
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption)
+                    .foregroundColor(.blue)
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(colorScheme == .dark ? .white : .primary)
+            }
+            
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(colorScheme == .dark ? .white.opacity(0.9) : .secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+// MARK: -  return ""
         }.filter { !$0.isEmpty }.joined(separator: ", ")
     }
 }

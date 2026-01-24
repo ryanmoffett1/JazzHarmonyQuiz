@@ -523,13 +523,20 @@ struct IntervalActiveView: View {
                     .fontWeight(.semibold)
                     .foregroundColor(.green)
             } else {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Incorrect")
                         .fontWeight(.semibold)
                         .foregroundColor(.red)
                     Text("The answer is \(question.interval.intervalType.name) (\(question.correctNote.name))")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                    
+                    // Add conceptual explanation for wrong answers
+                    let concept = ConceptualExplanations.shared.intervalExplanation(for: question.interval.intervalType)
+                    Text(concept.sound)
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                        .padding(.top, 2)
                 }
             }
             

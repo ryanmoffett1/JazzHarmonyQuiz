@@ -1103,10 +1103,14 @@ struct ActiveScaleQuizView: View {
             // Record correct answer
             scaleGame.recordEarTrainingAnswer(correct: true)
         } else {
-            feedbackMessage = "Incorrect"
+            feedbackMessage = "Incorrect - \(correctScaleType.name)"
             ScaleDrillHaptics.error()
             // Record incorrect answer
             scaleGame.recordEarTrainingAnswer(correct: false)
+            
+            // Show conceptual explanation
+            let concept = ConceptualExplanations.shared.scaleExplanation(for: correctScaleType)
+            feedbackMessage += "\n\n" + concept.sound
         }
     }
     
