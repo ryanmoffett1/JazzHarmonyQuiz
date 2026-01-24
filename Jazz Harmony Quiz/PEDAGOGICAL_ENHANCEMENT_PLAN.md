@@ -649,9 +649,10 @@ Every feature in this plan serves that north star.
 
 | Phase | Feature | Status | Completed |
 |-------|---------|--------|-----------|
-| 1 | SR Data Model | ⬜️ Not Started | - |
-| 1 | SR Integration (Cadence) | ⬜️ Not Started | - |
-| 1 | Practice Due UI | ⬜️ Not Started | - |
+| 1 | SR Data Model | ✅ Done | Jan 23, 2026 |
+| 1 | SR Integration (Cadence) | ✅ Done | Jan 23, 2026 |
+| 1 | SR Integration (Chord/Scale/Interval) | ✅ Done | Jan 23, 2026 |
+| 1 | Practice Due UI | ✅ Done | Jan 23, 2026 |
 | 1 | Interval Ear Training | ⬜️ Not Started | - |
 | 2 | Chord Ear Training | ⬜️ Not Started | - |
 | 2 | Cadence Ear Training | ⬜️ Not Started | - |
