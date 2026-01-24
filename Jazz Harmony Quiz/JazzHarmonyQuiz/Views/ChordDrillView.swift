@@ -541,8 +541,8 @@ struct ActiveQuizView: View {
                 feedbackView()
             } else if let question = quizGame.currentQuestion {
                 // Question Display
-                if question.questionType == .earTraining {
-                    // Ear Training Display
+                if question.questionType == .earTraining || question.questionType == .auralQuality {
+                    // Aural Quality Display
                     VStack(spacing: 16) {
                         Image(systemName: "ear.fill")
                             .font(.system(size: 50))
@@ -552,7 +552,26 @@ struct ActiveQuizView: View {
                             .font(.headline)
                             .foregroundColor(.secondary)
 
-                        Text("Use the play button below to hear different voicings")
+                        Text("Identify the chord quality")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(16)
+                    .padding(.horizontal)
+                } else if question.questionType == .auralSpelling {
+                    // Aural Spelling Display
+                    VStack(spacing: 16) {
+                        Image(systemName: "ear.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(.purple)
+
+                        Text("Listen and spell the chord")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+
+                        Text("Select all notes you hear")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -584,7 +603,7 @@ struct ActiveQuizView: View {
                 }
 
                 // Answer Input Area
-                if question.questionType == .earTraining {
+                if question.questionType.isAural {
                     // Play Chord Button with style menu
                     VStack(spacing: 12) {
                         Menu {
@@ -620,13 +639,19 @@ struct ActiveQuizView: View {
                         }
                         .padding(.horizontal)
                         
-                        Text("Select the chord quality")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        if question.questionType == .auralQuality || question.questionType == .earTraining {
+                            Text("Select the chord quality")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("Select the notes you hear")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
                     
-                    // Chord Type Picker with answer choices
-                    if !quizGame.currentAnswerChoices.isEmpty {
+                    // Chord Type Picker for quality recognition
+                    if question.questionType == .auralQuality || question.questionType == .earTraining {
                         VStack(spacing: 8) {
                             ForEach(quizGame.currentAnswerChoices, id: \.id) { chordType in
                                 let isSelected = selectedChordType?.id == chordType.id
@@ -674,6 +699,42 @@ struct ActiveQuizView: View {
                             }
                         }
                         .padding(.horizontal)
+                    }
+                    
+                    // Piano Keyboard for aural spelling
+                    if question.questionType == .auralSpelling {
+                        PianoKeyboard(
+                            selectedNotes: $selectedNotes,
+                            octaveRange: 4...4,
+                            showNoteNames: false,
+                            allowMultipleSelection: true
+                        )
+                        .padding(.horizontal)
+                        .frame(height: 140)
+                        
+                        // Selected Notes Display
+                        if !selectedNotes.isEmpty {
+                            VStack(spacing: 8) {
+                                Text("Selected Notes:")
+                                    .font(.headline)
+                                    .foregroundColor(settings.secondaryText(for: colorScheme))
+
+                                FlowLayout(spacing: 8) {
+                                    ForEach(Array(selectedNotes.sorted(by: { $0.midiNumber < $1.midiNumber })), id: \.midiNumber) { note in
+                                        Text(note.name)
+                                            .font(settings.chordDisplayFont(size: 18, weight: .semibold))
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 8)
+                                            .background(settings.selectedNoteBackground(for: colorScheme))
+                                            .cornerRadius(8)
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(settings.backgroundColor(for: colorScheme))
+                            .cornerRadius(12)
+                        }
                     }
                 } else {
                     // Piano Keyboard for visual questions
@@ -737,18 +798,18 @@ struct ActiveQuizView: View {
         }
         .padding()
         .onChange(of: quizGame.currentQuestionIndex) { _, _ in
-            // Auto-play chord for ear training questions
+            // Auto-play chord for aural questions
             if let question = quizGame.currentQuestion,
-               question.questionType == .earTraining {
+               question.questionType.isAural {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     playCurrentChord()
                 }
             }
         }
         .onAppear {
-            // Play on initial appear if ear training question
+            // Play on initial appear if aural question
             if let question = quizGame.currentQuestion,
-               question.questionType == .earTraining {
+               question.questionType.isAural {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     playCurrentChord()
                 }
@@ -1103,8 +1164,10 @@ struct ActiveQuizView: View {
         guard let question = quizGame.currentQuestion else { return false }
 
         switch question.questionType {
-        case .earTraining:
+        case .earTraining, .auralQuality:
             return selectedChordType != nil
+        case .auralSpelling:
+            return !selectedNotes.isEmpty
         case .singleTone, .allTones:
             return !selectedNotes.isEmpty
         }
@@ -1142,14 +1205,26 @@ struct ActiveQuizView: View {
         let correctAnswer = question.correctAnswer
 
         // Handle answer based on question type
-        if question.questionType == .earTraining {
-            // For ear training, check chord type selection
-            isCorrect = selectedChordType?.symbol == question.chord.chordType.symbol
-            userAnswer = question.chord.chordTones  // Use chord tones for quiz game
+        if question.questionType == .earTraining || question.questionType == .auralQuality {
+            // For aural quality recognition, check chord type selection
+            if let selectedType = selectedChordType {
+                isCorrect = selectedType.id == question.chord.chordType.id
+                // Submit chord type answer to quiz game
+                quizGame.submitChordTypeAnswer(selectedType)
+            } else {
+                isCorrect = false
+            }
+            userAnswer = question.chord.chordTones  // Use chord tones for display
+        } else if question.questionType == .auralSpelling {
+            // For aural spelling, check selected notes
+            userAnswer = Array(selectedNotes)
+            isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
+            quizGame.submitAnswer(userAnswer)
         } else {
             // For visual questions, use selected notes
             userAnswer = Array(selectedNotes)
             isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
+            quizGame.submitAnswer(userAnswer)
         }
 
         // Store current question, user's answer, and correct answer for feedback
@@ -1172,9 +1247,9 @@ struct ActiveQuizView: View {
         } else {
             ChordDrillHaptics.error()
 
-            // For ear training, don't auto-play - let user control playback
+            // For aural questions, don't auto-play - let user control playback
             // For visual questions, play user's answer
-            if settings.audioEnabled && question.questionType != .earTraining {
+            if settings.audioEnabled && !question.questionType.isAural {
                 if !userAnswer.isEmpty {
                     AudioManager.shared.playChord(userAnswer, duration: 1.0)
                 }

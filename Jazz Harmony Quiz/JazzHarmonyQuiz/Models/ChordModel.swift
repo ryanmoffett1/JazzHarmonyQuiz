@@ -201,6 +201,8 @@ enum QuestionType: String, CaseIterable, Codable, Equatable {
     case singleTone = "Single Tone"
     case allTones = "All Tones"
     case earTraining = "Ear Training"
+    case auralQuality = "Identify Quality by Ear"
+    case auralSpelling = "Spell Chord by Ear"
 
     var description: String {
         switch self {
@@ -210,6 +212,10 @@ enum QuestionType: String, CaseIterable, Codable, Equatable {
             return "Play all chord tones"
         case .earTraining:
             return "Identify chord by ear"
+        case .auralQuality:
+            return "Hear a chord and identify its quality"
+        case .auralSpelling:
+            return "Hear a chord and spell all notes"
         }
     }
 
@@ -217,7 +223,17 @@ enum QuestionType: String, CaseIterable, Codable, Equatable {
         switch self {
         case .singleTone: return "music.note"
         case .allTones: return "pianokeys"
-        case .earTraining: return "ear"
+        case .earTraining, .auralQuality, .auralSpelling: return "ear"
+        }
+    }
+    
+    /// Returns true if this is an aural (ear training) question type
+    var isAural: Bool {
+        switch self {
+        case .earTraining, .auralQuality, .auralSpelling:
+            return true
+        case .singleTone, .allTones:
+            return false
         }
     }
 }
@@ -243,11 +259,16 @@ struct QuizQuestion: Identifiable, Codable, Equatable {
             } else {
                 self.correctAnswer = [chord.root]
             }
-        case .allTones, .earTraining:
+        case .allTones, .auralSpelling:
+            self.correctAnswer = chord.chordTones
+        case .earTraining, .auralQuality:
+            // For quality recognition, the "answer" is the chord type
+            // We store chord tones for display purposes after submission
             self.correctAnswer = chord.chordTones
         }
 
-        self.timeLimit = questionType == .earTraining ? 45.0 : 30.0
+        // Longer time limit for aural questions
+        self.timeLimit = questionType.isAural ? 45.0 : 30.0
     }
 }
 

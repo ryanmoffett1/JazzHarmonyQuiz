@@ -452,6 +452,7 @@ class QuizGame: ObservableObject {
     @Published var totalQuestions: Int = 10
     @Published var questions: [QuizQuestion] = []
     @Published var userAnswers: [UUID: [Note]] = [:]
+    @Published var userChordTypeAnswers: [UUID: ChordType] = [:]  // For aural quality questions
     @Published var questionStartTime: Date?
     @Published var totalQuizTime: TimeInterval = 0
     @Published var isQuizActive: Bool = false
@@ -574,8 +575,10 @@ class QuizGame: ObservableObject {
                 question = QuizQuestion(chord: chord, questionType: .singleTone, targetTone: targetTone)
             case .allTones:
                 question = QuizQuestion(chord: chord, questionType: .allTones)
-            case .earTraining:
-                question = QuizQuestion(chord: chord, questionType: .earTraining)
+            case .earTraining, .auralQuality:
+                question = QuizQuestion(chord: chord, questionType: questionType)
+            case .auralSpelling:
+                question = QuizQuestion(chord: chord, questionType: .auralSpelling)
             }
             questions.append(question)
         }
@@ -617,15 +620,19 @@ class QuizGame: ObservableObject {
             case .allTones:
                 question = QuizQuestion(chord: chord, questionType: .allTones)
                 
-            case .earTraining:
-                question = QuizQuestion(chord: chord, questionType: .earTraining)
+            case .earTraining, .auralQuality:
+                question = QuizQuestion(chord: chord, questionType: questionType)
+                
+            case .auralSpelling:
+                question = QuizQuestion(chord: chord, questionType: .auralSpelling)
             }
             
             questions.append(question)
         }
         
-        // Generate answer choices for first question if ear training
-        if let firstQuestion = questions.first, firstQuestion.questionType == .earTraining {
+        // Generate answer choices for first question if aural quality question
+        if let firstQuestion = questions.first,
+           (firstQuestion.questionType == .earTraining || firstQuestion.questionType == .auralQuality) {
             currentAnswerChoices = generateAnswerChoices(for: firstQuestion.chord.chordType)
         }
     }
@@ -718,6 +725,23 @@ class QuizGame: ObservableObject {
         nextQuestion()
     }
     
+    /// Submit chord type answer for aural quality questions
+    func submitChordTypeAnswer(_ chordType: ChordType) {
+        guard let question = currentQuestion else { return }
+        
+        // Record the chord type answer
+        userChordTypeAnswers[question.id] = chordType
+        
+        // Calculate time for this question
+        if let startTime = questionStartTime {
+            let questionTime = Date().timeIntervalSince(startTime)
+            totalQuizTime += questionTime
+        }
+        
+        // Move to next question
+        nextQuestion()
+    }
+    
     private func nextQuestion() {
         currentQuestionIndex += 1
         
@@ -725,9 +749,10 @@ class QuizGame: ObservableObject {
             currentQuestion = questions[currentQuestionIndex]
             questionStartTime = Date()
             
-            // Generate answer choices for ear training questions
-            if currentQuestion?.questionType == .earTraining {
-                currentAnswerChoices = generateAnswerChoices(for: currentQuestion!.chord.chordType)
+            // Generate answer choices for aural quality questions
+            if let question = currentQuestion,
+               (question.questionType == .earTraining || question.questionType == .auralQuality) {
+                currentAnswerChoices = generateAnswerChoices(for: question.chord.chordType)
             }
         } else {
             finishQuiz()
@@ -743,8 +768,22 @@ class QuizGame: ObservableObject {
         var questionResults: [UUID: Bool] = [:]
         
         for question in questions {
-            let userAnswer = userAnswers[question.id] ?? []
-            let isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
+            let isCorrect: Bool
+            
+            // Check based on question type
+            if question.questionType == .auralQuality || question.questionType == .earTraining {
+                // For aural quality, check chord type answer
+                if let userChordType = userChordTypeAnswers[question.id] {
+                    isCorrect = userChordType.id == question.chord.chordType.id
+                } else {
+                    isCorrect = false
+                }
+            } else {
+                // For note-based questions, check notes
+                let userAnswer = userAnswers[question.id] ?? []
+                isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
+            }
+            
             questionResults[question.id] = isCorrect
             
             if isCorrect {
@@ -1125,8 +1164,10 @@ class QuizGame: ObservableObject {
                 }
             case .allTones:
                 variant = "all-tones"
-            case .earTraining:
+            case .earTraining, .auralQuality:
                 variant = "ear-training"
+            case .auralSpelling:
+                variant = "ear-spelling"
             }
             
             let itemID = SRItemID(
