@@ -1024,12 +1024,15 @@ class QuizGame: ObservableObject {
             // Determine variant based on question type
             let variant: String
             switch questionType {
-            case .singleTone(let tone):
-                variant = "single-\(tone.name)"
+            case .singleTone:
+                // For single tone questions, include the specific tone being asked
+                if let tone = question.targetTone {
+                    variant = "single-\(tone.name)"
+                } else {
+                    variant = "single"
+                }
             case .allTones:
                 variant = "all-tones"
-            case .chordSpelling:
-                variant = "spelling"
             }
             
             let itemID = SRItemID(

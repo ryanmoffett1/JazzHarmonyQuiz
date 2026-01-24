@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		53B32507A1164CC6B398FD05 /* SpacedRepetition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4652997D68DE4F2CA3E2998A /* SpacedRepetition.swift */; };
-		5A634891227C479190B2BAC9 /* PracticeDueCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */; };
 		941565132F186B14001C0BC2 /* IntervalDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941565122F186B14001C0BC2 /* IntervalDrillView.swift */; };
 		9434133B2F1EDD1D009235D1 /* PlayerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9434133A2F1EDD1C009235D1 /* PlayerProfile.swift */; };
 		9434133D2F1EDD74009235D1 /* PlayerProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9434133C2F1EDD74009235D1 /* PlayerProfileView.swift */; };
@@ -41,8 +39,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4652997D68DE4F2CA3E2998A /* SpacedRepetition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacedRepetition.swift; sourceTree = "<group>"; };
-		0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeDueCard.swift; sourceTree = "<group>"; };
 		941565122F186B14001C0BC2 /* IntervalDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillView.swift; sourceTree = "<group>"; };
 		9434133A2F1EDD1C009235D1 /* PlayerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfile.swift; sourceTree = "<group>"; };
 		9434133C2F1EDD74009235D1 /* PlayerProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileView.swift; sourceTree = "<group>"; };
@@ -150,8 +146,7 @@
 				94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */,
 				94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */,
 				944280222F12A0160035FE8B /* SettingsManager.swift */,
-			
-				4652997D68DE4F2CA3E2998A /* SpacedRepetition.swift */,);
+			);
 			path = Models;
 			sourceTree = "<group>";
 		};
@@ -169,8 +164,7 @@
 				A1234567890ABCDEF019 /* ScoreboardView.swift */,
 				944280262F12A0630035FE8B /* SettingsView.swift */,
 				9434133C2F1EDD74009235D1 /* PlayerProfileView.swift */,
-			
-				0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */,);
+			);
 			path = Views;
 			sourceTree = "<group>";
 		};
@@ -279,9 +273,7 @@
 				944280292F12A0770035FE8B /* CadenceScoreboardView.swift in Sources */,
 				94ADBD0B2F1C01E900AD5DC0 /* ChordSelectorView.swift in Sources */,
 				A1234567890ABCDEF022 /* JazzChordDatabase.swift in Sources */,
-			
-				53B32507A1164CC6B398FD05 /* SpacedRepetition.swift in Sources */,
-				5A634891227C479190B2BAC9 /* PracticeDueCard.swift in Sources */,);
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
