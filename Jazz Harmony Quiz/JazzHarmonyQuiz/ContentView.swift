@@ -21,6 +21,9 @@ struct ContentView: View {
                     // Stats Dashboard Card (tap to view profile)
                     StatsDashboardCard(navigationPath: $navigationPath)
                     
+                    // Spaced Repetition - Practice Due Card
+                    practiceDueSection
+                    
                     // Quick Actions
                     QuickActionsSection(navigationPath: $navigationPath)
                     
@@ -61,6 +64,28 @@ struct ContentView: View {
                     EmptyView()
                 }
             }
+        }
+    }
+    
+    // MARK: - Practice Due Section
+    
+    @ViewBuilder
+    private var practiceDueSection: some View {
+        let srStore = SpacedRepetitionStore.shared
+        let totalDue = srStore.totalDueCount()
+        
+        if totalDue > 0 {
+            Button(action: {
+                // TODO: Navigate to practice due view
+                // For now, start quick practice
+                navigationPath.append("quickPractice")
+            }) {
+                PracticeDueCard(srStore: srStore)
+            }
+            .buttonStyle(PlainButtonStyle())
+        } else if srStore.statistics().totalItems > 0 {
+            // Show stats even when nothing is due
+            PracticeDueCard(srStore: srStore)
         }
     }
 }

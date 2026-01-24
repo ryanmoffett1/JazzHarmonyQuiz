@@ -245,6 +245,9 @@ class IntervalGame: ObservableObject {
         )
         
         addToScoreboard(result)
+        
+        // Spaced Repetition: Record results for each question
+        recordSpacedRepetitionResults()
     }
     
     /// Calculate rating change based on performance
@@ -315,6 +318,41 @@ class IntervalGame: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: scoreboardKey),
            let decoded = try? JSONDecoder().decode([IntervalQuizResult].self, from: data) {
             scoreboard = decoded
+        }
+    }
+    
+    // MARK: - Spaced Repetition Integration
+    
+    /// Record spaced repetition results for answered questions
+    private func recordSpacedRepetitionResults() {
+        let srStore = SpacedRepetitionStore.shared
+        let avgTimePerQuestion = elapsedTime / Double(totalQuestions)
+        
+        for answeredQ in answeredQuestions {
+            // Determine variant based on question type
+            let variant: String
+            switch answeredQ.question.questionType {
+            case .identifyInterval:
+                variant = "identify"
+            case .buildInterval:
+                variant = "build"
+            case .aurally:
+                variant = "ear"
+            }
+            
+            let itemID = SRItemID(
+                mode: .intervalDrill,
+                topic: answeredQ.question.interval.intervalType.shortName,
+                key: answeredQ.question.interval.rootNote.name,
+                variant: variant
+            )
+            
+            // Record result
+            srStore.recordResult(
+                itemID: itemID,
+                wasCorrect: answeredQ.wasCorrect,
+                responseTime: avgTimePerQuestion
+            )
         }
     }
     

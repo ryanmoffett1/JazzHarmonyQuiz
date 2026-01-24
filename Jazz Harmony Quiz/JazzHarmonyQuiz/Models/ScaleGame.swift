@@ -316,6 +316,9 @@ class ScaleGame: ObservableObject {
         }
         
         saveToUserDefaults()
+        
+        // Spaced Repetition: Record results for each question
+        recordSpacedRepetitionResults()
     }
     
     private func calculateCorrectAnswers() -> Int {
@@ -417,6 +420,46 @@ class ScaleGame: ObservableObject {
             .map { $0.key }
         
         return weakSymbols.compactMap { scaleDatabase.getScaleType(bySymbol: $0) }
+    }
+    
+    // MARK: - Spaced Repetition Integration
+    
+    /// Record spaced repetition results for all questions in the quiz
+    private func recordSpacedRepetitionResults() {
+        let srStore = SpacedRepetitionStore.shared
+        
+        for question in questions {
+            guard let userAnswer = userAnswers[question.id] else { continue }
+            let wasCorrect = question.checkAnswer(Set(userAnswer))
+            
+            // Calculate time spent on this question (estimate based on total quiz time)
+            let avgTimePerQuestion = totalQuizTime / Double(totalQuestions)
+            
+            // Determine variant based on question type
+            let variant: String
+            switch question.questionType {
+            case .ascending:
+                variant = "ascending"
+            case .descending:
+                variant = "descending"
+            case .spellingNotes:
+                variant = "spelling"
+            }
+            
+            let itemID = SRItemID(
+                mode: .scaleDrill,
+                topic: question.scale.scaleType.symbol,
+                key: question.scale.root.name,
+                variant: variant
+            )
+            
+            // Record result
+            srStore.recordResult(
+                itemID: itemID,
+                wasCorrect: wasCorrect,
+                responseTime: avgTimePerQuestion
+            )
+        }
     }
     
     // MARK: - Persistence

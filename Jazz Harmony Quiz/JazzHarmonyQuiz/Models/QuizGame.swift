@@ -1004,6 +1004,50 @@ class QuizGame: ObservableObject {
         return totalQuizTime / Double(answeredQuestions)
     }
     
+    // MARK: - Spaced Repetition Integration
+    
+    /// Record spaced repetition results for all questions in the quiz
+    private func recordSpacedRepetitionResults() {
+        let srStore = SpacedRepetitionStore.shared
+        
+        for question in questions {
+            let userAnswer = userAnswers[question.id] ?? []
+            let wasCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
+            
+            // Calculate time spent on this question (estimate based on total quiz time)
+            let avgTimePerQuestion = totalQuizTime / Double(totalQuestions)
+            
+            // Create SR item ID for the chord
+            let chord = question.chord
+            let questionType = question.questionType
+            
+            // Determine variant based on question type
+            let variant: String
+            switch questionType {
+            case .singleTone(let tone):
+                variant = "single-\(tone.name)"
+            case .allTones:
+                variant = "all-tones"
+            case .chordSpelling:
+                variant = "spelling"
+            }
+            
+            let itemID = SRItemID(
+                mode: .chordDrill,
+                topic: chord.chordType.symbol,
+                key: chord.root.name,
+                variant: variant
+            )
+            
+            // Record result
+            srStore.recordResult(
+                itemID: itemID,
+                wasCorrect: wasCorrect,
+                responseTime: avgTimePerQuestion
+            )
+        }
+    }
+    
     // MARK: - State Management
     
     func resetQuizState() {

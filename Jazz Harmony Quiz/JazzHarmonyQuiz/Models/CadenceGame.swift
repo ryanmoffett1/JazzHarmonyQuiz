@@ -1000,6 +1000,77 @@ class CadenceGame: ObservableObject {
     func getStreakEncouragement() -> String? {
         return EncouragementEngine.getStreakMessage(streak: currentStreak)
     }
+    
+    // MARK: - Spaced Repetition Integration
+    
+    /// Record spaced repetition results for all questions in the quiz
+    private func recordSpacedRepetitionResults() {
+        let srStore = SpacedRepetitionStore.shared
+        
+        for question in questions {
+            let userAnswer = userAnswers[question.id] ?? [[], [], []]
+            let wasCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
+            
+            // Calculate time spent on this question (estimate based on total quiz time)
+            let avgTimePerQuestion = totalQuizTime / Double(totalQuestions)
+            
+            // Create SR item ID based on drill mode
+            let itemID: SRItemID
+            
+            switch selectedDrillMode {
+            case .fullProgression:
+                // Record the full cadence in this key
+                itemID = SRItemID(
+                    mode: .cadenceDrill,
+                    topic: selectedCadenceType.rawValue,
+                    key: question.cadence.key.name,
+                    variant: "full"
+                )
+                
+            case .isolatedChord:
+                // Record the specific chord position
+                itemID = SRItemID(
+                    mode: .cadenceDrill,
+                    topic: selectedCadenceType.rawValue,
+                    key: question.cadence.key.name,
+                    variant: "isolated-\(selectedIsolatedPosition.rawValue)"
+                )
+                
+            case .speedRound:
+                // Record speed round cadences
+                itemID = SRItemID(
+                    mode: .cadenceDrill,
+                    topic: selectedCadenceType.rawValue,
+                    key: question.cadence.key.name,
+                    variant: "speed"
+                )
+                
+            case .commonTones:
+                // Record common tone practice
+                itemID = SRItemID(
+                    mode: .cadenceDrill,
+                    topic: "common-tones",
+                    key: question.cadence.key.name,
+                    variant: selectedCadenceType.rawValue
+                )
+            case .chordIdentification:
+                // Record chord identification practice
+                itemID = SRItemID(
+                    mode: .cadenceDrill,
+                    topic: "chord-id",
+                    key: question.cadence.key.name,
+                    variant: selectedCadenceType.rawValue
+                )
+            }
+            
+            // Record result
+            srStore.recordResult(
+                itemID: itemID,
+                wasCorrect: wasCorrect,
+                responseTime: avgTimePerQuestion
+            )
+        }
+    }
 
     // MARK: - Initialization
 
