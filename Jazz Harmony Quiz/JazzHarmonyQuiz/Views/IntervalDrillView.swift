@@ -588,8 +588,18 @@ struct IntervalActiveView: View {
         }
     }
     
-        AudioManager.shared.playInterval(rootNote: interval.rootNote, targetNote: interval.targetNote, style: settings.defaultIntervalStyle, tempo: settings.intervalTempo)
-        AudioManager.shared.playInterval(interval)
+    private func playInterval(_ interval: Interval) {
+        let audioManager = AudioManager.shared
+        let style = settings.defaultIntervalStyle
+        let tempo = settings.intervalTempo
+        
+        audioManager.playInterval(
+            rootNote: interval.rootNote,
+            targetNote: interval.targetNote,
+            style: style,
+            tempo: tempo
+        )
+    }
     }
     
     private func playInterval(_ interval: Interval) {
@@ -1037,44 +1047,6 @@ struct IntervalScoreboardPreview: View {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%d:%02d", minutes, seconds)
-    }
-}
-
-// MARK: - Audio Manager Extension
-
-extension AudioManager {
-    /// Play an interval (two notes in sequence)
-    func playInterval(_ interval: Interval, style: IntervalPlayStyle = .melodic) {
-        guard isEnabled else { return }
-        
-        let rootMidi = interval.rootNote.midiNumber
-        // Calculate the actual target MIDI based on direction
-        // Don't use targetNote.midiNumber as it may be normalized to base octave
-        let semitoneOffset = interval.direction == .descending ? -interval.intervalType.semitones : interval.intervalType.semitones
-        let targetMidi = rootMidi + semitoneOffset
-        
-        switch style {
-        case .melodic:
-            // Play notes sequentially
-            playNote(UInt8(clamping: rootMidi), velocity: 80)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                self.playNote(UInt8(clamping: targetMidi), velocity: 80)
-            }
-        case .harmonic:
-            // Play notes simultaneously - use calculated MIDI values
-            playNote(UInt8(clamping: rootMidi), velocity: 80)
-            playNote(UInt8(clamping: targetMidi), velocity: 80)
-            // Stop after duration
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                self.stopNote(UInt8(clamping: rootMidi))
-                self.stopNote(UInt8(clamping: targetMidi))
-            }
-        }
-    }
-    
-    enum IntervalPlayStyle {
-        case melodic   // Notes played one after another
-        case harmonic  // Notes played together
     }
 }
 
