@@ -1010,6 +1010,8 @@ class QuizGame: ObservableObject {
     private func recordSpacedRepetitionResults() {
         let srStore = SpacedRepetitionStore.shared
         
+        print("🔄 SR: Recording \(questions.count) chord drill questions")
+        
         for question in questions {
             let userAnswer = userAnswers[question.id] ?? []
             let wasCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
@@ -1042,6 +1044,8 @@ class QuizGame: ObservableObject {
                 variant: variant
             )
             
+            print("  📝 SR Item: \(itemID.displayName) - \(wasCorrect ? "✅" : "❌")")
+            
             // Record result
             srStore.recordResult(
                 itemID: itemID,
@@ -1049,6 +1053,9 @@ class QuizGame: ObservableObject {
                 responseTime: avgTimePerQuestion
             )
         }
+        
+        let stats = srStore.statistics()
+        print("✅ SR: Total items tracked: \(stats.totalItems), Due: \(srStore.totalDueCount())")
     }
     
     // MARK: - State Management
