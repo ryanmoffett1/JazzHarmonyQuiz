@@ -97,7 +97,6 @@ struct SRSchedule: Codable {
 // MARK: - Spaced Repetition Store
 
 /// Manages spaced repetition schedules for all practice items
-@MainActor
 class SpacedRepetitionStore: ObservableObject {
     static let shared = SpacedRepetitionStore()
     

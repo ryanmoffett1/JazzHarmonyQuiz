@@ -336,7 +336,7 @@ class IntervalGame: ObservableObject {
                 variant = "identify"
             case .buildInterval:
                 variant = "build"
-            case .aurally:
+            case .auralIdentify:
                 variant = "ear"
             }
             
