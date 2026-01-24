@@ -320,6 +320,20 @@ class CadenceGame: ObservableObject {
         )
         PlayerProfile.shared.addXP(ratingChange, from: .cadenceDrill)
         
+        // Record curriculum progress if there's an active module
+        Task { @MainActor in
+            if let activeModuleID = CurriculumManager.shared.activeModuleID {
+                let wasPerfectScore = correctAnswers == totalQuestions
+                CurriculumManager.shared.recordModuleAttempt(
+                    moduleID: activeModuleID,
+                    questionsAnswered: totalQuestions,
+                    correctAnswers: correctAnswers,
+                    wasPerfectSession: wasPerfectScore
+                )
+                CurriculumManager.shared.setActiveModule(nil)
+            }
+        }
+        
         // Store for UI
         lastRatingChange = ratingChange
         didRankUp = ratingResult.didRankUp

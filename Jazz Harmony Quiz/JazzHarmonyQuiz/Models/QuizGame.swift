@@ -848,6 +848,20 @@ class QuizGame: ObservableObject {
         )
         PlayerProfile.shared.addXP(ratingChange, from: .chordDrill)
         
+        // Record curriculum progress if there's an active module
+        Task { @MainActor in
+            if let activeModuleID = CurriculumManager.shared.activeModuleID {
+                CurriculumManager.shared.recordModuleAttempt(
+                    moduleID: activeModuleID,
+                    questionsAnswered: totalQuestions,
+                    correctAnswers: correctAnswers,
+                    wasPerfectSession: wasPerfectScore
+                )
+                // Clear active module after recording
+                CurriculumManager.shared.setActiveModule(nil)
+            }
+        }
+        
         // Update per-chord and per-key stats (mode-specific)
         for question in questions {
             let isCorrect = questionResults[question.id] ?? false

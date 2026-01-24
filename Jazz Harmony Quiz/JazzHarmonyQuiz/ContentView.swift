@@ -24,6 +24,9 @@ struct ContentView: View {
                     // Spaced Repetition - Practice Due Card
                     practiceDueSection
                     
+                    // Recommended Next Module
+                    recommendedNextSection
+                    
                     // Quick Actions
                     QuickActionsSection(navigationPath: $navigationPath)
                     
@@ -57,10 +60,23 @@ struct ContentView: View {
                 case "quickPractice":
                     ChordDrillView(startQuickPractice: true)
                 case "achievements":
-                    AchievementsView()
-                case "settings":
-                    SettingsView()
+                case "curriculum":
+                    CurriculumView()
                 default:
+                    EmptyView()
+                }
+            }
+        }
+    }
+    
+    // MARK: - Recommended Next Section
+    
+    @ViewBuilder
+    private var recommendedNextSection: some View {
+        let curriculumManager = CurriculumManager.shared
+        
+        if let nextModule = curriculumManager.recommendedNextModule {
+            RecommendedNextCard(module: nextModule, navigationPath: $navigationPath)   default:
                     EmptyView()
                 }
             }
@@ -694,6 +710,188 @@ struct LockedAchievementCard: View {
         .background(Color(.systemGray6))
         .cornerRadius(12)
         .opacity(0.6)
+    }
+}
+
+// MARK: - Recommended Next Card
+
+struct RecommendedNextCard: View {
+    let module: CurriculumModule
+    @Binding var navigationPath: NavigationPath
+    @StateObject private var curriculumManager = CurriculumManager.shared
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("🎯 Recommended Next")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Button(action: {
+                    navigationPath.append("curriculum")
+                }) {
+                    Text("View All")
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                }
+            }
+            
+            HStack(spacing: 12) {
+                // Module emoji
+                Text(module.emoji)
+                    .font(.system(size: 40))
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(module.title)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    
+                    Text(module.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                    
+                    HStack(spacing: 8) {
+                        Label(module.pathway.name, systemImage: "map")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        
+                        Text("•")
+                            .foregroundColor(.secondary)
+                        
+                        Label("Level \(module.level)", systemImage: "chart.bar")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Spacer()
+                
+                Button(action: startModule) {
+                    VStack(spacing: 4) {
+                        Image(systemName: "play.circle.fill")
+                            .font(.title2)
+                        Text("Start")
+                            .font(.caption2)
+                    }
+                    .foregroundColor(.blue)
+                }
+            }
+            
+            // Progress bar if module is in progress
+            if let progress = curriculumManager.moduleProgress[module.id] {
+                let percentage = curriculumManager.getModuleProgressPercentage(module)
+                ProgressView(value: percentage / 100.0)
+                    .progressViewStyle(LinearProgressViewStyle(tint: pathwayColor))
+                
+                HStack {
+                    Text("\(Int(percentage))% Complete")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Text("\(progress.attempts) attempts")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemBackground))
+                .shadow(color: pathwayColor.opacity(0.2), radius: 8, x: 0, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(pathwayColor, lineWidth: 2)
+        )
+        .padding(.horizontal)
+    }
+    
+    private var pathwayColor: Color {
+        switch module.pathway {
+        case .harmonyFoundations: return .blue
+        case .functionalHarmony: return .green
+        case .earTraining: return .orange
+        case .advancedTopics: return .purple
+        }
+    }
+    
+    private func startModule() {
+        // Set this module as active in the curriculum manager
+        curriculumManager.setActiveModule(module.id)
+        
+        // Navigate to the appropriate drill mode based on module.mode
+        let destination: String
+        switch module.mode {
+        case .chords:
+            destination = "chordDrill"
+        case .scales:
+            destination = "scaleDrill"
+        case .cadences:
+            destination = "harmonyDrill"
+        case .intervals:
+            destination = "intervalDrill"
+        case .progressions:
+            destination = "progressionDrill"
+        }
+        
+        // Apply module configuration to SettingsManager
+        applyModuleConfiguration()
+        
+        // Navigate to the drill
+        navigationPath.append(destination)
+    }
+    
+    private func applyModuleConfiguration() {
+        let config = module.recommendedConfig
+        let settings = SettingsManager.shared
+        
+        switch module.mode {
+        case .chords:
+            if let chordTypes = config.chordTypes {
+                settings.selectedChordTypes = chordTypes
+            }
+            if let difficulty = config.keyDifficulty {
+                settings.keyDifficulty = difficulty
+            }
+            settings.showNoteNames = config.showNoteNames ?? settings.showNoteNames
+            settings.showKeyboard = config.showKeyboard ?? settings.showKeyboard
+            
+        case .scales:
+            if let scaleTypes = config.scaleTypes {
+                settings.selectedScaleTypes = scaleTypes
+            }
+            if let difficulty = config.keyDifficulty {
+                settings.keyDifficulty = difficulty
+            }
+            
+        case .cadences:
+            if let cadenceTypes = config.cadenceTypes {
+                settings.selectedCadenceTypes = cadenceTypes
+            }
+            if let difficulty = config.keyDifficulty {
+                settings.keyDifficulty = difficulty
+            }
+            
+        case .intervals:
+            if let intervalTypes = config.intervalTypes {
+                settings.selectedIntervalTypes = intervalTypes
+            }
+            settings.playMelodically = config.playMelodically ?? settings.playMelodically
+            
+        case .progressions:
+            if let progressionTypes = config.progressionTypes {
+                settings.selectedProgressionTypes = progressionTypes
+            }
+            if let difficulty = config.keyDifficulty {
+                settings.keyDifficulty = difficulty
+            }
+        }
     }
 }
 

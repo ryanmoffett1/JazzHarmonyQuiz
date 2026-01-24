@@ -197,6 +197,20 @@ class ProgressionGame: ObservableObject {
         // Calculate rating change
         lastRatingChange = calculateRatingChange(correctAnswers: correctCount, totalQuestions: questions.count)
         updateRating(by: lastRatingChange)
+        
+        // Record curriculum progress if there's an active module
+        Task { @MainActor in
+            if let activeModuleID = CurriculumManager.shared.activeModuleID {
+                let wasPerfectScore = correctCount == questions.count
+                CurriculumManager.shared.recordModuleAttempt(
+                    moduleID: activeModuleID,
+                    questionsAnswered: questions.count,
+                    correctAnswers: correctCount,
+                    wasPerfectSession: wasPerfectScore
+                )
+                CurriculumManager.shared.setActiveModule(nil)
+            }
+        }
     }
 
     private func calculateRatingChange(correctAnswers: Int, totalQuestions: Int) -> Int {

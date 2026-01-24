@@ -381,6 +381,20 @@ class ScaleGame: ObservableObject {
         )
         PlayerProfile.shared.addXP(ratingChange, from: .scaleDrill)
         
+        // Record curriculum progress if there's an active module
+        Task { @MainActor in
+            if let activeModuleID = CurriculumManager.shared.activeModuleID {
+                let wasPerfectScore = correctCount == totalQuestions
+                CurriculumManager.shared.recordModuleAttempt(
+                    moduleID: activeModuleID,
+                    questionsAnswered: totalQuestions,
+                    correctAnswers: correctCount,
+                    wasPerfectSession: wasPerfectScore
+                )
+                CurriculumManager.shared.setActiveModule(nil)
+            }
+        }
+        
         // Update streak
         playerStats.updateStreak()
         
