@@ -116,7 +116,7 @@ struct IntervalDrillView: View {
             IntervalDrillHaptics.success()
             if settings.playChordOnCorrect {
                 // Play the correct interval to reinforce the sound
-                AudioManager.shared.playInterval(question.interval)
+                AudioManager.shared.playInterval(rootNote: question.interval.rootNote, targetNote: question.interval.targetNote, style: settings.defaultIntervalStyle, tempo: settings.intervalTempo)
             }
         } else {
             IntervalDrillHaptics.error()
@@ -141,11 +141,11 @@ struct IntervalDrillView: View {
                     intervalType: IntervalDatabase.shared.interval(forSemitones: abs(userNote.midiNumber - question.interval.rootNote.midiNumber)) ?? question.interval.intervalType,
                     direction: question.interval.direction
                 )
-                AudioManager.shared.playInterval(userInterval)
+                AudioManager.shared.playInterval(rootNote: userInterval.rootNote, targetNote: userInterval.targetNote, style: settings.defaultIntervalStyle, tempo: settings.intervalTempo)
                 
                 // Then play the correct interval after a delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    AudioManager.shared.playInterval(question.interval)
+                    AudioManager.shared.playInterval(rootNote: question.interval.rootNote, targetNote: question.interval.targetNote, style: settings.defaultIntervalStyle, tempo: settings.intervalTempo)
                 }
             }
             
@@ -157,11 +157,11 @@ struct IntervalDrillView: View {
                     intervalType: userIntervalType,
                     direction: question.interval.direction
                 )
-                AudioManager.shared.playInterval(userInterval)
+                AudioManager.shared.playInterval(rootNote: userInterval.rootNote, targetNote: userInterval.targetNote, style: settings.defaultIntervalStyle, tempo: settings.intervalTempo)
                 
                 // Then play the correct interval after a delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    AudioManager.shared.playInterval(question.interval)
+                    AudioManager.shared.playInterval(rootNote: question.interval.rootNote, targetNote: question.interval.targetNote, style: settings.defaultIntervalStyle, tempo: settings.intervalTempo)
                 }
             }
         }
@@ -588,7 +588,7 @@ struct IntervalActiveView: View {
         }
     }
     
-    private func playInterval(_ interval: Interval) {
+        AudioManager.shared.playInterval(rootNote: interval.rootNote, targetNote: interval.targetNote, style: settings.defaultIntervalStyle, tempo: settings.intervalTempo)
         AudioManager.shared.playInterval(interval)
     }
     
@@ -702,6 +702,22 @@ struct NoteDisplay: View {
         }
     }
     
+    // MARK: - Audio Playback
+    
+    private func playInterval(_ interval: Interval) {
+        let audioManager = AudioManager.shared
+        let style = settings.defaultIntervalStyle
+        let tempo = settings.intervalTempo
+        
+        audioManager.playInterval(
+            rootNote: interval.rootNote,
+            targetNote: interval.targetNote,
+            style: style,
+            tempo: tempo
+        )
+    }
+}
+
 // MARK: - Interval Picker
 
 struct IntervalPicker: View {
@@ -849,10 +865,10 @@ struct IntervalResultsView: View {
                 
                 // Stats Grid
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                    IntervalStatCard(title: "Time", value: formatTime(intervalGame.elapsedTime), icon: "clock")
-                    IntervalStatCard(title: "Difficulty", value: intervalGame.selectedDifficulty.rawValue, icon: "speedometer")
-                    IntervalStatCard(title: "Avg/Question", value: formatTime(intervalGame.elapsedTime / Double(intervalGame.totalQuestions)), icon: "timer")
-                    IntervalStatCard(title: "Direction", value: intervalGame.selectedDirection.rawValue, icon: "arrow.up.arrow.down")
+                    StatCard(title: "Time", value: formatTime(intervalGame.elapsedTime), icon: "clock")
+                    StatCard(title: "Difficulty", value: intervalGame.selectedDifficulty.rawValue, icon: "speedometer")
+                    StatCard(title: "Avg/Question", value: formatTime(intervalGame.elapsedTime / Double(intervalGame.totalQuestions)), icon: "timer")
+                    StatCard(title: "Direction", value: intervalGame.selectedDirection.rawValue, icon: "arrow.up.arrow.down")
                 }
                 .padding(.horizontal)
                 
@@ -930,7 +946,7 @@ struct IntervalResultsView: View {
     }
 }
 
-fileprivate struct IntervalStatCard: View {
+fileprivate struct StatCard: View {
     let title: String
     let value: String
     let icon: String
