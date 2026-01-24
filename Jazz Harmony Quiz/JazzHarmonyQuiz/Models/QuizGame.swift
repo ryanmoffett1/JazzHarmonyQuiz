@@ -479,6 +479,9 @@ class QuizGame: ObservableObject {
     private var quizStartTime: Date?
     private var timer: Timer?
     
+    // MARK: - Answer Choices (for ear training)
+    @Published var currentAnswerChoices: [ChordType] = []
+    
     // MARK: - UserDefaults Keys
     private let statsKey = "JazzHarmonyChordDrillStats"
     
@@ -620,6 +623,83 @@ class QuizGame: ObservableObject {
             
             questions.append(question)
         }
+        
+        // Generate answer choices for first question if ear training
+        if let firstQuestion = questions.first, firstQuestion.questionType == .earTraining {
+            currentAnswerChoices = generateAnswerChoices(for: firstQuestion.chord.chordType)
+        }
+    }
+    
+    /// Generate answer choices for ear training (chord quality recognition)
+    func generateAnswerChoices(for correctChord: ChordType) -> [ChordType] {
+        // Get all chord types for current difficulty
+        var pool = chordDatabase.chordTypes.filter { $0.difficulty == selectedDifficulty }
+        
+        // If not enough for variety, include adjacent difficulties
+        if pool.count < 6 {
+            if selectedDifficulty == .intermediate {
+                pool += chordDatabase.chordTypes.filter { $0.difficulty == .beginner || $0.difficulty == .advanced }
+            } else if selectedDifficulty == .beginner {
+                pool += chordDatabase.chordTypes.filter { $0.difficulty == .intermediate }
+            } else if selectedDifficulty == .advanced {
+                pool += chordDatabase.chordTypes.filter { $0.difficulty == .intermediate }
+            }
+        }
+        
+        // Remove the correct answer from pool
+        pool = pool.filter { $0.id != correctChord.id }
+        
+        // Calculate similarity scores for each chord type
+        let scoredChoices = pool.map { chordType -> (ChordType, Int) in
+            let similarity = calculateChordSimilarity(correctChord, chordType)
+            return (chordType, similarity)
+        }
+        
+        // Sort by similarity (most similar first) and take top 3
+        let distractors = scoredChoices
+            .sorted { $0.1 > $1.1 }
+            .prefix(3)
+            .map { $0.0 }
+        
+        // Combine correct answer with distractors and shuffle
+        var choices = Array(distractors) + [correctChord]
+        choices.shuffle()
+        
+        return choices
+    }
+    
+    /// Calculate similarity between two chord types (higher = more similar)
+    private func calculateChordSimilarity(_ chord1: ChordType, _ chord2: ChordType) -> Int {
+        var score = 0
+        
+        // Same number of tones = more similar
+        if chord1.chordTones.count == chord2.chordTones.count {
+            score += 3
+        }
+        
+        // Check for common chord tones
+        let tones1 = Set(chord1.chordTones.map { $0.semitonesFromRoot })
+        let tones2 = Set(chord2.chordTones.map { $0.semitonesFromRoot })
+        let commonTones = tones1.intersection(tones2).count
+        score += commonTones * 2
+        
+        // Major vs minor quality (both have natural 3rd or both have b3)
+        let has3rd1 = chord1.chordTones.contains { $0.semitonesFromRoot == 4 }
+        let has3rd2 = chord2.chordTones.contains { $0.semitonesFromRoot == 4 }
+        let hasb3_1 = chord1.chordTones.contains { $0.semitonesFromRoot == 3 }
+        let hasb3_2 = chord2.chordTones.contains { $0.semitonesFromRoot == 3 }
+        if (has3rd1 && has3rd2) || (hasb3_1 && hasb3_2) {
+            score += 4
+        }
+        
+        // Dominant vs non-dominant (b7 presence)
+        let hasb7_1 = chord1.chordTones.contains { $0.semitonesFromRoot == 10 }
+        let hasb7_2 = chord2.chordTones.contains { $0.semitonesFromRoot == 10 }
+        if hasb7_1 == hasb7_2 {
+            score += 2
+        }
+        
+        return score
     }
     
     func submitAnswer(_ notes: [Note]) {
@@ -644,6 +724,11 @@ class QuizGame: ObservableObject {
         if currentQuestionIndex < questions.count {
             currentQuestion = questions[currentQuestionIndex]
             questionStartTime = Date()
+            
+            // Generate answer choices for ear training questions
+            if currentQuestion?.questionType == .earTraining {
+                currentAnswerChoices = generateAnswerChoices(for: currentQuestion!.chord.chordType)
+            }
         } else {
             finishQuiz()
         }

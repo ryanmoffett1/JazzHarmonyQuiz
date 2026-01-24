@@ -165,6 +165,48 @@ struct SettingsView: View {
                     Text("Configure how intervals are played during ear training exercises. Harmonic plays both notes together, melodic plays them in sequence.")
                         .foregroundColor(settings.secondaryText(for: colorScheme))
                 }
+                
+                // Chord Ear Training Section
+                Section {
+                    Toggle("Auto-Play Chords", isOn: $settings.autoPlayChords)
+                    
+                    Picker("Default Playback Style", selection: $settings.defaultChordStyle) {
+                        ForEach(AudioManager.ChordPlaybackStyle.allCases, id: \.self) { style in
+                            Text(style.rawValue).tag(style)
+                        }
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Tempo")
+                            Spacer()
+                            Text("\(Int(settings.chordTempo)) BPM")
+                                .foregroundColor(settings.secondaryText(for: colorScheme))
+                        }
+                        Slider(value: $settings.chordTempo, in: 60...180, step: 10)
+                    }
+                    
+                    Button("Test Chord") {
+                        let audioManager = AudioManager.shared
+                        let chordNotes = [
+                            Note(name: "C", midiNumber: 60, isSharp: false),
+                            Note(name: "E", midiNumber: 64, isSharp: false),
+                            Note(name: "G", midiNumber: 67, isSharp: false),
+                            Note(name: "B", midiNumber: 71, isSharp: false)
+                        ]
+                        audioManager.playChord(
+                            chordNotes,
+                            style: settings.defaultChordStyle,
+                            tempo: settings.chordTempo
+                        )
+                    }
+                    .foregroundColor(.blue)
+                } header: {
+                    Text("Chord Ear Training")
+                } footer: {
+                    Text("Configure how chords are played during ear training exercises. Choose from block chords, arpeggios, or guide tones only.")
+                        .foregroundColor(settings.secondaryText(for: colorScheme))
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)

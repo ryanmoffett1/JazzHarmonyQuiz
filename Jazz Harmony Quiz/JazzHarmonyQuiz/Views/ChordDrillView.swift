@@ -552,28 +552,13 @@ struct ActiveQuizView: View {
                             .font(.headline)
                             .foregroundColor(.secondary)
 
-                        Text("Use the replay button below if needed")
+                        Text("Use the play button below to hear different voicings")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(16)
-                    .padding(.horizontal)
-
-                    // Replay button
-                    Button(action: { playCurrentChord() }) {
-                        HStack {
-                            Image(systemName: "speaker.wave.2.fill")
-                            Text("Replay Chord")
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(8)
-                    }
                     .padding(.horizontal)
                 } else {
                     // Regular Question Display
@@ -600,22 +585,98 @@ struct ActiveQuizView: View {
 
                 // Answer Input Area
                 if question.questionType == .earTraining {
-                    // Chord Type Picker for ear training
-                    VStack(spacing: 8) {
+                    // Play Chord Button with style menu
+                    VStack(spacing: 12) {
+                        Menu {
+                            Button("Block Chord") {
+                                playChordWithStyle(.block)
+                            }
+                            Button("Arpeggio Up") {
+                                playChordWithStyle(.arpeggioUp)
+                            }
+                            Button("Arpeggio Down") {
+                                playChordWithStyle(.arpeggioDown)
+                            }
+                            Button("Guide Tones Only") {
+                                playChordWithStyle(.guideTones)
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "speaker.wave.2.fill")
+                                Text("Play Chord")
+                            }
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                LinearGradient(
+                                    colors: [.blue, .purple],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(12)
+                        }
+                        .padding(.horizontal)
+                        
                         Text("Select the chord quality")
                             .font(.caption)
                             .foregroundColor(.secondary)
-
-                        ChordTypePicker(
-                            difficulty: quizGame.selectedDifficulty,
-                            selectedChordType: $selectedChordType,
-                            correctChord: showingFeedback ? question.chord.chordType : nil,
-                            disabled: showingFeedback
-                        )
+                    }
+                    
+                    // Chord Type Picker with answer choices
+                    if !quizGame.currentAnswerChoices.isEmpty {
+                        VStack(spacing: 8) {
+                            ForEach(quizGame.currentAnswerChoices, id: \.id) { chordType in
+                                let isSelected = selectedChordType?.id == chordType.id
+                                let isCorrect = showingFeedback && chordType.id == question.chord.chordType.id
+                                let isWrong = showingFeedback && isSelected && chordType.id != question.chord.chordType.id
+                                
+                                Button(action: {
+                                    if !showingFeedback {
+                                        selectedChordType = chordType
+                                        ChordDrillHaptics.light()
+                                    }
+                                }) {
+                                    HStack {
+                                        Text(chordType.name)
+                                            .font(.headline)
+                                        Spacer()
+                                        Text(chordType.symbol.isEmpty ? "Major" : chordType.symbol)
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                        
+                                        if showingFeedback {
+                                            if isCorrect {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .foregroundColor(.green)
+                                            } else if isWrong {
+                                                Image(systemName: "xmark.circle.fill")
+                                                    .foregroundColor(.red)
+                                            }
+                                        } else if isSelected {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
+                                    .padding()
+                                    .background(
+                                        showingFeedback ?
+                                            (isCorrect ? Color.green.opacity(0.2) :
+                                             isWrong ? Color.red.opacity(0.2) :
+                                             Color(.systemGray6)) :
+                                            (isSelected ? Color.blue.opacity(0.2) : Color(.systemGray6))
+                                    )
+                                    .cornerRadius(10)
+                                }
+                                .disabled(showingFeedback)
+                            }
+                        }
                         .padding(.horizontal)
                     }
                 } else {
-                    // Piano Keyboard
+                    // Piano Keyboard for visual questions
                 PianoKeyboard(
                     selectedNotes: $selectedNotes,
                     octaveRange: 4...4,
@@ -709,62 +770,197 @@ struct ActiveQuizView: View {
                     .background(settings.chordDisplayBackground(for: colorScheme))
                     .cornerRadius(8)
                 
-                if isCorrect {
-                    // Correct answer display
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.green)
-                    
-                    Text("Correct!")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.green)
-                    
-                    // Show correct notes (all green)
-                    notesDisplay(notes: correctAnswerForFeedback, allCorrect: true)
-                    
-                    continueButton()
-                    
-                } else {
-                    // Incorrect answer - two phases
-                    if feedbackPhase == .showingUserAnswer {
-                        // Phase 1: Show user's answer
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 50))
-                            .foregroundColor(.red)
-                        
-                        Text("Your answer:")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        
-                        // Show user's notes with correct/incorrect coloring
-                        userAnswerNotesDisplay()
-                        
-                        Button(action: showCorrectAnswer) {
-                            Text("See Correct Answer")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 24)
-                                .padding(.vertical, 12)
-                                .background(Color.blue)
-                                .cornerRadius(10)
-                        }
-                        .padding(.top, 8)
-                        
-                    } else {
-                        // Phase 2: Show correct answer
+                // Ear training feedback shows chord qualities, not individual notes
+                if question.questionType == .earTraining {
+                    if isCorrect {
+                        // Correct answer
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 50))
+                            .font(.system(size: 60))
                             .foregroundColor(.green)
                         
-                        Text("Correct answer:")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
+                        Text("Correct!")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.green)
+                        
+                        Text(question.chord.chordType.name)
+                            .font(.title)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.green)
+                            .cornerRadius(12)
+                        
+                        continueButton()
+                        
+                    } else {
+                        // Incorrect answer
+                        if feedbackPhase == .showingUserAnswer {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(.red)
+                            
+                            Text("Your answer:")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                            
+                            if let selected = selectedChordType {
+                                Text(selected.name)
+                                    .font(.title2)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color.red)
+                                    .cornerRadius(12)
+                            }
+                            
+                            Button(action: showCorrectAnswer) {
+                                Text("See Correct Answer")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 12)
+                                    .background(Color.blue)
+                                    .cornerRadius(10)
+                            }
+                            .padding(.top, 8)
+                            
+                        } else {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(.green)
+                            
+                            Text("Correct answer:")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                            
+                            Text(question.chord.chordType.name)
+                                .font(.title)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.green)
+                                .cornerRadius(12)
+                            
+                            // Comparison buttons to toggle between chords
+                            VStack(spacing: 12) {
+                                Text("Compare:")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .padding(.top, 8)
+                                
+                                HStack(alignment: .top, spacing: 16) {
+                                    VStack(spacing: 4) {
+                                        Button(action: {
+                                            if let selected = selectedChordType {
+                                                let userChord = Chord(root: question.chord.root, chordType: selected)
+                                                AudioManager.shared.playChord(userChord.chordTones, duration: 1.2)
+                                            }
+                                        }) {
+                                            HStack {
+                                                Image(systemName: "speaker.wave.2.fill")
+                                                Text("Your Answer")
+                                            }
+                                            .font(.subheadline)
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 10)
+                                            .background(Color.red)
+                                            .cornerRadius(8)
+                                        }
+                                        
+                                        if let selected = selectedChordType {
+                                            Text(selected.name)
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                    
+                                    VStack(spacing: 4) {
+                                        Button(action: {
+                                            AudioManager.shared.playChord(correctAnswerForFeedback, duration: 1.2)
+                                        }) {
+                                            HStack {
+                                                Image(systemName: "speaker.wave.2.fill")
+                                                Text("Correct")
+                                            }
+                                            .font(.subheadline)
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 10)
+                                            .background(Color.green)
+                                            .cornerRadius(8)
+                                        }
+                                        
+                                        Text(question.chord.chordType.name)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                            
+                            continueButton()
+                        }
+                    }
+                } else {
+                    // Visual question feedback shows individual notes
+                    if isCorrect {
+                        // Correct answer display
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.green)
+                        
+                        Text("Correct!")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.green)
                         
                         // Show correct notes (all green)
                         notesDisplay(notes: correctAnswerForFeedback, allCorrect: true)
                         
                         continueButton()
+                        
+                    } else {
+                        // Incorrect answer - two phases
+                        if feedbackPhase == .showingUserAnswer {
+                            // Phase 1: Show user's answer
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(.red)
+                            
+                            Text("Your answer:")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                            
+                            // Show user's notes with correct/incorrect coloring
+                            userAnswerNotesDisplay()
+                            
+                            Button(action: showCorrectAnswer) {
+                                Text("See Correct Answer")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 12)
+                                    .background(Color.blue)
+                                    .cornerRadius(10)
+                            }
+                            .padding(.top, 8)
+                            
+                        } else {
+                            // Phase 2: Show correct answer
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(.green)
+                            
+                            Text("Correct answer:")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                            
+                            // Show correct notes (all green)
+                            notesDisplay(notes: correctAnswerForFeedback, allCorrect: true)
+                            
+                            continueButton()
+                        }
                     }
                 }
             }
@@ -926,6 +1122,18 @@ struct ActiveQuizView: View {
             tempo: tempo
         )
     }
+    
+    private func playChordWithStyle(_ style: AudioManager.ChordPlaybackStyle) {
+        guard let question = quizGame.currentQuestion else { return }
+        let audioManager = AudioManager.shared
+        let tempo = settings.chordTempo
+
+        audioManager.playChord(
+            question.chord.chordTones,
+            style: style,
+            tempo: tempo
+        )
+    }
 
     private func submitAnswer() {
         guard let question = quizGame.currentQuestion else { return }
@@ -964,11 +1172,10 @@ struct ActiveQuizView: View {
         } else {
             ChordDrillHaptics.error()
 
-            // For ear training, play correct answer; for visual, play user's answer
-            if settings.audioEnabled {
-                if question.questionType == .earTraining {
-                    AudioManager.shared.playChord(correctAnswer, duration: 1.0)
-                } else if !userAnswer.isEmpty {
+            // For ear training, don't auto-play - let user control playback
+            // For visual questions, play user's answer
+            if settings.audioEnabled && question.questionType != .earTraining {
+                if !userAnswer.isEmpty {
                     AudioManager.shared.playChord(userAnswer, duration: 1.0)
                 }
             }
