@@ -395,7 +395,24 @@ struct IntervalActiveView: View {
                     showAnswer: hasSubmitted
                 )
                 .padding(.horizontal)
-                
+
+                // Replay button for ear training
+                if question.questionType == .auralIdentify {
+                    Button(action: { playInterval(question.interval) }) {
+                        HStack {
+                            Image(systemName: "speaker.wave.2.fill")
+                            Text("Replay Interval")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                    .padding(.horizontal)
+                }
+
                 Spacer()
                 
                 // Answer Input
@@ -592,7 +609,7 @@ struct IntervalActiveView: View {
         let audioManager = AudioManager.shared
         let style = settings.defaultIntervalStyle
         let tempo = settings.intervalTempo
-        
+
         audioManager.playInterval(
             rootNote: interval.rootNote,
             targetNote: interval.targetNote,
@@ -600,21 +617,7 @@ struct IntervalActiveView: View {
             tempo: tempo
         )
     }
-    }
-    
-    private func playInterval(_ interval: Interval) {
-        let audioManager = AudioManager.shared
-        let style = settings.defaultIntervalStyle
-        let tempo = settings.intervalTempo
-        
-        audioManager.playInterval(
-            rootNote: interval.rootNote,
-            targetNote: interval.targetNote,
-            style: style,
-            tempo: tempo
-        )
-    }
-    
+
     private func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
@@ -651,9 +654,13 @@ struct IntervalDisplayView: View {
                     Image(systemName: "ear.fill")
                         .font(.system(size: 50))
                         .foregroundColor(.blue)
-                    
+
                     Text("Listen to the interval")
                         .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    Text("Use the replay button below if needed")
+                        .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 .padding(.vertical, 20)
@@ -723,21 +730,6 @@ struct NoteDisplay: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
-    }
-    
-    // MARK: - Audio Playback
-    
-    private func playInterval(_ interval: Interval) {
-        let audioManager = AudioManager.shared
-        let style = settings.defaultIntervalStyle
-        let tempo = settings.intervalTempo
-        
-        audioManager.playInterval(
-            rootNote: interval.rootNote,
-            targetNote: interval.targetNote,
-            style: style,
-            tempo: tempo
-        )
     }
 }
 
@@ -962,19 +954,6 @@ struct IntervalResultsView: View {
         return "📚 Don't give up! Try an easier difficulty."
     }
     
-    private func playInterval(_ interval: Interval) {
-        let audioManager = AudioManager.shared
-        let style = settings.defaultIntervalStyle
-        let tempo = settings.intervalTempo
-        
-        audioManager.playInterval(
-            rootNote: interval.rootNote,
-            targetNote: interval.targetNote,
-            style: style,
-            tempo: tempo
-        )
-    }
-    
     private func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
@@ -1044,9 +1023,28 @@ struct IntervalScoreboardPreview: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "trophy")
-        let minutes = Int(time) / 60
-        let seconds = Int(time) % 60
-        return String(format: "%d:%02d", minutes, seconds)
+                    .foregroundColor(.yellow)
+                Text("Recent Scores")
+                    .font(.headline)
+            }
+
+            ForEach(intervalGame.scoreboard.prefix(3)) { score in
+                HStack {
+                    Text("\(score.difficulty.rawValue)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text("\(score.correctAnswers)/\(score.totalQuestions)")
+                        .font(.caption.monospacedDigit())
+                    Text("(\(Int(score.accuracy))%)")
+                        .font(.caption)
+                        .foregroundColor(score.accuracy >= 80 ? .green : .orange)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
     }
 }
 

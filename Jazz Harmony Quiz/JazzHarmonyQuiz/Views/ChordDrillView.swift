@@ -23,6 +23,7 @@ struct ChordDrillView: View {
     @EnvironmentObject var quizGame: QuizGame
     @EnvironmentObject var settings: SettingsManager
     @State private var selectedNotes: Set<Note> = []
+    @State private var selectedChordType: ChordType? = nil  // For ear training answers
     @State private var viewState: ViewState = .setup
     @State private var numberOfQuestions: Int
     @State private var selectedDifficulty: ChordType.ChordDifficulty
@@ -68,7 +69,7 @@ struct ChordDrillView: View {
                     onStartDailyChallenge: startDailyChallengeQuiz
                 )
             case .active:
-                ActiveQuizView(selectedNotes: $selectedNotes, showingFeedback: $showingFeedback, viewState: $viewState)
+                ActiveQuizView(selectedNotes: $selectedNotes, selectedChordType: $selectedChordType, showingFeedback: $showingFeedback, viewState: $viewState)
             case .results:
                 ChordDrillResultsView(onNewQuiz: {
                     // Reset quiz and show setup
@@ -296,7 +297,11 @@ struct QuizSetupView: View {
                                     HStack {
                                         Image(systemName: selectedQuestionTypes.contains(questionType) ? "checkmark.square.fill" : "square")
                                             .foregroundColor(selectedQuestionTypes.contains(questionType) ? .blue : .gray)
-                                        
+
+                                        Image(systemName: questionType.icon)
+                                            .foregroundColor(.green)
+                                            .frame(width: 24)
+
                                         VStack(alignment: .leading) {
                                             Text(questionType.rawValue)
                                                 .font(.subheadline)
@@ -305,7 +310,7 @@ struct QuizSetupView: View {
                                                 .font(.caption)
                                                 .foregroundColor(.secondary)
                                         }
-                                        
+
                                         Spacer()
                                     }
                                 }
@@ -514,6 +519,7 @@ struct ActiveQuizView: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     @Binding var selectedNotes: Set<Note>
+    @Binding var selectedChordType: ChordType?
     @Binding var showingFeedback: Bool
     @Binding var viewState: ChordDrillView.ViewState
     @State private var isCorrect = false
@@ -535,27 +541,81 @@ struct ActiveQuizView: View {
                 feedbackView()
             } else if let question = quizGame.currentQuestion {
                 // Question Display
-                VStack(spacing: 15) {
-                    Text("Chord: \(question.chord.displayName)")
-                        .font(settings.chordDisplayFont(size: 28, weight: .bold))
-                        .foregroundColor(settings.primaryText(for: colorScheme))
-                        .padding()
-                        .background(settings.chordDisplayBackground(for: colorScheme))
-                        .cornerRadius(8)
-                    
-                    Text(questionPrompt(for: question))
-                        .font(.headline)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    
-                    if let targetTone = question.targetTone {
-                        Text("Find the: \(targetTone.name)")
-                            .font(.subheadline)
+                if question.questionType == .earTraining {
+                    // Ear Training Display
+                    VStack(spacing: 16) {
+                        Image(systemName: "ear.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(.blue)
+
+                        Text("Listen to the chord")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+
+                        Text("Use the replay button below if needed")
+                            .font(.caption)
                             .foregroundColor(.secondary)
                     }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(16)
+                    .padding(.horizontal)
+
+                    // Replay button
+                    Button(action: { playCurrentChord() }) {
+                        HStack {
+                            Image(systemName: "speaker.wave.2.fill")
+                            Text("Replay Chord")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                    .padding(.horizontal)
+                } else {
+                    // Regular Question Display
+                    VStack(spacing: 15) {
+                        Text("Chord: \(question.chord.displayName)")
+                            .font(settings.chordDisplayFont(size: 28, weight: .bold))
+                            .foregroundColor(settings.primaryText(for: colorScheme))
+                            .padding()
+                            .background(settings.chordDisplayBackground(for: colorScheme))
+                            .cornerRadius(8)
+
+                        Text(questionPrompt(for: question))
+                            .font(.headline)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+
+                        if let targetTone = question.targetTone {
+                            Text("Find the: \(targetTone.name)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
-                
-                // Piano Keyboard
+
+                // Answer Input Area
+                if question.questionType == .earTraining {
+                    // Chord Type Picker for ear training
+                    VStack(spacing: 8) {
+                        Text("Select the chord quality")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        ChordTypePicker(
+                            difficulty: quizGame.selectedDifficulty,
+                            selectedChordType: $selectedChordType,
+                            correctChord: showingFeedback ? question.chord.type : nil,
+                            disabled: showingFeedback
+                        )
+                        .padding(.horizontal)
+                    }
+                } else {
+                    // Piano Keyboard
                 PianoKeyboard(
                     selectedNotes: $selectedNotes,
                     octaveRange: 4...4,
@@ -589,7 +649,8 @@ struct ActiveQuizView: View {
                     .background(settings.backgroundColor(for: colorScheme))
                     .cornerRadius(12)
                 }
-                
+                }  // End of piano keyboard else block
+
                 // Submit Button
                 Button(action: submitAnswer) {
                     Text("Submit Answer")
@@ -597,10 +658,10 @@ struct ActiveQuizView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
+                        .background(canSubmit ? settings.successColor(for: colorScheme) : Color.gray)
                         .cornerRadius(12)
                 }
-                .disabled(selectedNotes.isEmpty)
+                .disabled(!canSubmit)
                 .padding(.horizontal)
 
                 // Clear Button
@@ -614,8 +675,26 @@ struct ActiveQuizView: View {
             }
         }
         .padding()
+        .onChange(of: quizGame.currentQuestionIndex) { _, _ in
+            // Auto-play chord for ear training questions
+            if let question = quizGame.currentQuestion,
+               question.questionType == .earTraining {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    playCurrentChord()
+                }
+            }
+        }
+        .onAppear {
+            // Play on initial appear if ear training question
+            if let question = quizGame.currentQuestion,
+               question.questionType == .earTraining {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    playCurrentChord()
+                }
+            }
+        }
     }
-    
+
     // MARK: - Feedback View
     
     @ViewBuilder
@@ -819,44 +898,82 @@ struct ActiveQuizView: View {
             return "Select the chord tone shown above"
         case .allTones:
             return "Select all the chord tones for this chord"
+        case .earTraining:
+            return "Identify the chord quality by ear"
         }
     }
-    
+
+    private var canSubmit: Bool {
+        guard let question = quizGame.currentQuestion else { return false }
+
+        switch question.questionType {
+        case .earTraining:
+            return selectedChordType != nil
+        case .singleTone, .allTones:
+            return !selectedNotes.isEmpty
+        }
+    }
+
+    private func playCurrentChord() {
+        guard let question = quizGame.currentQuestion else { return }
+        let audioManager = AudioManager.shared
+        let style = settings.defaultChordStyle
+        let tempo = settings.chordTempo
+
+        audioManager.playChord(
+            question.chord.chordTones,
+            style: style,
+            tempo: tempo
+        )
+    }
+
     private func submitAnswer() {
         guard let question = quizGame.currentQuestion else { return }
-        
-        let userAnswer = Array(selectedNotes)
+
+        let userAnswer: [Note]
         let correctAnswer = question.correctAnswer
-        
+
+        // Handle answer based on question type
+        if question.questionType == .earTraining {
+            // For ear training, check chord type selection
+            isCorrect = selectedChordType?.symbol == question.chord.type.symbol
+            userAnswer = question.chord.chordTones  // Use chord tones for quiz game
+        } else {
+            // For visual questions, use selected notes
+            userAnswer = Array(selectedNotes)
+            isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
+        }
+
         // Store current question, user's answer, and correct answer for feedback
         currentQuestionForFeedback = question
         correctAnswerForFeedback = correctAnswer
         userAnswerForFeedback = userAnswer
         feedbackPhase = .showingUserAnswer
-        
+
         // Check if this is the last question BEFORE submitting
         isLastQuestion = quizGame.currentQuestionIndex == quizGame.totalQuestions - 1
-        
-        // Check if answer is correct
-        isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
-        
+
         // Haptic feedback and audio
         if isCorrect {
             ChordDrillHaptics.success()
-            
+
             // Play correct chord audio if enabled
             if settings.audioEnabled {
                 AudioManager.shared.playChord(correctAnswer, duration: 1.0)
             }
         } else {
             ChordDrillHaptics.error()
-            
-            // Play the user's entered chord so they can hear it
-            if settings.audioEnabled && !userAnswer.isEmpty {
-                AudioManager.shared.playChord(userAnswer, duration: 1.0)
+
+            // For ear training, play correct answer; for visual, play user's answer
+            if settings.audioEnabled {
+                if question.questionType == .earTraining {
+                    AudioManager.shared.playChord(correctAnswer, duration: 1.0)
+                } else if !userAnswer.isEmpty {
+                    AudioManager.shared.playChord(userAnswer, duration: 1.0)
+                }
             }
         }
-        
+
         // Show feedback
         showingFeedback = true
     }
@@ -886,6 +1003,7 @@ struct ActiveQuizView: View {
     
     private func clearSelection() {
         selectedNotes.removeAll()
+        selectedChordType = nil
     }
     
     private func continueToNextQuestion() {
@@ -1150,6 +1268,98 @@ struct ChordDrillResultsView: View {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+}
+
+// MARK: - Chord Type Picker
+
+struct ChordTypePicker: View {
+    let difficulty: ChordType.ChordDifficulty
+    @Binding var selectedChordType: ChordType?
+    let correctChord: ChordType?
+    let disabled: Bool
+
+    private var chordTypes: [ChordType] {
+        JazzChordDatabase.shared.chordTypes.filter { $0.difficulty == difficulty }
+    }
+
+    var body: some View {
+        LazyVGrid(columns: [
+            GridItem(.adaptive(minimum: 80), spacing: 8)
+        ], spacing: 8) {
+            ForEach(chordTypes) { chordType in
+                Button(action: {
+                    if !disabled {
+                        selectedChordType = chordType
+                        ChordDrillHaptics.light()
+                    }
+                }) {
+                    VStack(spacing: 2) {
+                        Text(chordType.symbol)
+                            .font(.headline)
+                        Text(chordType.name)
+                            .font(.system(size: 9))
+                            .lineLimit(1)
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 4)
+                    .frame(maxWidth: .infinity)
+                    .background(backgroundColor(for: chordType))
+                    .foregroundColor(foregroundColor(for: chordType))
+                    .cornerRadius(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(borderColor(for: chordType), lineWidth: 2)
+                    )
+                }
+                .disabled(disabled)
+            }
+        }
+    }
+
+    private func backgroundColor(for chordType: ChordType) -> Color {
+        if let correct = correctChord {
+            if chordType.symbol == correct.symbol {
+                return .green.opacity(0.3)
+            } else if chordType == selectedChordType {
+                return .red.opacity(0.3)
+            }
+        }
+
+        if chordType == selectedChordType {
+            return .green.opacity(0.2)
+        }
+        return Color(.systemGray6)
+    }
+
+    private func foregroundColor(for chordType: ChordType) -> Color {
+        if let correct = correctChord {
+            if chordType.symbol == correct.symbol {
+                return .green
+            } else if chordType == selectedChordType {
+                return .red
+            }
+        }
+
+        if chordType == selectedChordType {
+            return .green
+        }
+        return .primary
+    }
+
+    private func borderColor(for chordType: ChordType) -> Color {
+        if let correct = correctChord {
+            if chordType.symbol == correct.symbol {
+                return .green
+            } else if chordType == selectedChordType {
+                return .red
+            }
+        }
+
+        if chordType == selectedChordType {
+            return .green
+        }
+        return .clear
     }
 }
 

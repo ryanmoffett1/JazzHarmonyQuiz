@@ -119,31 +119,125 @@ class AudioManager: ObservableObject {
     
     /// Play a chord (multiple notes simultaneously)
     func playChord(_ notes: [Note], velocity: UInt8 = 80, duration: TimeInterval = 1.0) {
-        guard isEnabled, let sampler = sampler else { 
+        guard isEnabled, let sampler = sampler else {
             print("playChord: isEnabled=\(isEnabled), sampler=\(self.sampler != nil ? "exists" : "nil")")
-            return 
+            return
         }
-        
+
         // Ensure audio engine is running
         ensureAudioEngineRunning()
-        
+
         // Normalize notes to middle C octave (MIDI 60-71)
         let normalizedMidiNotes = notes.map { note -> UInt8 in
             let pitchClass = note.midiNumber % 12
             return UInt8(60 + pitchClass)  // Octave 4 (middle C)
         }
-        
+
         // Start all notes
         for midiNote in normalizedMidiNotes {
             sampler.startNote(midiNote, withVelocity: velocity, onChannel: 0)
         }
-        
+
         // Stop all notes after duration
         DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
             for midiNote in normalizedMidiNotes {
                 sampler.stopNote(midiNote, onChannel: 0)
             }
         }
+    }
+
+    /// Play a chord with a specific playback style (block, arpeggio, guide tones)
+    /// - Parameters:
+    ///   - notes: Array of notes to play
+    ///   - style: Playback style (block, arpeggio up/down, guide tones)
+    ///   - tempo: Tempo in BPM for arpeggio styles (default 120)
+    ///   - completion: Optional closure called when playback completes
+    func playChord(
+        _ notes: [Note],
+        style: ChordPlaybackStyle = .block,
+        tempo: Double = 120,
+        completion: (() -> Void)? = nil
+    ) {
+        guard isEnabled, let sampler = sampler else {
+            completion?()
+            return
+        }
+
+        ensureAudioEngineRunning()
+
+        switch style {
+        case .block:
+            // Use existing playChord() method for block style
+            playChord(notes, velocity: 80, duration: 1.5)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                completion?()
+            }
+
+        case .arpeggioUp:
+            // Play notes ascending with tempo-based delay
+            let delayBetweenNotes = 60.0 / tempo  // BPM to seconds
+            let sortedNotes = notes.sorted { $0.midiNumber < $1.midiNumber }
+
+            for (index, note) in sortedNotes.enumerated() {
+                let playDelay = Double(index) * delayBetweenNotes
+                DispatchQueue.main.asyncAfter(deadline: .now() + playDelay) {
+                    let pitchClass = note.midiNumber % 12
+                    let normalizedMidi = UInt8(60 + pitchClass)
+                    sampler.startNote(normalizedMidi, withVelocity: 80, onChannel: 0)
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + delayBetweenNotes * 0.8) {
+                        sampler.stopNote(normalizedMidi, onChannel: 0)
+                    }
+                }
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(sortedNotes.count) * delayBetweenNotes) {
+                completion?()
+            }
+
+        case .arpeggioDown:
+            // Play notes descending
+            let delayBetweenNotes = 60.0 / tempo
+            let sortedNotes = notes.sorted { $0.midiNumber > $1.midiNumber }
+
+            for (index, note) in sortedNotes.enumerated() {
+                let playDelay = Double(index) * delayBetweenNotes
+                DispatchQueue.main.asyncAfter(deadline: .now() + playDelay) {
+                    let pitchClass = note.midiNumber % 12
+                    let normalizedMidi = UInt8(60 + pitchClass)
+                    sampler.startNote(normalizedMidi, withVelocity: 80, onChannel: 0)
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + delayBetweenNotes * 0.8) {
+                        sampler.stopNote(normalizedMidi, onChannel: 0)
+                    }
+                }
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(sortedNotes.count) * delayBetweenNotes) {
+                completion?()
+            }
+
+        case .guideTones:
+            // Extract and play root, 3rd, 7th only
+            let guideTones = extractGuideTones(from: notes)
+            playChord(guideTones, velocity: 80, duration: 1.5)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                completion?()
+            }
+        }
+    }
+
+    /// Extract guide tones (root, 3rd, 7th) from a chord
+    private func extractGuideTones(from notes: [Note]) -> [Note] {
+        guard notes.count >= 3 else { return notes }
+        let sorted = notes.sorted { $0.midiNumber < $1.midiNumber }
+
+        // Return root (first), third (2nd), and seventh (last or 2nd-to-last)
+        return [
+            sorted[0],                              // Root
+            sorted[min(1, sorted.count - 1)],      // 3rd
+            sorted[sorted.count - 1]                // 7th
+        ]
     }
     
     /// Play a cadence progression with proper rhythm
@@ -319,7 +413,7 @@ class AudioManager: ObservableObject {
         case harmonic = "Harmonic"              // Both notes simultaneously
         case melodicAscending = "Melodic Up"    // Lower note, then higher note
         case melodicDescending = "Melodic Down" // Higher note, then lower note
-        
+
         var description: String {
             switch self {
             case .harmonic:
@@ -328,6 +422,22 @@ class AudioManager: ObservableObject {
                 return "Lower then higher"
             case .melodicDescending:
                 return "Higher then lower"
+            }
+        }
+    }
+
+    enum ChordPlaybackStyle: String, CaseIterable, Codable {
+        case block = "Block"
+        case arpeggioUp = "Arpeggio ↑"
+        case arpeggioDown = "Arpeggio ↓"
+        case guideTones = "Guide Tones"
+
+        var description: String {
+            switch self {
+            case .block: return "All notes simultaneously"
+            case .arpeggioUp: return "Notes ascending"
+            case .arpeggioDown: return "Notes descending"
+            case .guideTones: return "Root, 3rd, 7th only"
             }
         }
     }

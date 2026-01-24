@@ -83,7 +83,45 @@ class SettingsManager: ObservableObject {
             UserDefaults.standard.set(intervalTempo, forKey: "intervalTempo")
         }
     }
-    
+
+    // Chord Ear Training Settings
+    @Published var autoPlayChords: Bool {
+        didSet {
+            UserDefaults.standard.set(autoPlayChords, forKey: "autoPlayChords")
+        }
+    }
+
+    @Published var defaultChordStyle: AudioManager.ChordPlaybackStyle {
+        didSet {
+            UserDefaults.standard.set(defaultChordStyle.rawValue, forKey: "defaultChordStyle")
+        }
+    }
+
+    @Published var chordTempo: Double {
+        didSet {
+            UserDefaults.standard.set(chordTempo, forKey: "chordTempo")
+        }
+    }
+
+    // Cadence Ear Training Settings
+    @Published var autoPlayCadences: Bool {
+        didSet {
+            UserDefaults.standard.set(autoPlayCadences, forKey: "autoPlayCadences")
+        }
+    }
+
+    @Published var cadenceBPM: Double {
+        didSet {
+            UserDefaults.standard.set(cadenceBPM, forKey: "cadenceBPM")
+        }
+    }
+
+    @Published var cadenceBeatsPerChord: Double {
+        didSet {
+            UserDefaults.standard.set(cadenceBeatsPerChord, forKey: "cadenceBeatsPerChord")
+        }
+    }
+
     // MARK: - Audio Manager Helpers
     
     private func updateAudioManagerEnabled() {
@@ -129,7 +167,22 @@ class SettingsManager: ObservableObject {
             self.defaultIntervalStyle = .harmonic
         }
         self.intervalTempo = UserDefaults.standard.object(forKey: "intervalTempo") as? Double ?? 120
-        
+
+        // Chord ear training settings
+        self.autoPlayChords = UserDefaults.standard.object(forKey: "autoPlayChords") as? Bool ?? true
+        if let savedChordStyle = UserDefaults.standard.string(forKey: "defaultChordStyle"),
+           let chordStyle = AudioManager.ChordPlaybackStyle(rawValue: savedChordStyle) {
+            self.defaultChordStyle = chordStyle
+        } else {
+            self.defaultChordStyle = .block
+        }
+        self.chordTempo = UserDefaults.standard.object(forKey: "chordTempo") as? Double ?? 120
+
+        // Cadence ear training settings
+        self.autoPlayCadences = UserDefaults.standard.object(forKey: "autoPlayCadences") as? Bool ?? true
+        self.cadenceBPM = UserDefaults.standard.object(forKey: "cadenceBPM") as? Double ?? 90
+        self.cadenceBeatsPerChord = UserDefaults.standard.object(forKey: "cadenceBeatsPerChord") as? Double ?? 2.0
+
         // Apply audio settings after a brief delay to ensure AudioManager is initialized
         DispatchQueue.main.async { [weak self] in
             self?.applyAudioSettings()

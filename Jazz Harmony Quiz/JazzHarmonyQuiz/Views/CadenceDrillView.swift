@@ -59,6 +59,9 @@ struct CadenceDrillView: View {
     @State private var selectedExtendedVChord: ExtendedVChordOption = .ninth
     @State private var selectedCommonTonePair: CommonTonePair = .iiToV
 
+    // Ear training state
+    @State private var userSelectedCadenceType: CadenceType? = nil  // For ear training answers
+
     enum ViewState {
         case setup
         case active
@@ -90,7 +93,10 @@ struct CadenceDrillView: View {
                 if cadenceGame.selectedDrillMode == .chordIdentification {
                     ActiveChordIdentificationView(viewState: $viewState)
                 } else {
-                    ActiveCadenceQuizView(viewState: $viewState)
+                    ActiveCadenceQuizView(
+                        viewState: $viewState,
+                        userSelectedCadenceType: $userSelectedCadenceType
+                    )
                 }
             case .results:
                 CadenceResultsView(onNewQuiz: {
@@ -689,6 +695,7 @@ struct ActiveCadenceQuizView: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     @Binding var viewState: CadenceDrillView.ViewState
+    @Binding var userSelectedCadenceType: CadenceType?  // For ear training answers
     @State private var currentChordIndex = 0 // Which chord we're currently spelling
     @State private var chordSpellings: [[Note]] = [[], [], [], [], []] // Spellings for up to 5 chords (Bird Changes)
     @State private var selectedNotes: Set<Note> = []
@@ -718,6 +725,19 @@ struct ActiveCadenceQuizView: View {
         cadenceGame.selectedDrillMode == .commonTones
     }
 
+    /// Whether we're in ear training mode
+    private var isEarTrainingMode: Bool {
+        cadenceGame.selectedDrillMode == .auralIdentify
+    }
+
+    /// Whether we can submit ear training answer
+    private var canSubmitEarTraining: Bool {
+        if showingFeedback {
+            return true
+        }
+        return userSelectedCadenceType != nil
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             // Speed Round Timer (if in speed round mode)
@@ -744,25 +764,77 @@ struct ActiveCadenceQuizView: View {
                 // Safety check - ensure we have the expected chords
                 let chordsToSpell = question.chordsToSpell
                 if !chordsToSpell.isEmpty {
-                    // Cadence Display
-                    VStack(spacing: 15) {
-                        HStack {
-                            Text("Key: \(question.cadence.key.name) \(question.cadence.cadenceType.rawValue)")
-                                .font(settings.chordDisplayFont(size: 24, weight: .bold))
-                                .foregroundColor(settings.primaryText(for: colorScheme))
-                            
-                            if isIsolatedMode {
-                                Text("(\(cadenceGame.selectedIsolatedPosition.rawValue) only)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
+                    // Conditional UI based on mode
+                    if isEarTrainingMode {
+                        // Ear Training Display
+                        VStack(spacing: 16) {
+                            Image(systemName: "ear.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(.blue)
+
+                            Text("Listen to the progression")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+
+                            Text("Use the replay button below if needed")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
                         .padding()
-                        .background(settings.chordDisplayBackground(for: colorScheme))
-                        .cornerRadius(8)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(16)
+                        .padding(.horizontal)
 
-                        // Display chords based on mode
-                        if isIsolatedMode {
+                        // Replay button
+                        Button(action: { playCurrentCadence() }) {
+                            HStack {
+                                Image(systemName: "speaker.wave.2.fill")
+                                Text("Replay Progression")
+                            }
+                            .font(.subheadline)
+                            .foregroundColor(.blue)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(8)
+                        }
+                        .padding(.horizontal)
+
+                        Spacer()
+
+                        // Cadence Type Picker
+                        VStack(spacing: 8) {
+                            Text("Select the cadence type")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+
+                            CadenceTypePicker(
+                                selectedCadenceType: $userSelectedCadenceType,
+                                correctCadenceType: showingFeedback ? question.cadence.cadenceType : nil,
+                                disabled: showingFeedback
+                            )
+                            .padding(.horizontal)
+                        }
+                    } else {
+                        // Visual Display for Other Modes
+                        VStack(spacing: 15) {
+                            HStack {
+                                Text("Key: \(question.cadence.key.name) \(question.cadence.cadenceType.rawValue)")
+                                    .font(settings.chordDisplayFont(size: 24, weight: .bold))
+                                    .foregroundColor(settings.primaryText(for: colorScheme))
+
+                                if isIsolatedMode {
+                                    Text("(\(cadenceGame.selectedIsolatedPosition.rawValue) only)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .padding()
+                            .background(settings.chordDisplayBackground(for: colorScheme))
+                            .cornerRadius(8)
+
+                            // Display chords based on mode
+                            if isIsolatedMode {
                             // Single chord display for isolated mode
                             chordDisplayCard(
                                 chord: chordsToSpell[0],
@@ -849,21 +921,24 @@ struct ActiveCadenceQuizView: View {
                                 .cornerRadius(8)
                             }
                         }
-                    }
+                        }  // End of VStack for visual display
+                    }  // End of else block
                 }
 
-                // Piano Keyboard
-                PianoKeyboard(
-                    selectedNotes: $selectedNotes,
-                    octaveRange: 4...4,
-                    showNoteNames: false,
-                    allowMultipleSelection: true
-                )
-                .padding(.horizontal)
-                .frame(height: 140)
+                // Piano Keyboard (only for non-ear training modes)
+                if !isEarTrainingMode {
+                    PianoKeyboard(
+                        selectedNotes: $selectedNotes,
+                        octaveRange: 4...4,
+                        showNoteNames: false,
+                        allowMultipleSelection: true
+                    )
+                    .padding(.horizontal)
+                    .frame(height: 140)
+                }
 
-                // Selected Notes Display
-                if !selectedNotes.isEmpty {
+                // Selected Notes Display (only for non-ear training modes)
+                if !isEarTrainingMode && !selectedNotes.isEmpty {
                     VStack(spacing: 8) {
                         Text("Selected Notes:")
                             .font(.headline)
@@ -900,7 +975,19 @@ struct ActiveCadenceQuizView: View {
                     }
 
                     // Next Chord / Submit Button (logic depends on mode)
-                    if isIsolatedMode {
+                    if isEarTrainingMode {
+                        // Ear training mode - submit cadence type selection
+                        Button(action: submitAnswer) {
+                            Text(showingFeedback ? "Next Question →" : "Submit Answer")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(canSubmitEarTraining ? settings.successColor(for: colorScheme) : Color.gray)
+                                .cornerRadius(12)
+                        }
+                        .disabled(!canSubmitEarTraining && !showingFeedback)
+                    } else if isIsolatedMode {
                         // In isolated mode, always show submit
                         Button(action: submitAnswer) {
                             Text("Submit Answer")
@@ -969,6 +1056,22 @@ struct ActiveCadenceQuizView: View {
             // Handle speed round timeout
             if isSpeedRoundMode && newValue <= 0 && oldValue > 0 {
                 handleSpeedRoundTimeout()
+            }
+        }
+        .onChange(of: cadenceGame.currentQuestionIndex) { _, _ in
+            // Auto-play for ear training questions
+            if isEarTrainingMode && settings.autoPlayCadences {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    playCurrentCadence()
+                }
+            }
+        }
+        .onAppear {
+            // Play on initial appear if ear training question
+            if isEarTrainingMode && settings.autoPlayCadences {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    playCurrentCadence()
+                }
             }
         }
         .onDisappear {
@@ -1099,7 +1202,36 @@ struct ActiveCadenceQuizView: View {
 
     private func submitAnswer() {
         guard let question = cadenceGame.currentQuestion else { return }
-        
+
+        // Handle ear training mode
+        if isEarTrainingMode {
+            // If already showing feedback, move to next question
+            if showingFeedback {
+                continueToNextQuestion()
+                return
+            }
+
+            // Check if selected cadence type matches
+            isCorrect = userSelectedCadenceType == question.cadence.cadenceType
+
+            // Haptic feedback
+            if isCorrect {
+                CadenceDrillHaptics.success()
+            } else {
+                CadenceDrillHaptics.error()
+            }
+
+            // Play progression for feedback
+            if settings.audioEnabled {
+                playCurrentCadence()
+            }
+
+            // Submit dummy answer (game expects chord spellings)
+            cadenceGame.submitAnswer(question.expectedAnswers)
+            showingFeedback = true
+            return
+        }
+
         // Stop speed round timer
         if isSpeedRoundMode {
             cadenceGame.stopSpeedRoundTimer()
@@ -1107,7 +1239,7 @@ struct ActiveCadenceQuizView: View {
 
         // Save the last chord spelling
         chordSpellings[currentChordIndex] = Array(selectedNotes)
-        
+
         // Prepare the answer based on mode
         let answerToSubmit: [[Note]]
         if isIsolatedMode || isCommonTonesMode {
@@ -1125,11 +1257,11 @@ struct ActiveCadenceQuizView: View {
 
         // Check if answer is correct
         isCorrect = cadenceGame.isAnswerCorrect(userAnswer: answerToSubmit, question: question)
-        
+
         // Haptic feedback based on result
         if isCorrect {
             HapticFeedback.success()
-            
+
             // Play the user's entered chords as a cadence progression if enabled
             // This lets them hear their specific voicing/inversion
             if settings.playChordOnCorrect && settings.audioEnabled {
@@ -1165,11 +1297,26 @@ struct ActiveCadenceQuizView: View {
         chordSpellings = [[], [], [], [], []]  // Reset for up to 5 chords
         selectedNotes.removeAll()
         currentHintText = nil
-        
+        userSelectedCadenceType = nil  // Clear ear training selection
+        showingFeedback = false
+
         // Start speed round timer for next question if still in quiz
         if isSpeedRoundMode && cadenceGame.isQuizActive {
             cadenceGame.startSpeedRoundTimer()
         }
+    }
+
+    private func playCurrentCadence() {
+        guard let question = cadenceGame.currentQuestion else { return }
+        let chords = question.cadence.chords.map { $0.chordTones }
+        let bpm = settings.cadenceBPM
+        let beatsPerChord = settings.cadenceBeatsPerChord
+
+        AudioManager.shared.playCadenceProgression(
+            chords,
+            bpm: bpm,
+            beatsPerChord: beatsPerChord
+        )
     }
 
     private func formatFeedback() -> String {
@@ -2253,6 +2400,70 @@ struct ActiveChordIdentificationView: View {
             default: return ""
             }
         }
+    }
+}
+
+// MARK: - Cadence Type Picker for Ear Training
+
+struct CadenceTypePicker: View {
+    @Binding var selectedCadenceType: CadenceType?
+    let correctCadenceType: CadenceType?
+    let disabled: Bool
+
+    var body: some View {
+        VStack(spacing: 8) {
+            ForEach(CadenceType.allCases, id: \.self) { cadenceType in
+                Button(action: {
+                    if !disabled {
+                        selectedCadenceType = cadenceType
+                        CadenceDrillHaptics.light()
+                    }
+                }) {
+                    HStack {
+                        Text(cadenceType.rawValue)
+                            .font(.headline)
+
+                        Spacer()
+
+                        // Show icon based on state
+                        if let correct = correctCadenceType {
+                            if cadenceType == correct {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                            } else if cadenceType == selectedCadenceType {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.red)
+                            }
+                        } else if cadenceType == selectedCadenceType {
+                            Image(systemName: "checkmark.circle")
+                                .foregroundColor(.green)
+                        } else {
+                            Image(systemName: "circle")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .padding()
+                    .background(backgroundColor(for: cadenceType))
+                    .cornerRadius(8)
+                }
+                .disabled(disabled)
+            }
+        }
+    }
+
+    private func backgroundColor(for cadenceType: CadenceType) -> Color {
+        if let correct = correctCadenceType {
+            if cadenceType == correct {
+                return .green.opacity(0.2)
+            } else if cadenceType == selectedCadenceType {
+                return .red.opacity(0.2)
+            }
+        }
+
+        if cadenceType == selectedCadenceType {
+            return .green.opacity(0.1)
+        }
+        return Color(.systemGray6)
     }
 }
 

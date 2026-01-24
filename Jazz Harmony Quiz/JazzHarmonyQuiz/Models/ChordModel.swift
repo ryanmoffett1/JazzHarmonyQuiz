@@ -200,13 +200,24 @@ struct Chord: Identifiable, Hashable, Codable {
 enum QuestionType: String, CaseIterable, Codable, Equatable {
     case singleTone = "Single Tone"
     case allTones = "All Tones"
-    
+    case earTraining = "Ear Training"
+
     var description: String {
         switch self {
         case .singleTone:
             return "Identify a specific chord tone"
         case .allTones:
             return "Play all chord tones"
+        case .earTraining:
+            return "Identify chord by ear"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .singleTone: return "music.note"
+        case .allTones: return "pianokeys"
+        case .earTraining: return "ear"
         }
     }
 }
@@ -232,11 +243,11 @@ struct QuizQuestion: Identifiable, Codable, Equatable {
             } else {
                 self.correctAnswer = [chord.root]
             }
-        case .allTones:
+        case .allTones, .earTraining:
             self.correctAnswer = chord.chordTones
         }
-        
-        self.timeLimit = 30.0 // 30 seconds default
+
+        self.timeLimit = questionType == .earTraining ? 45.0 : 30.0
     }
 }
 
@@ -249,7 +260,8 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
     case isolatedChord = "Isolated Chord"
     case speedRound = "Speed Round"
     case commonTones = "Common Tones"
-    
+    case auralIdentify = "Ear Training"
+
     var description: String {
         switch self {
         case .chordIdentification:
@@ -262,6 +274,19 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
             return "Timed challenge - spell each chord before time runs out!"
         case .commonTones:
             return "Identify notes shared between adjacent chords"
+        case .auralIdentify:
+            return "Identify cadence by ear"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .chordIdentification: return "music.note.list"
+        case .fullProgression: return "pianokeys"
+        case .isolatedChord: return "target"
+        case .speedRound: return "timer"
+        case .commonTones: return "link"
+        case .auralIdentify: return "ear"
         }
     }
     
@@ -282,6 +307,7 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
         case .isolatedChord: return "target"
         case .speedRound: return "timer"
         case .commonTones: return "link"
+        case .auralIdentify: return "ear"
         }
     }
 
@@ -293,6 +319,7 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
         case .isolatedChord: return "Isolated"
         case .speedRound: return "Speed"
         case .commonTones: return "Common"
+        case .auralIdentify: return "Ear"
         }
     }
 }
@@ -716,6 +743,8 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
                 return "Find notes shared between \(chords[0].displayName) and \(chords[1].displayName)"
             }
             return "Find the common tones between \(pair.rawValue)"
+        case .auralIdentify:
+            return "What cadence type did you hear?"
         }
     }
 
@@ -749,6 +778,8 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
             self.timeLimit = 30.0
         case .chordIdentification:
             self.timeLimit = 45.0
+        case .auralIdentify:
+            self.timeLimit = 60.0  // More time for ear training
         }
     }
     
