@@ -126,6 +126,45 @@ struct SettingsView: View {
                     Text("Hear the chord played back when you answer correctly. Great for ear training!")
                         .foregroundColor(settings.secondaryText(for: colorScheme))
                 }
+                
+                // Interval Ear Training Section
+                Section {
+                    Toggle("Auto-Play Intervals", isOn: $settings.autoPlayIntervals)
+                    
+                    Picker("Playback Style", selection: $settings.defaultIntervalStyle) {
+                        ForEach(AudioManager.IntervalPlaybackStyle.allCases, id: \.self) { style in
+                            Text(style.rawValue).tag(style)
+                        }
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Tempo")
+                            Spacer()
+                            Text("\(Int(settings.intervalTempo)) BPM")
+                                .foregroundColor(settings.secondaryText(for: colorScheme))
+                        }
+                        Slider(value: $settings.intervalTempo, in: 60...180, step: 10)
+                    }
+                    
+                    Button("Test Interval") {
+                        let audioManager = AudioManager.shared
+                        let rootNote = Note(name: "C", midiNumber: 60, isSharp: false)
+                        let targetNote = Note(name: "E", midiNumber: 64, isSharp: false)
+                        audioManager.playInterval(
+                            rootNote: rootNote,
+                            targetNote: targetNote,
+                            style: settings.defaultIntervalStyle,
+                            tempo: settings.intervalTempo
+                        )
+                    }
+                    .foregroundColor(.blue)
+                } header: {
+                    Text("Interval Ear Training")
+                } footer: {
+                    Text("Configure how intervals are played during ear training exercises. Harmonic plays both notes together, melodic plays them in sequence.")
+                        .foregroundColor(settings.secondaryText(for: colorScheme))
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
