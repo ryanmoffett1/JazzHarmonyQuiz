@@ -653,10 +653,10 @@ Every feature in this plan serves that north star.
 | 1 | SR Integration (Cadence) | ✅ Done | Jan 23, 2026 |
 | 1 | SR Integration (Chord/Scale/Interval) | ✅ Done | Jan 23, 2026 |
 | 1 | Practice Due UI | ✅ Done | Jan 23, 2026 |
-| 1 | Interval Ear Training | ⬜️ Not Started | - |
+| 1 | Interval Ear Training | 🔶 Next Up | - |
 | 2 | Chord Ear Training | ⬜️ Not Started | - |
 | 2 | Cadence Ear Training | ⬜️ Not Started | - |
-| 2 | SR Expansion (All Modes) | ⬜️ Not Started | - |
+| 2 | SR Expansion (All Modes) | ✅ Done | Jan 23, 2026 |
 | 3 | Progression Database | ⬜️ Not Started | - |
 | 3 | Progression Game Logic | ⬜️ Not Started | - |
 | 3 | Progression Drill View | ⬜️ Not Started | - |
@@ -670,4 +670,4 @@ Every feature in this plan serves that north star.
 
 ---
 
-**Last Updated:** January 19, 2026
+**Last Updated:** January 23, 2026
