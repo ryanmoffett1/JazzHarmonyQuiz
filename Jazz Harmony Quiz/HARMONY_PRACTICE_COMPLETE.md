@@ -20,7 +20,7 @@
 - Major ii-V-I (beginner)
 - Minor ii-V-i (beginner)  
 - Simple V-I (beginner)
-- Extended ii-V-I with alterations (intermediate)
+- ii-V-I with ♭9 (intermediate)
 - Tritone substitution (advanced)
 
 **Progressions:**

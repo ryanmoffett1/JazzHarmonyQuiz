@@ -206,7 +206,7 @@ class ProgressionDatabase {
             
             // CADENCES - Intermediate
             ProgressionTemplate(
-                name: "Extended ii-V-I",
+                name: "ii-V-I with ♭9",
                 description: "ii⁷ – V⁷♭9 – Imaj⁷",
                 chords: [
                     FunctionalChordSpec(romanNumeral: "ii", quality: "m7"),
@@ -216,7 +216,7 @@ class ProgressionDatabase {
                 difficulty: .intermediate,
                 category: .cadences,
                 exampleStandards: ["Stella By Starlight"],
-                pedagogicalNotes: "Adding ♭9 to the V chord creates more tension and color."
+                pedagogicalNotes: "Adding ♭9 to the V chord creates more tension and color. The ♭9 is a half-step above the root."
             ),
             
             ProgressionTemplate(

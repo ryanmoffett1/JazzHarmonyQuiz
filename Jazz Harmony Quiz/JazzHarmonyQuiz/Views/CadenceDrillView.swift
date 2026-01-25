@@ -1563,6 +1563,17 @@ struct ActiveCadenceQuizView: View {
             }
         } else {
             HapticFeedback.error()
+            
+            // Play the CORRECT answer so the user can hear what they should have spelled
+            if settings.audioEnabled {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    AudioManager.shared.playCadenceProgression(
+                        question.expectedAnswers,
+                        bpm: 90,
+                        beatsPerChord: 2
+                    )
+                }
+            }
         }
 
         // Show feedback
