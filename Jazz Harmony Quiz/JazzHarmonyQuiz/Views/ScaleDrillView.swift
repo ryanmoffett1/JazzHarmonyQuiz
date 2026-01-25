@@ -917,7 +917,7 @@ struct ActiveScaleQuizView: View {
                     .disabled(!hasCorrectCount)
                 }
                 
-            } else if isCorrect || feedbackPhase == .showingCorrectAnswer {
+            } else if isCorrect || feedbackPhase == .showingCorrectAnswer || (question.questionType == .earTraining && hasSubmitted) {
                 // Play Scale Button
                 Button(action: {
                     playScaleWithHighlight(notes: question.correctNotes)
