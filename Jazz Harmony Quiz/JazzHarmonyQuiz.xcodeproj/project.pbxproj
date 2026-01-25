@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		53B32507A1164CC6B398FD05 /* SpacedRepetition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4652997D68DE4F2CA3E2998A /* SpacedRepetition.swift */; };
 		5A634891227C479190B2BAC9 /* PracticeDueCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */; };
-		94TEST0001000000000001 /* NoteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94TEST0001000000000002 /* NoteTests.swift */; };
 		9400DEB42F2515E100BDBF25 /* ProgressionDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB32F2515E100BDBF25 /* ProgressionDrillView.swift */; };
 		9400DEB82F2516A900BDBF25 /* ProgressionProgression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB72F2516A900BDBF25 /* ProgressionProgression.swift */; };
 		9400DEB92F2516A900BDBF25 /* ProgressionGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB62F2516A900BDBF25 /* ProgressionGame.swift */; };
@@ -38,6 +37,7 @@
 		94E4E7932F149D6E009754EE /* IntervalDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E4E7922F149D6E009754EE /* IntervalDatabase.swift */; };
 		94E4E7952F149D7E009754EE /* IntervalGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E4E7942F149D7E009754EE /* IntervalGame.swift */; };
 		94E4E7972F149D9C009754EE /* IntervalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E4E7962F149D9C009754EE /* IntervalModel.swift */; };
+		94TEST0001000000000001 /* NoteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94TEST0001000000000002 /* NoteTests.swift */; };
 		A1234567890ABCDEF001 /* JazzHarmonyQuizApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */; };
 		A1234567890ABCDEF003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF002 /* ContentView.swift */; };
 		A1234567890ABCDEF005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF004 /* Assets.xcassets */; };
@@ -63,8 +63,6 @@
 /* Begin PBXFileReference section */
 		0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeDueCard.swift; sourceTree = "<group>"; };
 		4652997D68DE4F2CA3E2998A /* SpacedRepetition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacedRepetition.swift; sourceTree = "<group>"; };
-		94TEST0001000000000002 /* NoteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteTests.swift; sourceTree = "<group>"; };
-		94TEST0001000000000004 /* JazzHarmonyQuizTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JazzHarmonyQuizTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9400DEB32F2515E100BDBF25 /* ProgressionDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionDrillView.swift; sourceTree = "<group>"; };
 		9400DEB52F2516A900BDBF25 /* ProgressionDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionDatabase.swift; sourceTree = "<group>"; };
 		9400DEB62F2516A900BDBF25 /* ProgressionGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionGame.swift; sourceTree = "<group>"; };
@@ -94,6 +92,8 @@
 		94E4E7922F149D6E009754EE /* IntervalDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDatabase.swift; sourceTree = "<group>"; };
 		94E4E7942F149D7E009754EE /* IntervalGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalGame.swift; sourceTree = "<group>"; };
 		94E4E7962F149D9C009754EE /* IntervalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalModel.swift; sourceTree = "<group>"; };
+		94TEST0001000000000002 /* NoteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteTests.swift; sourceTree = "<group>"; };
+		94TEST0001000000000004 /* JazzHarmonyQuizTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JazzHarmonyQuizTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzHarmonyQuizApp.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -108,14 +108,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		A1234567890ABCDEF024 /* Frameworks */ = {
+		94TEST0001000000000005 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		94TEST0001000000000005 /* Frameworks */ = {
+		A1234567890ABCDEF024 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -142,6 +142,14 @@
 			path = Helpers;
 			sourceTree = "<group>";
 		};
+		94TEST0001000000000006 /* JazzHarmonyQuizTests */ = {
+			isa = PBXGroup;
+			children = (
+				94TEST0001000000000002 /* NoteTests.swift */,
+			);
+			path = JazzHarmonyQuizTests;
+			sourceTree = "<group>";
+		};
 		A1234567890ABCDEF025 = {
 			isa = PBXGroup;
 			children = (
@@ -150,14 +158,6 @@
 				A1234567890ABCDEF027 /* Products */,
 				9420C4D02F1BFD3600C9D1F8 /* Recovered References */,
 			);
-			sourceTree = "<group>";
-		};
-		94TEST0001000000000006 /* JazzHarmonyQuizTests */ = {
-			isa = PBXGroup;
-			children = (
-				94TEST0001000000000002 /* NoteTests.swift */,
-			);
-			path = JazzHarmonyQuizTests;
 			sourceTree = "<group>";
 		};
 		A1234567890ABCDEF026 /* JazzHarmonyQuiz */ = {
@@ -242,23 +242,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A1234567890ABCDEF031 /* JazzHarmonyQuiz */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A1234567890ABCDEF032 /* Build configuration list for PBXNativeTarget "JazzHarmonyQuiz" */;
-			buildPhases = (
-				A1234567890ABCDEF033 /* Sources */,
-				A1234567890ABCDEF024 /* Frameworks */,
-				A1234567890ABCDEF034 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = JazzHarmonyQuiz;
-			productName = JazzHarmonyQuiz;
-			productReference = A1234567890ABCDEF023 /* JazzHarmonyQuiz.app */;
-			productType = "com.apple.product-type.application";
-		};
 		94TEST0001000000000008 /* JazzHarmonyQuizTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 94TEST0001000000000009 /* Build configuration list for PBXNativeTarget "JazzHarmonyQuizTests" */;
@@ -277,15 +260,24 @@
 			productReference = 94TEST0001000000000004 /* JazzHarmonyQuizTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-/* End PBXNativeTarget section */
-
-/* Begin PBXTargetDependency section */
-		94TEST0001000000000007 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A1234567890ABCDEF031 /* JazzHarmonyQuiz */;
-			targetProxy = 94TEST0001000000000003 /* PBXContainerItemProxy */;
+		A1234567890ABCDEF031 /* JazzHarmonyQuiz */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1234567890ABCDEF032 /* Build configuration list for PBXNativeTarget "JazzHarmonyQuiz" */;
+			buildPhases = (
+				A1234567890ABCDEF033 /* Sources */,
+				A1234567890ABCDEF024 /* Frameworks */,
+				A1234567890ABCDEF034 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = JazzHarmonyQuiz;
+			productName = JazzHarmonyQuiz;
+			productReference = A1234567890ABCDEF023 /* JazzHarmonyQuiz.app */;
+			productType = "com.apple.product-type.application";
 		};
-/* End PBXTargetDependency section */
+/* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		A1234567890ABCDEF035 /* Project object */ = {
@@ -295,12 +287,12 @@
 				LastSwiftUpdateCheck = 1500;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
-					A1234567890ABCDEF031 = {
-						CreatedOnToolsVersion = 15.0;
-					};
 					94TEST0001000000000008 = {
 						CreatedOnToolsVersion = 15.0;
 						TestTargetID = A1234567890ABCDEF031;
+					};
+					A1234567890ABCDEF031 = {
+						CreatedOnToolsVersion = 15.0;
 					};
 				};
 			};
@@ -324,6 +316,13 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		94TEST0001000000000011 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A1234567890ABCDEF034 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -341,13 +340,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				94TEST0001000000000001 /* NoteTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		94TEST0001000000000011 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -398,7 +390,53 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		94TEST0001000000000007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1234567890ABCDEF031 /* JazzHarmonyQuiz */;
+			targetProxy = 94TEST0001000000000003 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		94TEST0001000000000012 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U62N9UMNG7;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jazzharmony.quiz.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JazzHarmonyQuiz.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JazzHarmonyQuiz";
+			};
+			name = Debug;
+		};
+		94TEST0001000000000013 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U62N9UMNG7;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jazzharmony.quiz.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JazzHarmonyQuiz.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JazzHarmonyQuiz";
+			};
+			name = Release;
+		};
 		A1234567890ABCDEF037 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -580,47 +618,18 @@
 			};
 			name = Release;
 		};
-		94TEST0001000000000012 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = U62N9UMNG7;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jazzharmony.quiz.tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JazzHarmonyQuiz.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JazzHarmonyQuiz";
-			};
-			name = Debug;
-		};
-		94TEST0001000000000013 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = U62N9UMNG7;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jazzharmony.quiz.tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JazzHarmonyQuiz.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JazzHarmonyQuiz";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		94TEST0001000000000009 /* Build configuration list for PBXNativeTarget "JazzHarmonyQuizTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94TEST0001000000000012 /* Debug */,
+				94TEST0001000000000013 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A1234567890ABCDEF032 /* Build configuration list for PBXNativeTarget "JazzHarmonyQuiz" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -635,15 +644,6 @@
 			buildConfigurations = (
 				A1234567890ABCDEF037 /* Debug */,
 				A1234567890ABCDEF038 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		94TEST0001000000000009 /* Build configuration list for PBXNativeTarget "JazzHarmonyQuizTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				94TEST0001000000000012 /* Debug */,
-				94TEST0001000000000013 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
