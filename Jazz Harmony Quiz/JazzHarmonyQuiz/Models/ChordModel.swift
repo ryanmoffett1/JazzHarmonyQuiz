@@ -79,16 +79,19 @@ struct QuizQuestion: Identifiable, Codable, Equatable {
 // MARK: - Cadence Models
 
 /// Drill mode determines how the cadence quiz is structured
+/// Simplified from 9 to 6 modes per DESIGN.md Section 7.5.2
 enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
     case chordIdentification = "Chord Identification"
     case fullProgression = "Full Progression"
-    case isolatedChord = "Isolated Chord"
-    case speedRound = "Speed Round"
     case commonTones = "Common Tones"
     case auralIdentify = "Ear Training"
     case guideTones = "Guide Tones"
     case resolutionTargets = "Resolution Targets"
-    case smoothVoicing = "Smooth Voicing"
+    
+    // Removed modes (per DESIGN.md):
+    // - isolatedChord: Consolidated into fullProgression with focus indicator
+    // - speedRound: Integrated as timed option in any mode
+    // - smoothVoicing: Moved to future Voice Leading module
 
     var description: String {
         switch self {
@@ -96,10 +99,6 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
             return "Identify chords by root and quality (e.g., F#m7 → B7 → Emaj7)"
         case .fullProgression:
             return "Spell all 3 chords in the ii-V-I"
-        case .isolatedChord:
-            return "Focus on one chord position across all keys"
-        case .speedRound:
-            return "Timed challenge - spell each chord before time runs out!"
         case .commonTones:
             return "Identify notes shared between adjacent chords"
         case .auralIdentify:
@@ -108,8 +107,6 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
             return "Play only the guide tones (3rd and 7th) for each chord"
         case .resolutionTargets:
             return "Find where guide tones resolve in the next chord"
-        case .smoothVoicing:
-            return "Voice chords with minimal finger movement"
         }
     }
 
@@ -117,37 +114,27 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
         switch self {
         case .chordIdentification: return "music.note.list"
         case .fullProgression: return "pianokeys"
-        case .isolatedChord: return "target"
-        case .speedRound: return "timer"
         case .commonTones: return "link"
         case .auralIdentify: return "ear"
         case .guideTones: return "circle.hexagongrid.fill"
         case .resolutionTargets: return "arrow.triangle.branch"
-        case .smoothVoicing: return "slider.horizontal.3"
         }
-    }
-    
-    /// Whether this mode has a per-chord timer
-    var hasPerChordTimer: Bool {
-        return self == .speedRound
     }
     
     /// Whether this mode uses chord selection (root+quality) instead of note spelling
     var usesChordSelection: Bool {
         return self == .chordIdentification
     }
+    
     /// Icon for the drill mode button
     var iconName: String {
         switch self {
         case .chordIdentification: return "textformat.abc"
         case .fullProgression: return "music.note.list"
-        case .isolatedChord: return "target"
-        case .speedRound: return "timer"
         case .commonTones: return "link"
         case .auralIdentify: return "ear"
         case .guideTones: return "circle.hexagongrid.fill"
         case .resolutionTargets: return "arrow.triangle.branch"
-        case .smoothVoicing: return "slider.horizontal.3"
         }
     }
 
@@ -156,13 +143,10 @@ enum CadenceDrillMode: String, CaseIterable, Codable, Equatable {
         switch self {
         case .chordIdentification: return "Chord ID"
         case .fullProgression: return "Full"
-        case .isolatedChord: return "Isolated"
-        case .speedRound: return "Speed"
         case .commonTones: return "Common"
         case .auralIdentify: return "Ear"
         case .guideTones: return "Guides"
         case .resolutionTargets: return "Resolution"
-        case .smoothVoicing: return "Smooth"
         }
     }
 }
@@ -598,12 +582,8 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
     /// The chord(s) the user needs to spell for this question
     var chordsToSpell: [Chord] {
         switch drillMode {
-        case .fullProgression, .speedRound, .chordIdentification:
+        case .fullProgression, .chordIdentification:
             return cadence.chords
-        case .isolatedChord:
-            guard let position = isolatedPosition else { return cadence.chords }
-            let index = min(position.index, cadence.chords.count - 1)
-            return [cadence.chords[index]]
         case .commonTones:
             // Return the two chords being compared
             guard let pair = commonTonePair, cadence.chords.count >= 3 else { return [] }
@@ -628,21 +608,14 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
                   index < pairs.count else { return [] }
             let pair = pairs[index]
             return [cadence.chords[pair.sourceChordIndex], cadence.chords[pair.targetChordIndex]]
-        case .smoothVoicing:
-            // Return all chords for smooth voicing
-            return cadence.chords
         }
     }
     
     /// The correct answer(s) for this question
     var expectedAnswers: [[Note]] {
         switch drillMode {
-        case .fullProgression, .speedRound, .chordIdentification:
+        case .fullProgression, .chordIdentification:
             return correctAnswers
-        case .isolatedChord:
-            guard let position = isolatedPosition else { return correctAnswers }
-            let index = min(position.index, correctAnswers.count - 1)
-            return [correctAnswers[index]]
         case .commonTones:
             // For common tones, correctAnswers[0] contains the common tones
             return correctAnswers.isEmpty ? [[]] : [correctAnswers[0]]
@@ -659,20 +632,14 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
                   index < pairs.count,
                   let targetNote = pairs[index].targetNote else { return [[]] }
             return [[targetNote]]
-        case .smoothVoicing:
-            // For smooth voicing, correctAnswers contains valid voicings
-            return correctAnswers
         }
     }
     
     /// Display text for the question
     var questionText: String {
         switch drillMode {
-        case .fullProgression, .speedRound, .chordIdentification:
+        case .fullProgression, .chordIdentification:
             return "Spell all chords in the progression"
-        case .isolatedChord:
-            guard let position = isolatedPosition else { return "Spell the chord" }
-            return "Spell the \(position.rawValue)"
         case .commonTones:
             guard let pair = commonTonePair else { return "Find the common tones" }
             let chords = chordsToSpell
@@ -692,9 +659,6 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
             let sourceChord = cadence.chords[pair.sourceChordIndex]
             let targetChord = cadence.chords[pair.targetChordIndex]
             return "The \(pair.sourceRole.rawValue) of \(sourceChord.displayName) is \(pair.sourceNote.name). Where does it resolve in \(targetChord.displayName)?"
-        case .smoothVoicing:
-            guard let constraint = voicingConstraint else { return "Voice with minimal motion" }
-            return "Voice \(cadence.chords[0].displayName) → \(cadence.chords[1].displayName) → \(cadence.chords[2].displayName) with top voice: \(constraint.topVoiceMotion.rawValue)"
         }
     }
 
@@ -722,14 +686,10 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
         // Calculate correct answers based on mode
         self.correctAnswers = cadence.chords.map { $0.chordTones }
         
-        // Shorter time limit for isolated chord mode
+        // Time limit based on mode
         switch drillMode {
         case .fullProgression:
             self.timeLimit = 60.0
-        case .isolatedChord:
-            self.timeLimit = 20.0
-        case .speedRound:
-            self.timeLimit = 5.0
         case .commonTones:
             self.timeLimit = 30.0
         case .chordIdentification:
@@ -740,8 +700,6 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
             self.timeLimit = 45.0  // Time for guide tone resolution
         case .resolutionTargets:
             self.timeLimit = 45.0  // Time for resolution targets
-        case .smoothVoicing:
-            self.timeLimit = 60.0  // Time for voicing with constraints
         }
     }
     
@@ -815,22 +773,7 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
         }
     }
     
-    /// Initializer for smooth voicing mode
-    init(cadence: CadenceProgression, voicingConstraint: VoicingConstraint) {
-        self.cadence = cadence
-        self.drillMode = .smoothVoicing
-        self.isolatedPosition = nil
-        self.commonTonePair = nil
-        self.timeLimit = 60.0
-        self.resolutionPairs = nil
-        self.voicingConstraint = voicingConstraint
-        self.currentResolutionIndex = nil
-        
-        // For smooth voicing, we don't have a single "correct" answer
-        // Instead, we validate based on constraints
-        // Store all chord tones as reference
-        self.correctAnswers = cadence.chords.map { $0.chordTones }
-    }
+    // Note: Smooth voicing initializer removed - mode moved to future Voice Leading module
     
     /// Get all guide tones across all chords
     func allGuideTones() -> [Note] {

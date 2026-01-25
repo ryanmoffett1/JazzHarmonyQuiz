@@ -13,12 +13,10 @@ struct CadenceDrillSetup: View {
     @Binding var selectedCadenceType: CadenceType
     @Binding var selectedDrillMode: CadenceDrillMode
     @Binding var selectedKeyDifficulty: KeyDifficulty
-    @Binding var selectedIsolatedPosition: IsolatedChordPosition
     
     // Phase 2 bindings
     @Binding var useMixedCadences: Bool
     @Binding var selectedCadenceTypes: Set<CadenceType>
-    @Binding var speedRoundTime: Double
     
     // Phase 3 bindings
     @Binding var useExtendedVChords: Bool
@@ -40,9 +38,7 @@ struct CadenceDrillSetup: View {
                 // Configuration options
                 VStack(alignment: .leading, spacing: 20) {
                     drillModeSection
-                    isolatedChordPositionSection
                     commonTonePairSection
-                    speedRoundTimerSection
                     keyDifficultySection
                     numberOfQuestionsSection
                     mixedCadencesSection
@@ -201,30 +197,6 @@ struct CadenceDrillSetup: View {
         }
     }
     
-    // MARK: - Isolated Chord Position Section
-    
-    @ViewBuilder
-    private var isolatedChordPositionSection: some View {
-        if selectedDrillMode == .isolatedChord {
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Chord to Practice")
-                    .font(.headline)
-
-                Picker("Chord Position", selection: $selectedIsolatedPosition) {
-                    ForEach(IsolatedChordPosition.allCases, id: \.self) { position in
-                        Text(position.rawValue).tag(position)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-
-                Text(selectedIsolatedPosition.description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .transition(.opacity.combined(with: .move(edge: .top)))
-        }
-    }
-    
     // MARK: - Common Tone Pair Section
     
     @ViewBuilder
@@ -242,32 +214,6 @@ struct CadenceDrillSetup: View {
                 .pickerStyle(SegmentedPickerStyle())
 
                 Text(selectedCommonTonePair.description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .transition(.opacity.combined(with: .move(edge: .top)))
-        }
-    }
-    
-    // MARK: - Speed Round Timer Section
-    
-    @ViewBuilder
-    private var speedRoundTimerSection: some View {
-        if selectedDrillMode == .speedRound {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Text("Time Per Chord")
-                        .font(.headline)
-                    Spacer()
-                    Text("\(Int(speedRoundTime))s")
-                        .font(.headline)
-                        .foregroundColor(.orange)
-                }
-
-                Slider(value: $speedRoundTime, in: 3...15, step: 1)
-                    .tint(.orange)
-
-                Text("How long you have to spell each chord before auto-advancing")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -463,22 +409,16 @@ struct CadenceDrillSetup: View {
                 return baseText + " Cadence types will be randomly mixed."
             }
             return baseText
-        case .isolatedChord:
-            return "Focus on spelling just the \(selectedIsolatedPosition.rawValue) across different keys. This helps build deep familiarity with one chord type before combining them in full progressions."
-        case .speedRound:
-            return "Race against the clock! You have \(Int(speedRoundTime)) seconds to spell each chord. The quiz auto-advances when time runs out. Build speed while maintaining accuracy!"
-        case .commonTones:
-            return "Identify notes that are shared between two adjacent chords. This develops voice leading awareness - a key skill for smooth jazz improvisation and comping."
         case .chordIdentification:
             return "Identify each chord in the progression by selecting its root and quality. This tests your knowledge of chord symbols and their relationships in common jazz cadences."
         case .auralIdentify:
             return "Listen to the cadence and identify which type it is. This develops your ear for recognizing common chord progressions."
         case .guideTones:
             return "Identify the guide tones (3rd and 7th) and their resolutions through the progression. This develops awareness of how chord tones move in voice leading."
+        case .commonTones:
+            return "Identify notes that are shared between two adjacent chords. This develops voice leading awareness - a key skill for smooth jazz improvisation and comping."
         case .resolutionTargets:
             return "Find where guide tones resolve in the next chord. This builds understanding of voice leading and tension resolution."
-        case .smoothVoicing:
-            return "Voice the progression with smooth voice leading, keeping common tones and moving other voices by small intervals."
         }
     }
     
@@ -553,10 +493,8 @@ struct CadenceDrillSetup: View {
             selectedCadenceType: .constant(.major),
             selectedDrillMode: .constant(.fullProgression),
             selectedKeyDifficulty: .constant(.all),
-            selectedIsolatedPosition: .constant(.ii),
             useMixedCadences: .constant(false),
             selectedCadenceTypes: .constant([.major, .minor]),
-            speedRoundTime: .constant(5.0),
             useExtendedVChords: .constant(false),
             selectedExtendedVChord: .constant(.ninth),
             selectedCommonTonePair: .constant(.iiToV),

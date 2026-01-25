@@ -355,17 +355,17 @@ struct CurriculumDatabase {
     )
     
     static let functionalHarmony_2_3_smoothVoicing = CurriculumModule(
-        title: "Smooth Voice Leading",
-        description: "Voice chords with minimal motion between changes",
+        title: "Voice Leading Mastery",
+        description: "Advanced guide tone and common tone practice across progressions",
         emoji: "🎹",
         pathway: CurriculumPathway.functionalHarmony,
         level: 6,
         mode: CurriculumPracticeMode.cadences,
         recommendedConfig: ModuleConfig(
             cadenceTypes: ["major"],
-            drillMode: "smoothVoicing",
-            keyDifficulty: "easy",
-            totalQuestions: 10,
+            drillMode: "guideTones",  // Using guideTones as smoothVoicing was removed
+            keyDifficulty: "medium",
+            totalQuestions: 15,
             useAudio: true
         ),
         prerequisiteModuleIDs: [functionalHarmony_2_2_commonTones.id],

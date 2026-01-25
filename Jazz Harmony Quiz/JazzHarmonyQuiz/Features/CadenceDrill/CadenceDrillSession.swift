@@ -29,16 +29,6 @@ struct CadenceDrillSession: View {
         return question.chordsToSpell.count
     }
     
-    /// Whether we're in isolated chord mode
-    private var isIsolatedMode: Bool {
-        cadenceGame.selectedDrillMode == .isolatedChord
-    }
-    
-    /// Whether we're in speed round mode
-    private var isSpeedRoundMode: Bool {
-        cadenceGame.selectedDrillMode == .speedRound
-    }
-    
     /// Whether we're in common tones mode
     private var isCommonTonesMode: Bool {
         cadenceGame.selectedDrillMode == .commonTones
@@ -58,11 +48,6 @@ struct CadenceDrillSession: View {
     private var isResolutionTargetsMode: Bool {
         cadenceGame.selectedDrillMode == .resolutionTargets
     }
-    
-    /// Whether we're in smooth voicing mode
-    private var isSmoothVoicingMode: Bool {
-        cadenceGame.selectedDrillMode == .smoothVoicing
-    }
 
     /// Whether we can submit ear training answer
     private var canSubmitEarTraining: Bool {
@@ -76,9 +61,6 @@ struct CadenceDrillSession: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Speed Round Timer (if in speed round mode)
-            speedRoundTimerView
-            
             if let question = cadenceGame.currentQuestion {
                 // Safety check - ensure we have the expected chords
                 let chordsToSpell = question.chordsToSpell
@@ -126,12 +108,6 @@ struct CadenceDrillSession: View {
                 Text("Incorrect.\n\n\(formatFeedback())")
             }
         }
-        .onChange(of: cadenceGame.speedRoundTimeRemaining) { oldValue, newValue in
-            // Handle speed round timeout
-            if isSpeedRoundMode && newValue <= 0 && oldValue > 0 {
-                handleSpeedRoundTimeout()
-            }
-        }
         .onChange(of: cadenceGame.currentQuestionIndex) { _, _ in
             // Store current question's cadence for playback (only if not showing feedback)
             // If showing feedback, we want to keep the previous question's chords
@@ -158,38 +134,6 @@ struct CadenceDrillSession: View {
                     playCurrentCadence()
                 }
             }
-        }
-        .onDisappear {
-            // Clean up timer when view disappears
-            cadenceGame.stopSpeedRoundTimer()
-        }
-    }
-    
-    // MARK: - Speed Round Timer View
-    
-    @ViewBuilder
-    private var speedRoundTimerView: some View {
-        if isSpeedRoundMode && cadenceGame.speedRoundTimerActive {
-            let timeText = String(format: "%.1f", cadenceGame.speedRoundTimeRemaining)
-            let timerColor: Color = cadenceGame.speedRoundIsWarning ? .red : .orange
-            let progressTint: Color = cadenceGame.speedRoundIsWarning ? .red : .orange
-            
-            VStack(spacing: 8) {
-                HStack {
-                    Image(systemName: "timer")
-                    Text(timeText)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .monospacedDigit()
-                }
-                .foregroundColor(timerColor)
-                
-                ProgressView(value: cadenceGame.speedRoundProgress)
-                    .progressViewStyle(LinearProgressViewStyle(tint: progressTint))
-                    .frame(height: 8)
-                    .animation(.linear(duration: 0.1), value: cadenceGame.speedRoundProgress)
-            }
-            .padding(.horizontal)
         }
     }
     
@@ -263,12 +207,6 @@ struct CadenceDrillSession: View {
                 Text("Key: \(question.cadence.key.name) \(question.cadence.cadenceType.rawValue)")
                     .font(settings.chordDisplayFont(size: 24, weight: .bold))
                     .foregroundColor(settings.primaryText(for: colorScheme))
-
-                if isIsolatedMode {
-                    Text("(\(cadenceGame.selectedIsolatedPosition.rawValue) only)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
             }
             .padding()
             .background(settings.chordDisplayBackground(for: colorScheme))
@@ -322,10 +260,6 @@ struct CadenceDrillSession: View {
             Text("Select the resolution target")
                 .font(.headline)
                 .foregroundColor(settings.primaryAccent(for: colorScheme))
-        } else if isSmoothVoicingMode {
-            Text("Voice: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName)")
-                .font(.headline)
-                .foregroundColor(settings.primaryAccent(for: colorScheme))
         } else {
             Text("Spell: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName)")
                 .font(.headline)
@@ -337,25 +271,14 @@ struct CadenceDrillSession: View {
     
     @ViewBuilder
     private func chordDisplaySection(chordsToSpell: [Chord]) -> some View {
-        if isIsolatedMode {
-            // Single chord display for isolated mode
-            chordDisplayCard(
-                chord: chordsToSpell[0],
-                index: 0,
-                isActive: true,
-                isCompleted: false
-            )
-            .frame(maxWidth: 200)
-        } else if isCommonTonesMode {
+        if isCommonTonesMode {
             commonTonesModeDisplay(chordsToSpell: chordsToSpell)
         } else if isGuideTonesMode {
             guideTonesModeDisplay(chordsToSpell: chordsToSpell)
         } else if isResolutionTargetsMode {
             resolutionTargetsModeDisplay(chordsToSpell: chordsToSpell)
-        } else if isSmoothVoicingMode {
-            smoothVoicingModeDisplay(chordsToSpell: chordsToSpell)
         } else {
-            // Display all chords for full progression or speed round
+            // Display all chords for full progression
             HStack(spacing: 20) {
                 ForEach(0..<chordsToSpell.count, id: \.self) { index in
                     chordDisplayCard(
@@ -486,48 +409,6 @@ struct CadenceDrillSession: View {
                         Text("Answer: \(targetNote.name)")
                             .font(.headline)
                             .foregroundColor(.green)
-                    }
-                }
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private func smoothVoicingModeDisplay(chordsToSpell: [Chord]) -> some View {
-        VStack(spacing: 15) {
-            Text("Move minimal semitones between chords")
-                .font(.subheadline)
-                .foregroundColor(.purple)
-                .padding(8)
-                .background(Color.purple.opacity(0.1))
-                .cornerRadius(8)
-            
-            HStack(spacing: 15) {
-                ForEach(0..<chordsToSpell.count, id: \.self) { index in
-                    VStack(spacing: 6) {
-                        Text(chordsToSpell[index].displayName)
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(index == currentChordIndex ? .purple : .secondary)
-                        
-                        if index < currentChordIndex {
-                            // Show completed voicing
-                            Text(chordSpellings[index].map { $0.name }.joined(separator: " "))
-                                .font(.caption)
-                                .foregroundColor(.green)
-                        }
-                    }
-                    .padding()
-                    .background(index == currentChordIndex ? Color.purple.opacity(0.1) : Color.gray.opacity(0.1))
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(index == currentChordIndex ? Color.purple : Color.clear, lineWidth: 2)
-                    )
-                    
-                    if index < chordsToSpell.count - 1 {
-                        Image(systemName: "arrow.right")
-                            .foregroundColor(.gray)
                     }
                 }
             }
@@ -665,18 +546,6 @@ struct CadenceDrillSession: View {
                         .cornerRadius(12)
                 }
                 .disabled(!canSubmitEarTraining && !showingFeedback)
-            } else if isIsolatedMode {
-                // In isolated mode, always show submit
-                Button(action: submitAnswer) {
-                    Text("Submit Answer")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
-                        .cornerRadius(12)
-                }
-                .disabled(selectedNotes.isEmpty)
             } else if isCommonTonesMode {
                 // Common tones mode - single submit
                 Button(action: submitAnswer) {
@@ -701,8 +570,8 @@ struct CadenceDrillSession: View {
                         .cornerRadius(12)
                 }
                 .disabled(selectedNotes.isEmpty)
-            } else if isGuideTonesMode || isSmoothVoicingMode {
-                // Guide tones and smooth voicing modes - multi-chord submit
+            } else if isGuideTonesMode {
+                // Guide tones mode - multi-chord submit
                 if currentChordIndex < chordsToSpellCount - 1 {
                     Button(action: moveToNextChord) {
                         Text("Next Chord →")
@@ -747,29 +616,13 @@ struct CadenceDrillSession: View {
                         .background(selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
                         .cornerRadius(12)
                 }
-                .disabled(selectedNotes.isEmpty && !isSpeedRoundMode)
+                .disabled(selectedNotes.isEmpty)
             }
         }
         .padding(.horizontal)
     }
     
     // MARK: - Actions
-    
-    private func handleSpeedRoundTimeout() {
-        // Save whatever notes were selected (may be empty)
-        chordSpellings[currentChordIndex] = Array(selectedNotes)
-        
-        if isIsolatedMode || currentChordIndex >= chordsToSpellCount - 1 {
-            // Last chord or isolated mode - auto-submit
-            submitAnswer()
-        } else {
-            // Move to next chord
-            currentChordIndex += 1
-            selectedNotes.removeAll()
-            currentHintText = nil
-            cadenceGame.resetSpeedRoundTimer()
-        }
-    }
 
     private func clearSelection() {
         selectedNotes.removeAll()
@@ -787,11 +640,6 @@ struct CadenceDrillSession: View {
         
         // Haptic feedback
         HapticFeedback.medium()
-        
-        // Reset speed round timer for next chord
-        if isSpeedRoundMode {
-            cadenceGame.resetSpeedRoundTimer()
-        }
     }
     
     private func requestHint() {
@@ -839,26 +687,20 @@ struct CadenceDrillSession: View {
             return
         }
 
-        // Stop speed round timer
-        if isSpeedRoundMode {
-            cadenceGame.stopSpeedRoundTimer()
-        }
-
         // Save the last chord spelling
         chordSpellings[currentChordIndex] = Array(selectedNotes)
 
         // Prepare the answer based on mode
         let answerToSubmit: [[Note]]
-        if isIsolatedMode || isCommonTonesMode || isResolutionTargetsMode {
-            // Isolated, common tones, and resolution targets all submit just one set of notes
+        if isCommonTonesMode || isResolutionTargetsMode {
+            // Common tones and resolution targets submit just one set of notes
             answerToSubmit = [Array(selectedNotes)]
-        } else if isGuideTonesMode || isSmoothVoicingMode {
-            // Guide tones and smooth voicing submit all chords
+        } else if isGuideTonesMode {
+            // Guide tones submits all chords
             let numChords = chordsToSpellCount
             answerToSubmit = Array(chordSpellings.prefix(numChords))
         } else {
-            // Only submit the number of chords we actually need to spell
-            // (not the full 5-element array which may have empty trailing arrays)
+            // Full progression - submit all chord spellings
             let numChords = chordsToSpellCount
             answerToSubmit = Array(chordSpellings.prefix(numChords))
         }
@@ -930,7 +772,7 @@ struct CadenceDrillSession: View {
 
         // Prepare the answer based on mode
         let answerToSubmit: [[Note]]
-        if isIsolatedMode || isCommonTonesMode {
+        if isCommonTonesMode {
             answerToSubmit = [Array(selectedNotes)]
         } else {
             // Only submit the number of chords we actually need to spell
@@ -951,11 +793,6 @@ struct CadenceDrillSession: View {
         feedbackUserSelectedType = nil
         currentQuestionCadenceChords = []  // Clear stored cadence
         showingFeedback = false
-
-        // Start speed round timer for next question if still in quiz
-        if isSpeedRoundMode && cadenceGame.isQuizActive {
-            cadenceGame.startSpeedRoundTimer()
-        }
     }
 
     private func playCurrentCadence() {
@@ -1028,20 +865,15 @@ struct CadenceDrillSession: View {
             let userNotes = chordSpellings[i].map { $0.name }.joined(separator: ", ")
             let correctNotes = expectedAnswers[i].map { $0.name }.joined(separator: ", ")
 
-            if isIsolatedMode {
-                feedback += "Your answer: \(userNotes.isEmpty ? "None" : userNotes)\n"
+            feedback += "Chord \(i + 1) (\(chordName)):\n"
+            feedback += "Your answer: \(userNotes.isEmpty ? "None" : userNotes)\n"
+
+            if !isCorrect {
                 feedback += "Correct: \(correctNotes)\n"
-            } else {
-                feedback += "Chord \(i + 1) (\(chordName)):\n"
-                feedback += "Your answer: \(userNotes.isEmpty ? "None" : userNotes)\n"
+            }
 
-                if !isCorrect {
-                    feedback += "Correct: \(correctNotes)\n"
-                }
-
-                if i < chordsToSpell.count - 1 {
-                    feedback += "\n"
-                }
+            if i < chordsToSpell.count - 1 {
+                feedback += "\n"
             }
         }
 

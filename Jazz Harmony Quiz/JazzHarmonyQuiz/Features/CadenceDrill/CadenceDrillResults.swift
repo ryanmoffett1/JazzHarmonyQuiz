@@ -139,21 +139,9 @@ struct CadenceDrillResults: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
-                if cadenceGame.selectedDrillMode == .isolatedChord {
-                    Text("Mode: \(cadenceGame.selectedIsolatedPosition.rawValue) only")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                } else if cadenceGame.selectedDrillMode == .speedRound {
-                    Text("Mode: Speed Round (\(Int(cadenceGame.speedRoundTimePerChord))s per chord)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    if cadenceGame.missedChordsDueToTimeout > 0 {
-                        Text("⏱ \(cadenceGame.missedChordsDueToTimeout) chord(s) timed out")
-                            .font(.caption)
-                            .foregroundColor(.orange)
-                    }
-                }
+                Text("Mode: \(cadenceGame.selectedDrillMode.description)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                 
                 if cadenceGame.useMixedCadences {
                     Text("Mixed Cadences Mode")

@@ -18,15 +18,10 @@ class CadenceGame: ObservableObject {
     // MARK: - Phase 1 Enhancement Properties
     @Published var selectedDrillMode: CadenceDrillMode = .fullProgression
     @Published var selectedKeyDifficulty: KeyDifficulty = .all
-    @Published var selectedIsolatedPosition: IsolatedChordPosition = .ii
     
     // MARK: - Phase 2 Enhancement Properties
     @Published var useMixedCadences: Bool = false
     @Published var selectedCadenceTypes: Set<CadenceType> = [.major]  // For mixed mode
-    @Published var speedRoundTimePerChord: TimeInterval = 5.0  // Seconds per chord in speed round
-    @Published var speedRoundTimeRemaining: TimeInterval = 0
-    @Published var speedRoundTimerActive: Bool = false
-    @Published var missedChordsDueToTimeout: Int = 0
     
     // MARK: - Phase 3 Enhancement Properties
     @Published var useExtendedVChords: Bool = false
@@ -56,7 +51,6 @@ class CadenceGame: ObservableObject {
     
     private var quizStartTime: Date?
     private var timer: Timer?
-    private var speedRoundTimer: Timer?
     
     // MARK: - UserDefaults Keys
     private let streakKey = "JazzHarmonyCadenceStreak"
@@ -71,8 +65,7 @@ class CadenceGame: ObservableObject {
             numberOfQuestions: numberOfQuestions,
             cadenceType: cadenceType,
             drillMode: .fullProgression,
-            keyDifficulty: .all,
-            isolatedPosition: .ii
+            keyDifficulty: .all
         )
     }
     
@@ -80,14 +73,12 @@ class CadenceGame: ObservableObject {
         numberOfQuestions: Int,
         cadenceType: CadenceType,
         drillMode: CadenceDrillMode,
-        keyDifficulty: KeyDifficulty,
-        isolatedPosition: IsolatedChordPosition
+        keyDifficulty: KeyDifficulty
     ) {
         totalQuestions = numberOfQuestions
         selectedCadenceType = cadenceType
         selectedDrillMode = drillMode
         selectedKeyDifficulty = keyDifficulty
-        selectedIsolatedPosition = isolatedPosition
 
         generateQuestions()
         currentQuestionIndex = 0
@@ -156,15 +147,11 @@ class CadenceGame: ObservableObject {
                 let pairs = generateResolutionPairs(for: cadence)
                 let randomIndex = Int.random(in: 0..<pairs.count)
                 question = CadenceQuestion(cadence: cadence, resolutionPairs: pairs, currentIndex: randomIndex)
-            } else if selectedDrillMode == .smoothVoicing {
-                // For smooth voicing mode, generate a voicing constraint
-                let constraint = generateVoicingConstraint()
-                question = CadenceQuestion(cadence: cadence, voicingConstraint: constraint)
             } else {
                 question = CadenceQuestion(
                     cadence: cadence,
                     drillMode: selectedDrillMode,
-                    isolatedPosition: selectedDrillMode == .isolatedChord ? selectedIsolatedPosition : nil
+                    isolatedPosition: nil  // isolatedChord mode removed
                 )
             }
             questions.append(question)
@@ -230,9 +217,6 @@ class CadenceGame: ObservableObject {
             isCorrect: questionResults,
             cadenceType: selectedCadenceType
         )
-        
-        // Stop speed round timer if active
-        stopSpeedRoundTimer()
 
         // Save to scoreboard
         if let result = currentResult {
@@ -318,10 +302,6 @@ class CadenceGame: ObservableObject {
         switch selectedDrillMode {
         case .fullProgression:
             modeMultiplier = 1.0
-        case .isolatedChord:
-            modeMultiplier = 0.7  // Easier
-        case .speedRound:
-            modeMultiplier = 1.5  // Harder
         case .commonTones:
             modeMultiplier = 1.3  // Different skill
         case .chordIdentification:
@@ -332,8 +312,6 @@ class CadenceGame: ObservableObject {
             modeMultiplier = 1.4  // Guide tone resolution
         case .resolutionTargets:
             modeMultiplier = 1.4  // Resolution targets
-        case .smoothVoicing:
-            modeMultiplier = 1.5  // Smooth voicing challenges
         }
         
         // Cadence type complexity bonus
@@ -414,7 +392,6 @@ class CadenceGame: ObservableObject {
         hintsUsedThisQuestion = 0
         totalHintsUsed = 0
         currentHintLevel = 0
-        missedChordsDueToTimeout = 0
         
         // Use the missed questions
         questions = missedQuestions
@@ -423,10 +400,6 @@ class CadenceGame: ObservableObject {
         if !questions.isEmpty {
             currentQuestion = questions[0]
             questionStartTime = Date()
-            
-            if selectedDrillMode == .speedRound {
-                startSpeedRoundTimer()
-            }
         }
     }
     
@@ -442,8 +415,6 @@ class CadenceGame: ObservableObject {
             return isGuideToneAnswerCorrect(userAnswer: userAnswer, question: question)
         case .resolutionTargets:
             return isResolutionTargetCorrect(userAnswer: userAnswer, question: question)
-        case .smoothVoicing:
-            return isSmoothVoicingCorrect(userAnswer: userAnswer, question: question)
         default:
             // Standard answer checking for other modes
             break
@@ -528,53 +499,7 @@ class CadenceGame: ObservableObject {
         return pitchClass(userNote.midiNumber) == pitchClass(targetNote.midiNumber)
     }
     
-    /// Check if smooth voicing answer is correct (meets voicing constraint)
-    private func isSmoothVoicingCorrect(userAnswer: [[Note]], question: CadenceQuestion) -> Bool {
-        guard let constraint = question.voicingConstraint,
-              userAnswer.count == question.cadence.chords.count else { return false }
-        
-        func pitchClass(_ midiNumber: Int) -> Int {
-            return midiNumber % 12
-        }
-        
-        // Check each chord contains all chord tones
-        for i in 0..<question.cadence.chords.count {
-            let userNotes = userAnswer[i]
-            let correctNotes = question.cadence.chords[i].chordTones
-            
-            let userPitchClasses = Set(userNotes.map { pitchClass($0.midiNumber) })
-            let correctPitchClasses = Set(correctNotes.map { pitchClass($0.midiNumber) })
-            
-            // Must contain all chord tones (can have more, like doublings)
-            if !correctPitchClasses.isSubset(of: userPitchClasses) {
-                return false
-            }
-        }
-        
-        // Check top voice motion constraint
-        var totalMotion = 0
-        for i in 0..<userAnswer.count - 1 {
-            let currentChord = userAnswer[i].sorted { $0.midiNumber < $1.midiNumber }
-            let nextChord = userAnswer[i + 1].sorted { $0.midiNumber < $1.midiNumber }
-            
-            guard let currentTop = currentChord.last,
-                  let nextTop = nextChord.last else { return false }
-            
-            let motion = nextTop.midiNumber - currentTop.midiNumber
-            
-            // Check if first transition matches the constraint
-            if i == 0 {
-                if motion != constraint.topVoiceMotion.semitones {
-                    return false
-                }
-            }
-            
-            totalMotion += abs(motion)
-        }
-        
-        // Check total motion constraint
-        return totalMotion <= constraint.maxTotalMotion
-    }
+    // Note: isSmoothVoicingCorrect removed - mode moved to future Voice Leading module
 
     // MARK: - Scoreboard Management
 
@@ -624,57 +549,6 @@ class CadenceGame: ObservableObject {
     func stopTimer() {
         timer?.invalidate()
         timer = nil
-    }
-    
-    // MARK: - Speed Round Timer
-    
-    func startSpeedRoundTimer() {
-        guard selectedDrillMode == .speedRound else { return }
-        
-        speedRoundTimeRemaining = speedRoundTimePerChord
-        speedRoundTimerActive = true
-        
-        speedRoundTimer?.invalidate()
-        speedRoundTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            
-            DispatchQueue.main.async {
-                if self.speedRoundTimeRemaining > 0 {
-                    self.speedRoundTimeRemaining -= 0.1
-                } else {
-                    self.handleSpeedRoundTimeout()
-                }
-            }
-        }
-    }
-    
-    func stopSpeedRoundTimer() {
-        speedRoundTimer?.invalidate()
-        speedRoundTimer = nil
-        speedRoundTimerActive = false
-    }
-    
-    func resetSpeedRoundTimer() {
-        speedRoundTimeRemaining = speedRoundTimePerChord
-    }
-    
-    private func handleSpeedRoundTimeout() {
-        // Timer ran out for current chord
-        missedChordsDueToTimeout += 1
-        
-        // The view will handle auto-advancing via onChange
-        speedRoundTimeRemaining = 0
-    }
-    
-    /// Progress of speed round timer (0.0 to 1.0)
-    var speedRoundProgress: Double {
-        guard speedRoundTimePerChord > 0 else { return 0 }
-        return speedRoundTimeRemaining / speedRoundTimePerChord
-    }
-    
-    /// Whether the timer is in warning zone (< 2 seconds)
-    var speedRoundIsWarning: Bool {
-        return speedRoundTimeRemaining < 2.0 && speedRoundTimeRemaining > 0
     }
 
     // MARK: - Question Navigation
@@ -878,11 +752,6 @@ class CadenceGame: ObservableObject {
         totalHintsUsed = 0
         currentHintLevel = 0
         
-        // Phase 2 resets
-        speedRoundTimeRemaining = 0
-        speedRoundTimerActive = false
-        missedChordsDueToTimeout = 0
-        stopSpeedRoundTimer()
         stopTimer()
     }
     
@@ -1136,22 +1005,31 @@ class CadenceGame: ObservableObject {
                     variant: "full"
                 )
                 
-            case .isolatedChord:
-                // Record the specific chord position
+            case .chordIdentification:
+                // Record chord identification practice
                 itemID = SRItemID(
                     mode: .cadenceDrill,
-                    topic: selectedCadenceType.rawValue,
+                    topic: "chord-id",
                     key: question.cadence.key.name,
-                    variant: "isolated-\(selectedIsolatedPosition.rawValue)"
+                    variant: selectedCadenceType.rawValue
                 )
                 
-            case .speedRound:
-                // Record speed round cadences
+            case .auralIdentify:
+                // Record ear training practice
                 itemID = SRItemID(
                     mode: .cadenceDrill,
-                    topic: selectedCadenceType.rawValue,
+                    topic: "aural-identify",
                     key: question.cadence.key.name,
-                    variant: "speed"
+                    variant: selectedCadenceType.rawValue
+                )
+                
+            case .guideTones:
+                // Record guide tone practice
+                itemID = SRItemID(
+                    mode: .cadenceDrill,
+                    topic: "guide-tones",
+                    key: question.cadence.key.name,
+                    variant: selectedCadenceType.rawValue
                 )
                 
             case .commonTones:
@@ -1162,43 +1040,12 @@ class CadenceGame: ObservableObject {
                     key: question.cadence.key.name,
                     variant: selectedCadenceType.rawValue
                 )
-            case .chordIdentification:
-                // Record chord identification practice
-                itemID = SRItemID(
-                    mode: .cadenceDrill,
-                    topic: "chord-id",
-                    key: question.cadence.key.name,
-                    variant: selectedCadenceType.rawValue
-                )
-            case .auralIdentify:
-                // Record ear training practice
-                itemID = SRItemID(
-                    mode: .cadenceDrill,
-                    topic: "aural-identify",
-                    key: question.cadence.key.name,
-                    variant: selectedCadenceType.rawValue
-                )
-            case .guideTones:
-                // Record guide tone practice
-                itemID = SRItemID(
-                    mode: .cadenceDrill,
-                    topic: "guide-tones",
-                    key: question.cadence.key.name,
-                    variant: selectedCadenceType.rawValue
-                )
+                
             case .resolutionTargets:
                 // Record resolution target practice
                 itemID = SRItemID(
                     mode: .cadenceDrill,
                     topic: "resolution-targets",
-                    key: question.cadence.key.name,
-                    variant: selectedCadenceType.rawValue
-                )
-            case .smoothVoicing:
-                // Record smooth voicing practice
-                itemID = SRItemID(
-                    mode: .cadenceDrill,
-                    topic: "smooth-voicing",
                     key: question.cadence.key.name,
                     variant: selectedCadenceType.rawValue
                 )
@@ -1226,7 +1073,6 @@ class CadenceGame: ObservableObject {
     
     deinit {
         timer?.invalidate()
-        speedRoundTimer?.invalidate()
     }
 }
 

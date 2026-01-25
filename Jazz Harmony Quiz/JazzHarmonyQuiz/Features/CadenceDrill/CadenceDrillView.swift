@@ -21,12 +21,10 @@ struct CadenceDrillView: View {
     @State private var selectedCadenceType: CadenceType = .major
     @State private var selectedDrillMode: CadenceDrillMode = .fullProgression
     @State private var selectedKeyDifficulty: KeyDifficulty = .all
-    @State private var selectedIsolatedPosition: IsolatedChordPosition = .ii
     
     // Phase 2 state
     @State private var useMixedCadences: Bool = false
     @State private var selectedCadenceTypes: Set<CadenceType> = [.major, .minor]
-    @State private var speedRoundTime: Double = 5.0
     
     // Phase 3 state
     @State private var useExtendedVChords: Bool = false
@@ -45,10 +43,8 @@ struct CadenceDrillView: View {
                     selectedCadenceType: $selectedCadenceType,
                     selectedDrillMode: $selectedDrillMode,
                     selectedKeyDifficulty: $selectedKeyDifficulty,
-                    selectedIsolatedPosition: $selectedIsolatedPosition,
                     useMixedCadences: $useMixedCadences,
                     selectedCadenceTypes: $selectedCadenceTypes,
-                    speedRoundTime: $speedRoundTime,
                     useExtendedVChords: $useExtendedVChords,
                     selectedExtendedVChord: $selectedExtendedVChord,
                     selectedCommonTonePair: $selectedCommonTonePair,
@@ -109,7 +105,6 @@ struct CadenceDrillView: View {
         // Set Phase 2 parameters
         cadenceGame.useMixedCadences = useMixedCadences
         cadenceGame.selectedCadenceTypes = selectedCadenceTypes
-        cadenceGame.speedRoundTimePerChord = speedRoundTime
         
         // Set Phase 3 parameters
         cadenceGame.useExtendedVChords = useExtendedVChords
@@ -121,14 +116,8 @@ struct CadenceDrillView: View {
             numberOfQuestions: numberOfQuestions,
             cadenceType: selectedCadenceType,
             drillMode: selectedDrillMode,
-            keyDifficulty: selectedKeyDifficulty,
-            isolatedPosition: selectedIsolatedPosition
+            keyDifficulty: selectedKeyDifficulty
         )
-        
-        // Start speed round timer if in speed round mode
-        if selectedDrillMode == .speedRound {
-            cadenceGame.startSpeedRoundTimer()
-        }
         
         // Only switch to active view AFTER questions are ready
         viewState = .active

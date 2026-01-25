@@ -91,21 +91,14 @@ Before marking a phase complete and moving to the next:
 ## Current Status
 
 ```
-Last Updated: 2026-01-25 21:30 UTC
+Last Updated: 2026-01-25 22:55 UTC
 Current Phase: Phase 5 - Feature: Drill Modules
-Current Task: 5.1.4 - Chord Drill tests (in progress)
-Overall Progress: Phases 0-4 COMPLETE, Phase 5.1 (Chord Drill) split complete
-Test Coverage: 95%+ (Model tests passing, ChordDrillGame tests pending)
-Blockers/Notes: Phase 0 complete (directory structure, app rename, brass accent, fonts).
-                Phase 1 complete (7 Core/Models files with comprehensive tests).
-                Phase 2 complete (SpacedRepetitionStore, AudioManager services).
-                Phase 3 complete (UI Components: PianoKeyboard, FlowLayout, DrillCard, etc.).
-                Phase 4 complete (Home & Navigation: HomeView, QuickPracticeGenerator, tabs).
-                Phase 5.1.1: ChordDrillView split into ChordDrillSetup, ChordDrillSessionView, ChordDrillResults.
-                Phase 5.1.2: ChordDrillGame.swift exists with presets.
-                Phase 5.1.3: Quick Start Presets implemented.
-                PracticeView updated with navigation to all drills.
-                Note: @MainActor tests may hang on simulator - run incrementally.
+Current Task: 5.2.2 - Consolidate drill modes from 9 to 6
+Overall Progress: Phases 0-4 COMPLETE, Phase 5.1 COMPLETE, Phase 5.2.1 COMPLETE
+Test Coverage: 210 tests passing, all green
+Blockers/Notes: Fixed infinite loop bug in ChordDrillGame.finishDrill()
+                Fixed ChordDrillGameTests async setUp/tearDown causing hangs
+                Tests now run reliably with code coverage enabled
 ```
 
 ### Quick Progress Overview
@@ -117,7 +110,7 @@ Blockers/Notes: Phase 0 complete (directory structure, app rename, brass accent,
 | 2 | Services Layer | COMPLETE | 10/10 | ✅ Yes |
 | 3 | UI Components Library | COMPLETE | 14/14 | ✅ Yes |
 | 4 | Feature: Home & Navigation | COMPLETE | 11/11 | ✅ Yes (175 tests) |
-| 5 | Feature: Drill Modules | IN_PROGRESS | 4/16 | ⏳ Partial |
+| 5 | Feature: Drill Modules | IN_PROGRESS | 5/16 | ✅ Yes (210 tests) |
 | 6 | Feature: Curriculum & Progress | NOT_STARTED | 0/12 | - |
 | 7 | Polish & Final Testing | NOT_STARTED | 0/10 | - |
 
