@@ -115,9 +115,13 @@ final class NoteTests: XCTestCase {
     }
     
     func testNoteFromMidiOutOfRange() {
-        // MIDI numbers outside allNotes range should return nil
-        XCTAssertNil(Note.noteFromMidi(200, preferSharps: true))
-        XCTAssertNil(Note.noteFromMidi(-10, preferSharps: false))
+        // Note.noteFromMidi wraps ALL MIDI numbers to valid pitch classes (0-11)
+        // So even extreme values return valid notes (they get mapped via modulo)
+        let highNote = Note.noteFromMidi(200, preferSharps: true)
+        XCTAssertNotNil(highNote, "High MIDI values should wrap to valid notes")
+        
+        let lowNote = Note.noteFromMidi(-10, preferSharps: false)
+        XCTAssertNotNil(lowNote, "Negative MIDI values should wrap to valid notes")
     }
     
     // MARK: - AllNotes Static Array

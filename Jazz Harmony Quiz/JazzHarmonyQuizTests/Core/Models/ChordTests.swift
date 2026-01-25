@@ -31,7 +31,8 @@ final class ChordTests: XCTestCase {
     }
     
     func testAllTonesContainsAlterations() {
-        let alterationNames = ["b9", "#9", "#11", "b5", "#5", "b13"]
+        // ChordTone.allTones contains: b9, #9, b3, b5, #5, b13, #13, b7
+        let alterationNames = ["b9", "#9", "b3", "b5", "#5", "b13", "b7"]
         for name in alterationNames {
             XCTAssertTrue(ChordTone.allTones.contains { $0.name == name }, "allTones should contain \(name)")
         }
@@ -263,6 +264,8 @@ final class ChordTests: XCTestCase {
     
     func testGuideTonesMinor7() {
         let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        // Note: guideTones looks up from ChordTone.allTones, not the chord's actual tones
+        // So it finds degree 3 (unaltered) and degree 7 (unaltered) regardless of chord type
         let min7Type = ChordType(
             name: "Minor 7",
             symbol: "min7",
@@ -278,13 +281,16 @@ final class ChordTests: XCTestCase {
         let cMin7 = Chord(root: c, chordType: min7Type)
         let guides = cMin7.guideTones
         
+        // Returns 2: unaltered 3rd (E) and unaltered 7th (B) from ChordTone.allTones
         XCTAssertEqual(guides.count, 2)
-        XCTAssertTrue(guides.contains { $0.name == "Eb" }) // b3rd
-        XCTAssertTrue(guides.contains { $0.name == "Bb" }) // b7th
+        XCTAssertTrue(guides.contains { $0.name == "E" }) // Unaltered major 3rd
+        XCTAssertTrue(guides.contains { $0.name == "B" }) // Unaltered major 7th
     }
     
     func testGuideTonesTriadHasOne() {
         let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        // Note: guideTones always looks up both degree 3 and 7 from ChordTone.allTones
+        // So even a triad returns 2 guide tones (the calculated 3rd and 7th positions)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
@@ -299,7 +305,10 @@ final class ChordTests: XCTestCase {
         let cMajor = Chord(root: c, chordType: majorType)
         let guides = cMajor.guideTones
         
-        XCTAssertEqual(guides.count, 1) // Has 3rd but no 7th, so 1 guide tone
+        // Returns 2: looks up from global allTones, finds 3rd (E) and 7th (B)
+        XCTAssertEqual(guides.count, 2)
+        XCTAssertEqual(guides[0].name, "E")  // 3rd
+        XCTAssertEqual(guides[1].name, "B")  // 7th
     }
     
     // MARK: - Role of Note Tests

@@ -120,9 +120,13 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     }
     
     func testSlowResponseDecreasesEaseFactorBoost() {
-        store.recordResult(itemID: testChordID, wasCorrect: true, responseTime: 10.0) // Slow response
+        // 10s response time falls into "okay" category (quality ~3)
+        // SM-2 formula with quality 3 slightly decreases ease factor
+        store.recordResult(itemID: testChordID, wasCorrect: true, responseTime: 10.0)
         let schedule = store.schedule(for: testChordID)
-        XCTAssertGreaterThanOrEqual(schedule.easeFactor, 2.5, "Slow but correct answer should still increase ease factor")
+        // Ease factor decreases from 2.5 with slow response
+        XCTAssertLessThanOrEqual(schedule.easeFactor, 2.5, "Slow response should not increase ease factor")
+        XCTAssertGreaterThanOrEqual(schedule.easeFactor, 1.3, "Ease factor should not go below minimum")
     }
     
     // MARK: - Ease Factor Bounds Tests

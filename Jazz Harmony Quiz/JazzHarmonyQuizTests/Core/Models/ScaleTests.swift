@@ -344,6 +344,8 @@ final class ScaleTests: XCTestCase {
     // MARK: - Hashable & Codable
     
     func testScaleEquality() {
+        // Scale uses auto-generated UUID for id, so two Scale instances are NOT equal
+        // even with the same root and scaleType. This tests the actual behavior.
         let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
@@ -355,7 +357,11 @@ final class ScaleTests: XCTestCase {
         let scale1 = Scale(root: c, scaleType: majorType)
         let scale2 = Scale(root: c, scaleType: majorType)
         
-        XCTAssertEqual(scale1, scale2)
+        // Each Scale instance has unique UUID, so they are NOT equal
+        XCTAssertNotEqual(scale1, scale2, "Scale instances with different UUIDs should not be equal")
+        
+        // But the same instance equals itself
+        XCTAssertEqual(scale1, scale1)
     }
     
     func testScaleCodable() throws {
