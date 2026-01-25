@@ -512,8 +512,9 @@ struct ActiveScaleQuizView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: showingFeedback)
         .onChange(of: scaleGame.currentQuestionIndex) { _, _ in
-            // Auto-play scale for ear training questions
-            if let question = scaleGame.currentQuestion,
+            // Auto-play scale for ear training questions (only if quiz is still active)
+            if scaleGame.isQuizActive,
+               let question = scaleGame.currentQuestion,
                question.questionType == .earTraining {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     playCurrentScale()

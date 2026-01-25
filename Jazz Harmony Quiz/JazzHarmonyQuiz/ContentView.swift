@@ -27,9 +27,6 @@ struct ContentView: View {
                     // Recommended Next Module
                     recommendedNextSection
                     
-                    // Quick Actions
-                    QuickActionsSection(navigationPath: $navigationPath)
-                    
                     // Main Drill Options
                     DrillOptionsSection(navigationPath: $navigationPath)
                     
@@ -55,10 +52,6 @@ struct ContentView: View {
                     ScoreboardView()
                 case "profile":
                     PlayerProfileView()
-                case "dailyChallenge":
-                    ChordDrillView(startDailyChallenge: true)
-                case "quickPractice":
-                    ChordDrillView(startQuickPractice: true)
                 case "achievements":
                     EmptyView() // Placeholder for future achievements view
                 case "curriculum":
@@ -90,9 +83,8 @@ struct ContentView: View {
         
         if totalDue > 0 {
             Button(action: {
-                // TODO: Navigate to practice due view
-                // For now, start quick practice
-                navigationPath.append("quickPractice")
+                // Navigate to chord drill for practice
+                navigationPath.append("chordDrill")
             }) {
                 PracticeDueCard(srStore: srStore)
             }
@@ -278,82 +270,6 @@ struct TodayStatItem: View {
             Text(label)
                 .font(.caption2)
                 .foregroundColor(.secondary)
-        }
-    }
-}
-
-// MARK: - Quick Actions Section
-
-struct QuickActionsSection: View {
-    @EnvironmentObject var quizGame: QuizGame
-    @Binding var navigationPath: NavigationPath
-    
-    private var playerProfile: PlayerProfile { PlayerProfile.shared }
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            // Daily Challenge Button
-            Button(action: {
-                navigationPath.append("dailyChallenge")
-            }) {
-                HStack {
-                    Image(systemName: "calendar.badge.clock")
-                        .font(.title2)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Daily Challenge")
-                            .font(.headline)
-                        Text(playerProfile.isDailyChallengeCompletedToday ? "Completed! ✓" : "Same challenge for everyone")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                    Spacer()
-                    if playerProfile.dailyChallengeStreak > 0 {
-                        Text("🔥 \(playerProfile.dailyChallengeStreak)")
-                            .font(.subheadline)
-                            .fontWeight(.bold)
-                    }
-                    Image(systemName: "chevron.right")
-                }
-                .foregroundColor(.white)
-                .padding()
-                .background(
-                    LinearGradient(
-                        colors: playerProfile.isDailyChallengeCompletedToday ? [.green, .mint] : [.orange, .red],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .cornerRadius(12)
-            }
-            
-            // Quick Practice Button
-            Button(action: {
-                navigationPath.append("quickPractice")
-            }) {
-                HStack {
-                    Image(systemName: "bolt.fill")
-                        .font(.title2)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Quick Practice")
-                            .font(.headline)
-                        Text("5 quick questions")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                }
-                .foregroundColor(.white)
-                .padding()
-                .background(
-                    LinearGradient(
-                        colors: [.green, .mint],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .cornerRadius(12)
-            }
         }
     }
 }

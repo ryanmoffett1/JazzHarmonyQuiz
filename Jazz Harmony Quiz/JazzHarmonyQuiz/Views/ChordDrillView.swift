@@ -33,10 +33,6 @@ struct ChordDrillView: View {
     @State private var showingResults = false
     @State private var showingFeedback = false
     
-    // For direct launch modes
-    private var startDailyChallenge: Bool = false
-    private var startQuickPractice: Bool = false
-    
     enum ViewState {
         case setup
         case active
@@ -45,14 +41,10 @@ struct ChordDrillView: View {
     
     init(numberOfQuestions: Int = 10,
          selectedDifficulty: ChordType.ChordDifficulty = .beginner,
-         selectedQuestionTypes: Set<QuestionType> = [.singleTone, .allTones],
-         startDailyChallenge: Bool = false,
-         startQuickPractice: Bool = false) {
+         selectedQuestionTypes: Set<QuestionType> = [.singleTone, .allTones]) {
         self._numberOfQuestions = State(initialValue: numberOfQuestions)
         self._selectedDifficulty = State(initialValue: selectedDifficulty)
         self._selectedQuestionTypes = State(initialValue: selectedQuestionTypes)
-        self.startDailyChallenge = startDailyChallenge
-        self.startQuickPractice = startQuickPractice
     }
     
     var body: some View {
@@ -65,8 +57,7 @@ struct ChordDrillView: View {
                     selectedQuestionTypes: $selectedQuestionTypes,
                     selectedKeyDifficulty: $selectedKeyDifficulty,
                     selectedChordSymbols: $selectedChordSymbols,
-                    onStartQuiz: startQuiz,
-                    onStartDailyChallenge: startDailyChallengeQuiz
+                    onStartQuiz: startQuiz
                 )
             case .active:
                 ActiveQuizView(selectedNotes: $selectedNotes, selectedChordType: $selectedChordType, showingFeedback: $showingFeedback, viewState: $viewState)
@@ -93,13 +84,8 @@ struct ChordDrillView: View {
             ToolbarItem(placement: .principal) {
                 if quizGame.isQuizActive {
                     VStack {
-                        HStack(spacing: 4) {
-                            Text("Question \(quizGame.currentQuestionNumber) of \(quizGame.totalQuestions)")
-                                .font(.headline)
-                            if quizGame.isDailyChallenge {
-                                Text("📅")
-                            }
-                        }
+                        Text("Question \(quizGame.currentQuestionNumber) of \(quizGame.totalQuestions)")
+                            .font(.headline)
                         ProgressView(value: quizGame.progress)
                             .frame(width: 200)
                     }
@@ -109,14 +95,6 @@ struct ChordDrillView: View {
         .onChange(of: quizGame.isQuizCompleted) { oldValue, newValue in
             if newValue && !oldValue {
                 viewState = .results
-            }
-        }
-        .onAppear {
-            // Handle direct launch modes
-            if startDailyChallenge {
-                startDailyChallengeQuiz()
-            } else if startQuickPractice {
-                startQuickPracticeQuiz()
             }
         }
     }
@@ -139,20 +117,6 @@ struct ChordDrillView: View {
         )
     }
     
-    private func startDailyChallengeQuiz() {
-        selectedNotes = []
-        showingFeedback = false
-        viewState = .active
-        quizGame.startDailyChallenge()
-    }
-    
-    private func startQuickPracticeQuiz() {
-        selectedNotes = []
-        showingFeedback = false
-        viewState = .active
-        quizGame.startQuickPractice()
-    }
-    
     private func quitQuiz() {
         viewState = .setup
         quizGame.resetQuizState()
@@ -173,7 +137,6 @@ struct QuizSetupView: View {
     @Binding var selectedKeyDifficulty: KeyDifficulty
     @Binding var selectedChordSymbols: Set<String>
     let onStartQuiz: () -> Void
-    let onStartDailyChallenge: () -> Void
     
     private var playerStats: PlayerStats { PlayerStats.shared }
 
@@ -208,32 +171,6 @@ struct QuizSetupView: View {
                             .foregroundColor(.orange)
                         }
                     }
-                }
-                
-                // Daily Challenge Button
-                Button(action: onStartDailyChallenge) {
-                    HStack {
-                        Image(systemName: "calendar.badge.clock")
-                        VStack(alignment: .leading) {
-                            Text("Daily Challenge")
-                                .font(.headline)
-                            Text(playerStats.isDailyChallengeCompletedToday ? "Completed! ✓" : "Same challenge for everyone!")
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.8))
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                    }
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(
-                        LinearGradient(
-                            colors: playerStats.isDailyChallengeCompletedToday ? [.green, .mint] : [.orange, .red],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .cornerRadius(12)
                 }
                 
                 VStack(alignment: .leading, spacing: 20) {
@@ -542,7 +479,7 @@ struct ActiveQuizView: View {
                 feedbackView()
             } else if let question = quizGame.currentQuestion {
                 // Question Display
-                if question.questionType == .earTraining || question.questionType == .auralQuality {
+                if question.questionType == .auralQuality {
                     // Aural Quality Display
                     VStack(spacing: 16) {
                         Image(systemName: "ear.fill")
@@ -562,7 +499,7 @@ struct ActiveQuizView: View {
                     .cornerRadius(16)
                     .padding(.horizontal)
                 } else if question.questionType == .auralSpelling {
-                    // Aural Spelling Display
+                    // Aural Spelling Display - show root so user doesn't need perfect pitch
                     VStack(spacing: 16) {
                         Image(systemName: "ear.fill")
                             .font(.system(size: 50))
@@ -571,8 +508,17 @@ struct ActiveQuizView: View {
                         Text("Listen and spell the chord")
                             .font(.headline)
                             .foregroundColor(.secondary)
+                        
+                        // Show the root note so user can identify quality and spell from there
+                        Text("Root: \(question.chord.root.name)")
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundColor(.primary)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.purple.opacity(0.2))
+                            .cornerRadius(12)
 
-                        Text("Select all notes you hear")
+                        Text("Identify the quality and select all chord tones")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -640,7 +586,7 @@ struct ActiveQuizView: View {
                         }
                         .padding(.horizontal)
                         
-                        if question.questionType == .auralQuality || question.questionType == .earTraining {
+                        if question.questionType == .auralQuality {
                             Text("Select the chord quality")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -652,7 +598,7 @@ struct ActiveQuizView: View {
                     }
                     
                     // Chord Type Picker for quality recognition
-                    if question.questionType == .auralQuality || question.questionType == .earTraining {
+                    if question.questionType == .auralQuality {
                         VStack(spacing: 8) {
                             ForEach(quizGame.currentAnswerChoices, id: \.id) { chordType in
                                 let isSelected = selectedChordType?.id == chordType.id
@@ -833,7 +779,7 @@ struct ActiveQuizView: View {
                     .cornerRadius(8)
                 
                 // Ear training feedback shows chord qualities, not individual notes
-                if question.questionType == .earTraining {
+                if question.questionType == .auralQuality {
                     if isCorrect {
                         // Correct answer
                         Image(systemName: "checkmark.circle.fill")
@@ -1156,12 +1102,10 @@ struct ActiveQuizView: View {
             return "Select the chord tone shown above"
         case .allTones:
             return "Select all the chord tones for this chord"
-        case .earTraining:
-            return "Identify the chord quality by ear"
         case .auralQuality:
             return "Identify the chord quality by ear"
         case .auralSpelling:
-            return "Spell the chord you hear"
+            return "Hear the quality, spell from the root"
         }
     }
 
@@ -1169,7 +1113,7 @@ struct ActiveQuizView: View {
         guard let question = quizGame.currentQuestion else { return false }
 
         switch question.questionType {
-        case .earTraining, .auralQuality:
+        case .auralQuality:
             return selectedChordType != nil
         case .auralSpelling:
             return !selectedNotes.isEmpty
@@ -1212,7 +1156,7 @@ struct ActiveQuizView: View {
         // Handle answer based on question type
         // NOTE: We do NOT call quizGame.submitAnswer() here - that happens in continueToNextQuestion()
         // after feedback is shown. Otherwise the question index advances twice.
-        if question.questionType == .earTraining || question.questionType == .auralQuality {
+        if question.questionType == .auralQuality {
             // For aural quality recognition, check chord type selection
             if let selectedType = selectedChordType {
                 isCorrect = selectedType.id == question.chord.chordType.id
@@ -1429,19 +1373,6 @@ struct ChordDrillResultsView: View {
                         Text("Quiz Complete!")
                             .font(.largeTitle)
                             .fontWeight(.bold)
-                        
-                        if quizGame.isDailyChallenge {
-                            HStack {
-                                Image(systemName: "calendar.badge.clock")
-                                Text("Daily Challenge")
-                            }
-                            .font(.subheadline)
-                            .foregroundColor(.orange)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.orange.opacity(0.1))
-                            .cornerRadius(8)
-                        }
                     }
                     
                     // Score Display

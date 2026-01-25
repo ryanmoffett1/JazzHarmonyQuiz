@@ -263,7 +263,6 @@ struct Chord: Identifiable, Hashable, Codable {
 enum QuestionType: String, CaseIterable, Codable, Equatable {
     case singleTone = "Single Tone"
     case allTones = "All Tones"
-    case earTraining = "Ear Training"
     case auralQuality = "Identify Quality by Ear"
     case auralSpelling = "Spell Chord by Ear"
 
@@ -273,12 +272,10 @@ enum QuestionType: String, CaseIterable, Codable, Equatable {
             return "Identify a specific chord tone"
         case .allTones:
             return "Play all chord tones"
-        case .earTraining:
-            return "Identify chord by ear"
         case .auralQuality:
             return "Hear a chord and identify its quality"
         case .auralSpelling:
-            return "Hear a chord and spell all notes"
+            return "Given the root, hear quality and spell"
         }
     }
 
@@ -286,14 +283,14 @@ enum QuestionType: String, CaseIterable, Codable, Equatable {
         switch self {
         case .singleTone: return "music.note"
         case .allTones: return "pianokeys"
-        case .earTraining, .auralQuality, .auralSpelling: return "ear"
+        case .auralQuality, .auralSpelling: return "ear"
         }
     }
     
     /// Returns true if this is an aural (ear training) question type
     var isAural: Bool {
         switch self {
-        case .earTraining, .auralQuality, .auralSpelling:
+        case .auralQuality, .auralSpelling:
             return true
         case .singleTone, .allTones:
             return false
@@ -324,7 +321,7 @@ struct QuizQuestion: Identifiable, Codable, Equatable {
             }
         case .allTones, .auralSpelling:
             self.correctAnswer = chord.chordTones
-        case .earTraining, .auralQuality:
+        case .auralQuality:
             // For quality recognition, the "answer" is the chord type
             // We store chord tones for display purposes after submission
             self.correctAnswer = chord.chordTones

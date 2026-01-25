@@ -19,7 +19,6 @@ class CadenceGame: ObservableObject {
     @Published var selectedDrillMode: CadenceDrillMode = .fullProgression
     @Published var selectedKeyDifficulty: KeyDifficulty = .all
     @Published var selectedIsolatedPosition: IsolatedChordPosition = .ii
-    @Published var isDailyChallenge: Bool = false
     
     // MARK: - Phase 2 Enhancement Properties
     @Published var useMixedCadences: Bool = false
@@ -34,9 +33,9 @@ class CadenceGame: ObservableObject {
     @Published var selectedExtendedVChord: ExtendedVChordOption = .basic
     @Published var selectedCommonTonePair: CommonTonePair = .iiToV  // For common tones mode
     
-    // MARK: - Phase 4: Statistics & Quick Practice
+    // MARK: - Phase 4: Statistics
     @Published var lifetimeStats: CadenceLifetimeStats = CadenceLifetimeStats()
-    @Published var lastQuizSettings: QuickPracticeSettings?
+    @Published var lastQuizSettings: LastQuizSettings?
     
     // MARK: - Rating & Ranking System
     @Published var lastRatingChange: Int = 0
@@ -73,8 +72,7 @@ class CadenceGame: ObservableObject {
             cadenceType: cadenceType,
             drillMode: .fullProgression,
             keyDifficulty: .all,
-            isolatedPosition: .ii,
-            isDailyChallenge: false
+            isolatedPosition: .ii
         )
     }
     
@@ -83,15 +81,13 @@ class CadenceGame: ObservableObject {
         cadenceType: CadenceType,
         drillMode: CadenceDrillMode,
         keyDifficulty: KeyDifficulty,
-        isolatedPosition: IsolatedChordPosition,
-        isDailyChallenge: Bool
+        isolatedPosition: IsolatedChordPosition
     ) {
         totalQuestions = numberOfQuestions
         selectedCadenceType = cadenceType
         selectedDrillMode = drillMode
         selectedKeyDifficulty = keyDifficulty
         selectedIsolatedPosition = isolatedPosition
-        self.isDailyChallenge = isDailyChallenge
 
         generateQuestions()
         currentQuestionIndex = 0
@@ -114,60 +110,6 @@ class CadenceGame: ObservableObject {
             currentQuestion = questions[0]
             questionStartTime = Date()
         }
-    }
-    
-    func startDailyChallenge() {
-        // Use date-based seed for deterministic daily challenge
-        let seed = dailyChallengeSeed()
-        var rng = SeededRandomNumberGenerator(seed: UInt64(seed))
-        
-        // Determine today's cadence type (alternates by day)
-        let cadenceType: CadenceType = seed % 2 == 0 ? .major : .minor
-        
-        // Determine today's key from all keys
-        let allKeys = KeyDifficulty.all.availableRoots
-        let keyIndex = seed % allKeys.count
-        let dailyKey = allKeys[keyIndex]
-        
-        // Start quiz with fixed parameters for daily challenge
-        totalQuestions = 5
-        selectedCadenceType = cadenceType
-        selectedDrillMode = .fullProgression
-        selectedKeyDifficulty = .all
-        self.isDailyChallenge = true
-        
-        // Generate deterministic questions using the daily key
-        questions = []
-        for _ in 0..<totalQuestions {
-            let cadence = CadenceProgression(key: dailyKey, cadenceType: cadenceType)
-            let question = CadenceQuestion(cadence: cadence)
-            questions.append(question)
-        }
-        
-        currentQuestionIndex = 0
-        userAnswers = [:]
-        totalQuizTime = 0
-        isQuizActive = true
-        isQuizCompleted = false
-        currentResult = nil
-        quizStartTime = Date()
-        
-        hintsUsedThisQuestion = 0
-        totalHintsUsed = 0
-        currentHintLevel = 0
-        
-        updateStreak()
-
-        if !questions.isEmpty {
-            currentQuestion = questions[0]
-            questionStartTime = Date()
-        }
-    }
-    
-    private func dailyChallengeSeed() -> Int {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month, .day], from: Date())
-        return (components.year! * 10000) + (components.month! * 100) + components.day!
     }
 
     private func generateQuestions() {
@@ -339,11 +281,6 @@ class CadenceGame: ObservableObject {
         didRankUp = ratingResult.didRankUp
         previousRank = ratingResult.previousRank
         
-        // Handle daily challenge completion
-        if isDailyChallenge && !playerStats.isDailyChallengeCompletedToday {
-            playerStats.completeDailyChallenge()
-        }
-        
         // Update mode-specific lifetime statistics
         updateLifetimeStats(ratingChange: ratingChange)
         
@@ -428,9 +365,6 @@ class CadenceGame: ObservableObject {
         // Question count bonus (more questions = more reliable score)
         let questionBonus = Double(totalQuestions) / 10.0
         
-        // Daily challenge bonus
-        let dailyBonus: Double = isDailyChallenge ? 1.25 : 1.0
-        
         // Speed bonus (if fast and accurate)
         let avgTimePerQuestion = totalQuizTime / Double(totalQuestions)
         let speedBonus: Double
@@ -445,7 +379,7 @@ class CadenceGame: ObservableObject {
         // Hint penalty (using hints reduces points)
         let hintPenalty: Double = max(0.5, 1.0 - (Double(totalHintsUsed) * 0.1))
         
-        let finalPoints = points * modeMultiplier * cadenceMultiplier * keyMultiplier * questionBonus * dailyBonus * speedBonus * hintPenalty
+        let finalPoints = points * modeMultiplier * cadenceMultiplier * keyMultiplier * questionBonus * speedBonus * hintPenalty
         
         // Ensure rating doesn't go below 0
         let newRating = max(0, lifetimeStats.currentRating + Int(finalPoints.rounded()))
@@ -940,7 +874,6 @@ class CadenceGame: ObservableObject {
         totalQuizTime = 0
         questionStartTime = nil
         quizStartTime = nil
-        isDailyChallenge = false
         hintsUsedThisQuestion = 0
         totalHintsUsed = 0
         currentHintLevel = 0
@@ -1078,7 +1011,7 @@ class CadenceGame: ObservableObject {
     }
     
     func saveLastQuizSettings() {
-        let settings = QuickPracticeSettings(
+        let settings = LastQuizSettings(
             numberOfQuestions: totalQuestions,
             cadenceType: selectedCadenceType,
             drillMode: selectedDrillMode,
@@ -1095,7 +1028,7 @@ class CadenceGame: ObservableObject {
     
     func loadLastQuizSettings() {
         if let data = UserDefaults.standard.data(forKey: lastQuizSettingsKey),
-           let decoded = try? JSONDecoder().decode(QuickPracticeSettings.self, from: data) {
+           let decoded = try? JSONDecoder().decode(LastQuizSettings.self, from: data) {
             lastQuizSettings = decoded
         }
     }
@@ -1105,44 +1038,6 @@ class CadenceGame: ObservableObject {
         guard let result = currentResult else { return }
         lifetimeStats.recordQuizResult(result, questions: questions, ratingChange: ratingChange)
         saveLifetimeStats()
-    }
-    
-    // MARK: - Phase 4: Quick Practice
-    
-    /// Start a quick 5-question practice session using last settings
-    func startQuickPractice() {
-        guard let settings = lastQuizSettings else {
-            // No previous settings, use defaults
-            startNewQuiz(numberOfQuestions: 5, cadenceType: .major)
-            return
-        }
-        
-        // Apply saved settings
-        selectedCadenceType = settings.cadenceType
-        selectedDrillMode = settings.drillMode
-        selectedKeyDifficulty = settings.keyDifficulty
-        useMixedCadences = settings.useMixedCadences
-        useExtendedVChords = settings.useExtendedVChords
-        selectedExtendedVChord = settings.extendedVChord
-        
-        // Start with 5 questions
-        startNewQuiz(
-            numberOfQuestions: 5,
-            cadenceType: settings.cadenceType,
-            drillMode: settings.drillMode,
-            keyDifficulty: settings.keyDifficulty,
-            isolatedPosition: selectedIsolatedPosition,
-            isDailyChallenge: false
-        )
-        
-        if settings.drillMode == .speedRound {
-            startSpeedRoundTimer()
-        }
-    }
-    
-    /// Whether quick practice is available (has previous settings)
-    var canQuickPractice: Bool {
-        return lastQuizSettings != nil
     }
     
     // MARK: - Phase 5: Weak Key Practice & Encouragement
@@ -1468,8 +1363,8 @@ struct PersonalBest: Codable {
     let date: Date
 }
 
-/// Settings for quick practice mode - saves last used settings
-struct QuickPracticeSettings: Codable {
+/// Settings for quiz mode - saves last used settings
+struct LastQuizSettings: Codable {
     var numberOfQuestions: Int = 5
     var cadenceType: CadenceType = .major
     var drillMode: CadenceDrillMode = .fullProgression

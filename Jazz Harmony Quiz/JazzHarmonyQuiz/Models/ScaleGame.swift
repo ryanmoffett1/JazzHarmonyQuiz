@@ -90,6 +90,7 @@ class ScaleGame: ObservableObject {
     @Published var totalQuestions: Int = 10
     @Published var questions: [ScaleQuestion] = []
     @Published var userAnswers: [UUID: [Note]] = [:]
+    @Published var earTrainingAnswers: [UUID: Bool] = [:]  // Tracks correct/incorrect for ear training
     @Published var questionStartTime: Date?
     @Published var totalQuizTime: TimeInterval = 0
     @Published var isQuizActive: Bool = false
@@ -143,6 +144,7 @@ class ScaleGame: ObservableObject {
         generateQuestions()
         currentQuestionIndex = 0
         userAnswers = [:]
+        earTrainingAnswers = [:]
         totalQuizTime = 0
         isQuizActive = true
         isQuizCompleted = false
@@ -303,6 +305,9 @@ class ScaleGame: ObservableObject {
     func recordEarTrainingAnswer(correct: Bool) {
         guard let question = currentQuestion else { return }
         
+        // Store the answer for calculating final score
+        earTrainingAnswers[question.id] = correct
+        
         // Update stats for this scale type
         let symbol = question.scale.scaleType.symbol
         var scaleStats = stats.statsByScaleSymbol[symbol] ?? ScaleTypeStatistics()
@@ -446,7 +451,13 @@ class ScaleGame: ObservableObject {
     private func calculateCorrectAnswers() -> Int {
         var correct = 0
         for question in questions {
-            if let answer = userAnswers[question.id] {
+            if question.questionType == .earTraining {
+                // Check ear training answers dictionary
+                if earTrainingAnswers[question.id] == true {
+                    correct += 1
+                }
+            } else if let answer = userAnswers[question.id] {
+                // Check note-based answers
                 if question.checkAnswer(Set(answer)) {
                     correct += 1
                 }
@@ -512,6 +523,7 @@ class ScaleGame: ObservableObject {
         currentQuestionIndex = 0
         questions = []
         userAnswers = [:]
+        earTrainingAnswers = [:]
         questionStartTime = nil
         totalQuizTime = 0
         isQuizActive = false
@@ -551,8 +563,17 @@ class ScaleGame: ObservableObject {
         let srStore = SpacedRepetitionStore.shared
         
         for question in questions {
-            guard let userAnswer = userAnswers[question.id] else { continue }
-            let wasCorrect = question.checkAnswer(Set(userAnswer))
+            let wasCorrect: Bool
+            
+            if question.questionType == .earTraining {
+                // Check ear training answers dictionary
+                guard let correct = earTrainingAnswers[question.id] else { continue }
+                wasCorrect = correct
+            } else {
+                // Check note-based answers
+                guard let userAnswer = userAnswers[question.id] else { continue }
+                wasCorrect = question.checkAnswer(Set(userAnswer))
+            }
             
             // Calculate time spent on this question (estimate based on total quiz time)
             let avgTimePerQuestion = totalQuizTime / Double(totalQuestions)

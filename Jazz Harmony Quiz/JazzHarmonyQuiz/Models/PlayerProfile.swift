@@ -138,11 +138,6 @@ class PlayerProfile: ObservableObject {
     @Published var unlockedAchievements: [Achievement] = []
     @Published var newlyUnlockedAchievements: [Achievement] = []
     
-    // MARK: - Daily Challenge Properties
-    
-    @Published var dailyChallengeLastCompleted: Date?
-    @Published var dailyChallengeStreak: Int = 0
-    
     // MARK: - Perfect Score Properties
     
     @Published var perfectScoreStreak: Int = 0
@@ -169,11 +164,6 @@ class PlayerProfile: ObservableObject {
     var overallAccuracy: Double {
         guard totalQuestionsAnswered > 0 else { return 0 }
         return Double(totalCorrectAnswers) / Double(totalQuestionsAnswered)
-    }
-    
-    var isDailyChallengeCompletedToday: Bool {
-        guard let lastCompleted = dailyChallengeLastCompleted else { return false }
-        return Calendar.current.isDateInToday(lastCompleted)
     }
     
     // Aliases for compatibility
@@ -331,27 +321,6 @@ class PlayerProfile: ObservableObject {
         saveToUserDefaults()
     }
     
-    func completeDailyChallenge() {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        
-        if let lastCompleted = dailyChallengeLastCompleted {
-            let lastDay = calendar.startOfDay(for: lastCompleted)
-            let daysDiff = calendar.dateComponents([.day], from: lastDay, to: today).day ?? 0
-            
-            if daysDiff == 1 {
-                dailyChallengeStreak += 1
-            } else if daysDiff > 1 {
-                dailyChallengeStreak = 1
-            }
-        } else {
-            dailyChallengeStreak = 1
-        }
-        
-        dailyChallengeLastCompleted = Date()
-        saveToUserDefaults()
-    }
-    
     // MARK: - Achievement System
     
     func hasAchievement(_ type: AchievementType) -> Bool {
@@ -394,10 +363,6 @@ class PlayerProfile: ObservableObject {
         if currentStreak >= 14 { unlockAchievement(.streak14) }
         if currentStreak >= 30 { unlockAchievement(.streak30) }
         
-        // Daily challenge achievements
-        if dailyChallengeStreak >= 1 { unlockAchievement(.dailyFirst) }
-        if dailyChallengeStreak >= 7 { unlockAchievement(.dailyStreak7) }
-        
         // Rank achievements
         if currentRating >= 1001 { unlockAchievement(.rankGigging) }
         if currentRating >= 1501 { unlockAchievement(.rankBebop) }
@@ -420,8 +385,6 @@ class PlayerProfile: ObservableObject {
             totalCorrectAnswers: totalCorrectAnswers,
             totalPracticeTime: totalPracticeTime,
             unlockedAchievements: unlockedAchievements,
-            dailyChallengeLastCompleted: dailyChallengeLastCompleted,
-            dailyChallengeStreak: dailyChallengeStreak,
             perfectScoreStreak: perfectScoreStreak,
             modeStats: modeStats
         )
@@ -446,8 +409,6 @@ class PlayerProfile: ObservableObject {
             totalCorrectAnswers = decoded.totalCorrectAnswers
             totalPracticeTime = decoded.totalPracticeTime
             unlockedAchievements = decoded.unlockedAchievements
-            dailyChallengeLastCompleted = decoded.dailyChallengeLastCompleted
-            dailyChallengeStreak = decoded.dailyChallengeStreak
             perfectScoreStreak = decoded.perfectScoreStreak
             modeStats = decoded.modeStats
         } else {
@@ -485,8 +446,6 @@ class PlayerProfile: ObservableObject {
         totalCorrectAnswers = decoded.totalCorrectAnswers
         totalPracticeTime = decoded.totalPracticeTime
         unlockedAchievements = decoded.unlockedAchievements
-        dailyChallengeLastCompleted = decoded.dailyChallengeLastCompleted
-        dailyChallengeStreak = decoded.dailyChallengeStreak
         perfectScoreStreak = decoded.perfectScoreStreak
         
         // Save in new format
@@ -552,8 +511,6 @@ private struct PlayerProfileData: Codable {
     let totalCorrectAnswers: Int
     let totalPracticeTime: TimeInterval
     let unlockedAchievements: [Achievement]
-    let dailyChallengeLastCompleted: Date?
-    let dailyChallengeStreak: Int
     let perfectScoreStreak: Int
     let modeStats: [PracticeMode: ModeStatistics]
 }
@@ -569,8 +526,6 @@ private struct OldPlayerStatsData: Codable {
     let totalCorrectAnswers: Int
     let totalPracticeTime: TimeInterval
     let unlockedAchievements: [Achievement]
-    let dailyChallengeLastCompleted: Date?
-    let dailyChallengeStreak: Int
     let perfectScoreStreak: Int
 }
 

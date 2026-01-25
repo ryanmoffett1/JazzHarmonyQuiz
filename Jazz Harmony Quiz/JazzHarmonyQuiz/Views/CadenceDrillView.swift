@@ -85,8 +85,6 @@ struct CadenceDrillView: View {
                     selectedExtendedVChord: $selectedExtendedVChord,
                     selectedCommonTonePair: $selectedCommonTonePair,
                     onStartQuiz: startQuiz,
-                    onStartDailyChallenge: startDailyChallenge,
-                    onQuickPractice: startQuickPractice,
                     onPracticeWeakKeys: startWeakKeyPractice
                 )
             case .active:
@@ -119,9 +117,6 @@ struct CadenceDrillView: View {
                         HStack(spacing: 4) {
                             Text("Question \(cadenceGame.currentQuestionNumber) of \(cadenceGame.totalQuestions)")
                                 .font(.headline)
-                            if cadenceGame.isDailyChallenge {
-                                Text("📅")
-                            }
                             if cadenceGame.currentStreak > 0 {
                                 Text("🔥\(cadenceGame.currentStreak)")
                                     .font(.caption)
@@ -157,8 +152,7 @@ struct CadenceDrillView: View {
             cadenceType: selectedCadenceType,
             drillMode: selectedDrillMode,
             keyDifficulty: selectedKeyDifficulty,
-            isolatedPosition: selectedIsolatedPosition,
-            isDailyChallenge: false
+            isolatedPosition: selectedIsolatedPosition
         )
         
         // Start speed round timer if in speed round mode
@@ -167,16 +161,6 @@ struct CadenceDrillView: View {
         }
         
         // Only switch to active view AFTER questions are ready
-        viewState = .active
-    }
-    
-    private func startDailyChallenge() {
-        cadenceGame.startDailyChallenge()
-        viewState = .active
-    }
-    
-    private func startQuickPractice() {
-        cadenceGame.startQuickPractice()
         viewState = .active
     }
     
@@ -219,8 +203,6 @@ struct CadenceSetupView: View {
     @Binding var selectedCommonTonePair: CommonTonePair
     
     let onStartQuiz: () -> Void
-    let onStartDailyChallenge: () -> Void
-    let onQuickPractice: () -> Void
     let onPracticeWeakKeys: () -> Void
 
     var body: some View {
@@ -275,34 +257,6 @@ struct CadenceSetupView: View {
                     }
                 }
                 
-                // Quick Practice Button (if has previous settings)
-                if cadenceGame.canQuickPractice {
-                    Button(action: onQuickPractice) {
-                        HStack {
-                            Image(systemName: "bolt.fill")
-                            VStack(alignment: .leading) {
-                                Text("Quick Practice")
-                                    .font(.headline)
-                                Text("5 questions with your last settings")
-                                    .font(.caption)
-                                    .foregroundColor(.white.opacity(0.8))
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                        }
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(
-                            LinearGradient(
-                                colors: [.green, .mint],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(12)
-                    }
-                }
-                
                 // Practice Weak Keys Button (if enough data)
                 if cadenceGame.canPracticeWeakKeys {
                     let weakKeys = cadenceGame.lifetimeStats.getWeakestKeys(limit: 3)
@@ -330,32 +284,6 @@ struct CadenceSetupView: View {
                         )
                         .cornerRadius(12)
                     }
-                }
-
-                // Daily Challenge Button
-                Button(action: onStartDailyChallenge) {
-                    HStack {
-                        Image(systemName: "calendar.badge.clock")
-                        VStack(alignment: .leading) {
-                            Text("Daily Challenge")
-                                .font(.headline)
-                            Text("Same challenge for everyone today!")
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.8))
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                    }
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(
-                        LinearGradient(
-                            colors: [.orange, .red],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .cornerRadius(12)
                 }
 
                 VStack(alignment: .leading, spacing: 20) {
@@ -1772,19 +1700,6 @@ struct CadenceResultsView: View {
                             Text("Quiz Complete!")
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
-                        }
-                        
-                        if cadenceGame.isDailyChallenge {
-                            HStack {
-                                Image(systemName: "calendar.badge.clock")
-                                Text("Daily Challenge")
-                            }
-                            .font(.subheadline)
-                            .foregroundColor(.orange)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.orange.opacity(0.1))
-                            .cornerRadius(8)
                         }
                         
                         // Streak encouragement

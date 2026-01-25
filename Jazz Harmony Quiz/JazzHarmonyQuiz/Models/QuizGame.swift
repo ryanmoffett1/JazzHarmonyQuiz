@@ -74,8 +74,6 @@ struct ChordDrillStats: Codable {
     var currentStreak: Int = 0
     var longestStreak: Int = 0
     var lastPracticeDate: Date?
-    var dailyChallengeLastCompleted: Date?
-    var dailyChallengeStreak: Int = 0
     var perfectScoreStreak: Int = 0  // Track consecutive perfect scores
     
     // Achievements
@@ -188,32 +186,6 @@ struct ChordDrillStats: Codable {
         return (chords, correct, time, uniqueDays)
     }
     
-    /// Check if daily challenge was completed today
-    var isDailyChallengeCompletedToday: Bool {
-        guard let lastCompleted = dailyChallengeLastCompleted else { return false }
-        return Calendar.current.isDateInToday(lastCompleted)
-    }
-    
-    mutating func completeDailyChallenge() {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        
-        if let lastCompleted = dailyChallengeLastCompleted {
-            let lastDay = calendar.startOfDay(for: lastCompleted)
-            let daysDiff = calendar.dateComponents([.day], from: lastDay, to: today).day ?? 0
-            
-            if daysDiff == 1 {
-                dailyChallengeStreak += 1
-            } else if daysDiff > 1 {
-                dailyChallengeStreak = 1
-            }
-        } else {
-            dailyChallengeStreak = 1
-        }
-        
-        dailyChallengeLastCompleted = Date()
-    }
-    
     /// Check and unlock any newly earned achievements
     mutating func checkAchievements(wasPerfectScore: Bool) {
         // First quiz
@@ -246,10 +218,6 @@ struct ChordDrillStats: Codable {
         if currentStreak >= 7 { unlockAchievement(.streak7) }
         if currentStreak >= 14 { unlockAchievement(.streak14) }
         if currentStreak >= 30 { unlockAchievement(.streak30) }
-        
-        // Daily challenge achievements
-        if dailyChallengeStreak >= 1 { unlockAchievement(.dailyFirst) }
-        if dailyChallengeStreak >= 7 { unlockAchievement(.dailyStreak7) }
         
         // Rank achievements
         if currentRating >= 1001 { unlockAchievement(.rankGigging) }
@@ -340,10 +308,6 @@ enum AchievementType: String, CaseIterable, Codable {
     case streak14 = "streak_14"
     case streak30 = "streak_30"
     
-    // Daily challenge
-    case dailyFirst = "daily_first"
-    case dailyStreak7 = "daily_streak_7"
-    
     // Rank achievements
     case rankGigging = "rank_gigging"
     case rankBebop = "rank_bebop"
@@ -369,8 +333,6 @@ enum AchievementType: String, CaseIterable, Codable {
         case .streak7: return "Week Warrior"
         case .streak14: return "Fortnight Fighter"
         case .streak30: return "Monthly Master"
-        case .dailyFirst: return "Daily Dabbler"
-        case .dailyStreak7: return "Daily Devotee"
         case .rankGigging: return "Ready to Gig"
         case .rankBebop: return "Bebop Scholar"
         case .rankWizard: return "Chord Wizard"
@@ -395,8 +357,6 @@ enum AchievementType: String, CaseIterable, Codable {
         case .streak7: return "Practice 7 days in a row"
         case .streak14: return "Practice 14 days in a row"
         case .streak30: return "Practice 30 days in a row"
-        case .dailyFirst: return "Complete your first daily challenge"
-        case .dailyStreak7: return "Complete 7 daily challenges in a row"
         case .rankGigging: return "Reach Gigging Musician rank"
         case .rankBebop: return "Reach Bebop Scholar rank"
         case .rankWizard: return "Reach Chord Wizard rank"
@@ -421,8 +381,6 @@ enum AchievementType: String, CaseIterable, Codable {
         case .streak7: return "📅"
         case .streak14: return "💪"
         case .streak30: return "🌟"
-        case .dailyFirst: return "☀️"
-        case .dailyStreak7: return "🌈"
         case .rankGigging: return "🎷"
         case .rankBebop: return "📚"
         case .rankWizard: return "🧙"
@@ -463,7 +421,6 @@ class QuizGame: ObservableObject {
     
     // MARK: - Stats & Rating (uses shared PlayerStats for unified rating)
     @Published var stats: ChordDrillStats = ChordDrillStats()  // Mode-specific stats
-    @Published var isDailyChallenge: Bool = false
     @Published var lastRatingChange: Int = 0
     @Published var didRankUp: Bool = false
     @Published var previousRank: Rank?
@@ -488,11 +445,10 @@ class QuizGame: ObservableObject {
     
     // MARK: - Quiz Management
     
-    func startNewQuiz(numberOfQuestions: Int, difficulty: ChordType.ChordDifficulty, questionTypes: Set<QuestionType>, isDaily: Bool = false) {
+    func startNewQuiz(numberOfQuestions: Int, difficulty: ChordType.ChordDifficulty, questionTypes: Set<QuestionType>) {
         totalQuestions = numberOfQuestions
         selectedDifficulty = difficulty
         selectedQuestionTypes = questionTypes
-        isDailyChallenge = isDaily
         
         // Reset rating tracking
         lastRatingChange = 0
@@ -511,76 +467,6 @@ class QuizGame: ObservableObject {
         if !questions.isEmpty {
             currentQuestion = questions[0]
             questionStartTime = Date()
-        }
-    }
-    
-    /// Start the daily challenge with deterministic seed
-    func startDailyChallenge() {
-        // Generate deterministic seed from today's date
-        let seed = dailyChallengeSeed()
-        var rng = SeededRandomNumberGenerator(seed: UInt64(seed))
-        
-        // Fixed daily challenge configuration
-        let difficulties: [ChordType.ChordDifficulty] = [.beginner, .intermediate, .advanced]
-        let difficulty = difficulties[Int.random(in: 0..<difficulties.count, using: &rng)]
-        
-        isDailyChallenge = true
-        totalQuestions = 10
-        selectedDifficulty = difficulty
-        selectedQuestionTypes = [.allTones]
-        
-        // Reset rating tracking
-        lastRatingChange = 0
-        didRankUp = false
-        previousRank = stats.currentRank
-        
-        generateDailyChallengeQuestions(seed: seed)
-        currentQuestionIndex = 0
-        userAnswers = [:]
-        totalQuizTime = 0
-        isQuizActive = true
-        isQuizCompleted = false
-        currentResult = nil
-        quizStartTime = Date()
-        
-        if !questions.isEmpty {
-            currentQuestion = questions[0]
-            questionStartTime = Date()
-        }
-    }
-    
-    private func dailyChallengeSeed() -> Int {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month, .day], from: Date())
-        return (components.year! * 10000) + (components.month! * 100) + components.day!
-    }
-    
-    private func generateDailyChallengeQuestions(seed: Int) {
-        var rng = SeededRandomNumberGenerator(seed: UInt64(seed))
-        questions = []
-        
-        let allChords = chordDatabase.getChords(by: selectedDifficulty)
-        guard !allChords.isEmpty else { return }
-        
-        for _ in 0..<totalQuestions {
-            let chord = allChords[Int.random(in: 0..<allChords.count, using: &rng)]
-            let questionTypes = Array(selectedQuestionTypes)
-            let questionType = questionTypes[Int.random(in: 0..<questionTypes.count, using: &rng)]
-            
-            let question: QuizQuestion
-            switch questionType {
-            case .singleTone:
-                let availableTones = chord.chordType.chordTones
-                let targetTone = availableTones[Int.random(in: 0..<availableTones.count, using: &rng)]
-                question = QuizQuestion(chord: chord, questionType: .singleTone, targetTone: targetTone)
-            case .allTones:
-                question = QuizQuestion(chord: chord, questionType: .allTones)
-            case .earTraining, .auralQuality:
-                question = QuizQuestion(chord: chord, questionType: questionType)
-            case .auralSpelling:
-                question = QuizQuestion(chord: chord, questionType: .auralSpelling)
-            }
-            questions.append(question)
         }
     }
     
@@ -620,8 +506,8 @@ class QuizGame: ObservableObject {
             case .allTones:
                 question = QuizQuestion(chord: chord, questionType: .allTones)
                 
-            case .earTraining, .auralQuality:
-                question = QuizQuestion(chord: chord, questionType: questionType)
+            case .auralQuality:
+                question = QuizQuestion(chord: chord, questionType: .auralQuality)
                 
             case .auralSpelling:
                 question = QuizQuestion(chord: chord, questionType: .auralSpelling)
@@ -632,7 +518,7 @@ class QuizGame: ObservableObject {
         
         // Generate answer choices for first question if aural quality question
         if let firstQuestion = questions.first,
-           (firstQuestion.questionType == .earTraining || firstQuestion.questionType == .auralQuality) {
+           firstQuestion.questionType == .auralQuality {
             currentAnswerChoices = generateAnswerChoices(for: firstQuestion.chord.chordType)
         }
     }
@@ -751,7 +637,7 @@ class QuizGame: ObservableObject {
             
             // Generate answer choices for aural quality questions
             if let question = currentQuestion,
-               (question.questionType == .earTraining || question.questionType == .auralQuality) {
+               question.questionType == .auralQuality {
                 currentAnswerChoices = generateAnswerChoices(for: question.chord.chordType)
             }
         } else {
@@ -771,7 +657,7 @@ class QuizGame: ObservableObject {
             let isCorrect: Bool
             
             // Check based on question type
-            if question.questionType == .auralQuality || question.questionType == .earTraining {
+            if question.questionType == .auralQuality {
                 // For aural quality, check chord type answer
                 if let userChordType = userChordTypeAnswers[question.id] {
                     isCorrect = userChordType.id == question.chord.chordType.id
@@ -886,11 +772,6 @@ class QuizGame: ObservableObject {
         didRankUp = ratingResult.didRankUp
         previousRank = ratingResult.previousRank
         
-        // Handle daily challenge completion
-        if isDailyChallenge && !playerStats.isDailyChallengeCompletedToday {
-            playerStats.completeDailyChallenge()
-        }
-        
         // Save mode-specific stats
         saveStatsToUserDefaults()
     }
@@ -936,9 +817,6 @@ class QuizGame: ObservableObject {
         // Question count bonus (more questions = more reliable score)
         let questionBonus = Double(totalQuestions) / 10.0  // 1.0 for 10 questions
         
-        // Daily challenge bonus
-        let dailyBonus: Double = isDailyChallenge ? 1.25 : 1.0
-        
         // Speed bonus (if fast and accurate)
         let avgTimePerQuestion = totalQuizTime / Double(totalQuestions)
         let speedBonus: Double
@@ -950,7 +828,7 @@ class QuizGame: ObservableObject {
             speedBonus = 1.0
         }
         
-        let finalPoints = points * difficultyMultiplier * questionBonus * dailyBonus * speedBonus
+        let finalPoints = points * difficultyMultiplier * questionBonus * speedBonus
         
         // Ensure rating doesn't go below 0
         let newRating = max(0, stats.currentRating + Int(finalPoints.rounded()))
@@ -1032,15 +910,6 @@ class QuizGame: ObservableObject {
     }
     
     // MARK: - Quick Practice
-    
-    /// Start a quick 5-question practice with current settings
-    func startQuickPractice() {
-        startNewQuiz(
-            numberOfQuestions: 5,
-            difficulty: selectedDifficulty,
-            questionTypes: selectedQuestionTypes
-        )
-    }
     
     /// Whether user has practiced today
     var hasPracticedToday: Bool {
@@ -1178,7 +1047,7 @@ class QuizGame: ObservableObject {
                 }
             case .allTones:
                 variant = "all-tones"
-            case .earTraining, .auralQuality:
+            case .auralQuality:
                 variant = "ear-training"
             case .auralSpelling:
                 variant = "ear-spelling"
