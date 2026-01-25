@@ -556,7 +556,12 @@ struct QuestionReviewCard: View {
                 let note = question.chord.chordTones[index]
                 return "\(note.name) (\(chordTone.name))"
             }
-           Conceptual Explanation View
+            return ""
+        }.joined(separator: ", ")
+    }
+}
+
+// MARK: - Conceptual Explanation View
 
 struct ConceptualExplanationView: View {
     @EnvironmentObject var settings: SettingsManager
@@ -624,11 +629,6 @@ struct ExplanationSection: View {
                 .foregroundColor(colorScheme == .dark ? .white.opacity(0.9) : .secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-    }
-}
-
-// MARK: -  return ""
-        }.filter { !$0.isEmpty }.joined(separator: ", ")
     }
 }
 

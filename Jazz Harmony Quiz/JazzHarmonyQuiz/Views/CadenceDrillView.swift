@@ -700,6 +700,12 @@ struct CadenceSetupView: View {
             return "Identify each chord in the progression by selecting its root and quality. This tests your knowledge of chord symbols and their relationships in common jazz cadences."
         case .auralIdentify:
             return "Listen to the cadence and identify which type it is. This develops your ear for recognizing common chord progressions."
+        case .guideTones:
+            return "Identify the guide tones (3rd and 7th) and their resolutions through the progression. This develops awareness of how chord tones move in voice leading."
+        case .resolutionTargets:
+            return "Find where guide tones resolve in the next chord. This builds understanding of voice leading and tension resolution."
+        case .smoothVoicing:
+            return "Voice the progression with smooth voice leading, keeping common tones and moving other voices by small intervals."
         }
     }
 }
@@ -772,28 +778,374 @@ struct ActiveCadenceQuizView: View {
         }
         return userSelectedCadenceType != nil
     }
+    
+    // MARK: - Extracted View Components
+    
+    @ViewBuilder
+    private var speedRoundTimerView: some View {
+        if isSpeedRoundMode && cadenceGame.speedRoundTimerActive {
+            let timeText = String(format: "%.1f", cadenceGame.speedRoundTimeRemaining)
+            let timerColor: Color = cadenceGame.speedRoundIsWarning ? .red : .orange
+            let progressTint: Color = cadenceGame.speedRoundIsWarning ? .red : .orange
+            
+            VStack(spacing: 8) {
+                HStack {
+                    Image(systemName: "timer")
+                    Text(timeText)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .monospacedDigit()
+                }
+                .foregroundColor(timerColor)
+                
+                ProgressView(value: cadenceGame.speedRoundProgress)
+                    .progressViewStyle(LinearProgressViewStyle(tint: progressTint))
+                    .frame(height: 8)
+                    .animation(.linear(duration: 0.1), value: cadenceGame.speedRoundProgress)
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    @ViewBuilder
+    private var earTrainingContentView: some View {
+        // Ear Training Display
+        VStack(spacing: 16) {
+            Image(systemName: "ear.fill")
+                .font(.system(size: 50))
+                .foregroundColor(.blue)
+            
+            Text("Listen to the progression")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            Text("Use the replay button below if needed")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(16)
+        .padding(.horizontal)
+        
+        // Replay button
+        Button(action: { playCurrentCadence() }) {
+            HStack {
+                Image(systemName: "speaker.wave.2.fill")
+                Text("Replay Progression")
+            }
+            .font(.subheadline)
+            .foregroundColor(.blue)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Color.blue.opacity(0.1))
+            .cornerRadius(8)
+        }
+        .padding(.horizontal)
+        
+        Spacer()
+        
+        // Cadence Type Picker
+        VStack(spacing: 8) {
+            Text("Select the cadence type")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            let availableTypes: [CadenceType] = cadenceGame.useMixedCadences && !cadenceGame.selectedCadenceTypes.isEmpty
+                ? Array(cadenceGame.selectedCadenceTypes).sorted(by: { $0.rawValue < $1.rawValue })
+                : CadenceType.allCases
+            
+            CadenceTypePicker(
+                selectedCadenceType: $userSelectedCadenceType,
+                correctCadenceType: showingFeedback ? feedbackCorrectCadenceType : nil,
+                disabled: showingFeedback,
+                availableTypes: availableTypes
+            )
+            .padding(.horizontal)
+        }
+    }
+
+    @ViewBuilder
+    private func visualDisplayContentView(question: CadenceQuestion, chordsToSpell: [Chord]) -> some View {
+        // Visual Display for Other Modes
+        VStack(spacing: 15) {
+            HStack {
+                Text("Key: \(question.cadence.key.name) \(question.cadence.cadenceType.rawValue)")
+                    .font(settings.chordDisplayFont(size: 24, weight: .bold))
+                    .foregroundColor(settings.primaryText(for: colorScheme))
+
+                if isIsolatedMode {
+                    Text("(\(cadenceGame.selectedIsolatedPosition.rawValue) only)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding()
+            .background(settings.chordDisplayBackground(for: colorScheme))
+            .cornerRadius(8)
+
+            // Display chords based on mode
+            chordDisplaySection(chordsToSpell: chordsToSpell)
+            
+            // Question text
+            questionTextView(chordsToSpell: chordsToSpell)
+            
+            // Hint display
+            if let hint = currentHintText {
+                Text(hint)
+                    .font(.subheadline)
+                    .foregroundColor(.orange)
+                    .padding(8)
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(8)
+            }
+            
+            // Hint button (not for modes where it would give away the answer)
+            if cadenceGame.canRequestHint && !isCommonTonesMode && !isResolutionTargetsMode {
+                Button(action: requestHint) {
+                    HStack {
+                        Image(systemName: "lightbulb")
+                        Text("Hint (\(3 - cadenceGame.currentHintLevel) left)")
+                    }
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(8)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func questionTextView(chordsToSpell: [Chord]) -> some View {
+        if isCommonTonesMode {
+            Text("Select the note(s) that appear in both chords")
+                .font(.headline)
+                .foregroundColor(settings.primaryAccent(for: colorScheme))
+        } else if isGuideTonesMode {
+            Text("Spell: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName) (3rd & 7th only)")
+                .font(.headline)
+                .foregroundColor(settings.primaryAccent(for: colorScheme))
+        } else if isResolutionTargetsMode {
+            Text("Select the resolution target")
+                .font(.headline)
+                .foregroundColor(settings.primaryAccent(for: colorScheme))
+        } else if isSmoothVoicingMode {
+            Text("Voice: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName)")
+                .font(.headline)
+                .foregroundColor(settings.primaryAccent(for: colorScheme))
+        } else {
+            Text("Spell: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName)")
+                .font(.headline)
+                .foregroundColor(settings.primaryAccent(for: colorScheme))
+        }
+    }
+    
+    @ViewBuilder
+    private func chordDisplaySection(chordsToSpell: [Chord]) -> some View {
+        if isIsolatedMode {
+            // Single chord display for isolated mode
+            chordDisplayCard(
+                chord: chordsToSpell[0],
+                index: 0,
+                isActive: true,
+                isCompleted: false
+            )
+            .frame(maxWidth: 200)
+        } else if isCommonTonesMode {
+            commonTonesModeDisplay(chordsToSpell: chordsToSpell)
+        } else if isGuideTonesMode {
+            guideTonesModeDisplay(chordsToSpell: chordsToSpell)
+        } else if isResolutionTargetsMode {
+            resolutionTargetsModeDisplay(chordsToSpell: chordsToSpell)
+        } else if isSmoothVoicingMode {
+            smoothVoicingModeDisplay(chordsToSpell: chordsToSpell)
+        } else {
+            // Display all chords for full progression or speed round
+            HStack(spacing: 20) {
+                ForEach(0..<chordsToSpell.count, id: \.self) { index in
+                    chordDisplayCard(
+                        chord: chordsToSpell[index],
+                        index: index,
+                        isActive: index == currentChordIndex,
+                        isCompleted: !chordSpellings[index].isEmpty && index < currentChordIndex
+                    )
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    @ViewBuilder
+    private func commonTonesModeDisplay(chordsToSpell: [Chord]) -> some View {
+        VStack(spacing: 10) {
+            Text("Find Common Tones Between:")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            HStack(spacing: 30) {
+                ForEach(0..<min(2, chordsToSpell.count), id: \.self) { index in
+                    VStack {
+                        Text(chordsToSpell[index].displayName)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        Text(chordsToSpell[index].chordTones.map { $0.name }.joined(separator: " "))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(12)
+                }
+            }
+            
+            Text("→")
+                .font(.title)
+                .foregroundColor(.gray)
+        }
+    }
+    
+    @ViewBuilder
+    private func guideTonesModeDisplay(chordsToSpell: [Chord]) -> some View {
+        VStack(spacing: 10) {
+            Text("Play ONLY the guide tones (3rd and 7th)")
+                .font(.subheadline)
+                .foregroundColor(.orange)
+                .padding(8)
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(8)
+            
+            HStack(spacing: 20) {
+                ForEach(0..<chordsToSpell.count, id: \.self) { index in
+                    VStack(spacing: 6) {
+                        Text(chordsToSpell[index].displayName)
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(index == currentChordIndex ? .blue : .secondary)
+                        
+                        Text("3rd & 7th")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .background(index == currentChordIndex ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(index == currentChordIndex ? Color.blue : Color.clear, lineWidth: 2)
+                    )
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func resolutionTargetsModeDisplay(chordsToSpell: [Chord]) -> some View {
+        if let question = cadenceGame.currentQuestion,
+           let pairs = question.resolutionPairs,
+           let currentIndex = question.currentResolutionIndex,
+           currentIndex < pairs.count {
+            let pair = pairs[currentIndex]
+            let sourceChord = question.cadence.chords[pair.sourceChordIndex]
+            let targetChord = question.cadence.chords[pair.targetChordIndex]
+            
+            VStack(spacing: 15) {
+                VStack(spacing: 10) {
+                    Text("The \(pair.sourceRole.rawValue) of \(sourceChord.displayName) is \(pair.sourceNote.name)")
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                        .padding(12)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(8)
+                    
+                    HStack(spacing: 30) {
+                        VStack {
+                            Text(sourceChord.displayName)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            Text(pair.sourceNote.name)
+                                .font(.title)
+                                .foregroundColor(.blue)
+                        }
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(12)
+                        
+                        Image(systemName: "arrow.right")
+                            .font(.title)
+                            .foregroundColor(.orange)
+                        
+                        VStack {
+                            Text(targetChord.displayName)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            Text("?")
+                                .font(.title)
+                                .foregroundColor(.orange)
+                        }
+                        .padding()
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(12)
+                    }
+                    
+                    if showingFeedback, let targetNote = pair.targetNote {
+                        Text("Answer: \(targetNote.name)")
+                            .font(.headline)
+                            .foregroundColor(.green)
+                    }
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func smoothVoicingModeDisplay(chordsToSpell: [Chord]) -> some View {
+        VStack(spacing: 15) {
+            Text("Move minimal semitones between chords")
+                .font(.subheadline)
+                .foregroundColor(.purple)
+                .padding(8)
+                .background(Color.purple.opacity(0.1))
+                .cornerRadius(8)
+            
+            HStack(spacing: 15) {
+                ForEach(0..<chordsToSpell.count, id: \.self) { index in
+                    VStack(spacing: 6) {
+                        Text(chordsToSpell[index].displayName)
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(index == currentChordIndex ? .purple : .secondary)
+                        
+                        if index < currentChordIndex {
+                            // Show completed voicing
+                            Text(chordSpellings[index].map { $0.name }.joined(separator: " "))
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
+                    }
+                    .padding()
+                    .background(index == currentChordIndex ? Color.purple.opacity(0.1) : Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(index == currentChordIndex ? Color.purple : Color.clear, lineWidth: 2)
+                    )
+                    
+                    if index < chordsToSpell.count - 1 {
+                        Image(systemName: "arrow.right")
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+        }
+    }
 
     var body: some View {
         VStack(spacing: 20) {
             // Speed Round Timer (if in speed round mode)
-            if isSpeedRoundMode && cadenceGame.speedRoundTimerActive {
-                VStack(spacing: 8) {
-                    HStack {
-                        Image(systemName: "timer")
-                        Text(String(format: "%.1f", cadenceGame.speedRoundTimeRemaining))
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .monospacedDigit()
-                    }
-                    .foregroundColor(cadenceGame.speedRoundIsWarning ? .red : .orange)
-                    
-                    ProgressView(value: cadenceGame.speedRoundProgress)
-                        .progressViewStyle(LinearProgressViewStyle(tint: cadenceGame.speedRoundIsWarning ? .red : .orange))
-                        .frame(height: 8)
-                        .animation(.linear(duration: 0.1), value: cadenceGame.speedRoundProgress)
-                }
-                .padding(.horizontal)
-            }
+            speedRoundTimerView
             
             if let question = cadenceGame.currentQuestion {
                 // Safety check - ensure we have the expected chords
@@ -801,320 +1153,10 @@ struct ActiveCadenceQuizView: View {
                 if !chordsToSpell.isEmpty {
                     // Conditional UI based on mode
                     if isEarTrainingMode {
-                        // Ear Training Display
-                        VStack(spacing: 16) {
-                            Image(systemName: "ear.fill")
-                                .font(.system(size: 50))
-                                .foregroundColor(.blue)
-
-                            Text("Listen to the progression")
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-
-                            Text("Use the replay button below if needed")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(16)
-                        .padding(.horizontal)
-
-                        // Replay button
-                        Button(action: { playCurrentCadence() }) {
-                            HStack {
-                                Image(systemName: "speaker.wave.2.fill")
-                                Text("Replay Progression")
-                            }
-                            .font(.subheadline)
-                            .foregroundColor(.blue)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(8)
-                        }
-                        .padding(.horizontal)
-
-                        Spacer()
-
-                        // Cadence Type Picker
-                        VStack(spacing: 8) {
-                            Text("Select the cadence type")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-
-                            CadenceTypePicker(
-                                selectedCadenceType: $userSelectedCadenceType,
-                                correctCadenceType: showingFeedback ? feedbackCorrectCadenceType : nil,
-                                disabled: showingFeedback,
-                                availableTypes: cadenceGame.useMixedCadences && !cadenceGame.selectedCadenceTypes.isEmpty 
-                                    ? Array(cadenceGame.selectedCadenceTypes).sorted(by: { $0.rawValue < $1.rawValue })
-                                    : CadenceType.allCases
-                            )
-                            .padding(.horizontal)
-                        }
+                        earTrainingContentView
                     } else {
-                        // Visual Display for Other Modes
-                        VStack(spacing: 15) {
-                            HStack {
-                                Text("Key: \(question.cadence.key.name) \(question.cadence.cadenceType.rawValue)")
-                                    .font(settings.chordDisplayFont(size: 24, weight: .bold))
-                                    .foregroundColor(settings.primaryText(for: colorScheme))
-
-                                if isIsolatedMode {
-                                    Text("(\(cadenceGame.selectedIsolatedPosition.rawValue) only)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            .padding()
-                            .background(settings.chordDisplayBackground(for: colorScheme))
-                            .cornerRadius(8)
-
-                            // Display chords based on mode
-                            if isIsolatedMode {
-                            // Single chord display for isolated mode
-                            chordDisplayCard(
-                                chord: chordsToSpell[0],
-                                index: 0,
-                                isActive: true,
-                                isCompleted: false
-                            )
-                            .frame(maxWidth: 200)
-                        } else if isCommonTonesMode {
-                            // Two chord display for common tones mode
-                            VStack(spacing: 10) {
-                                Text("Find Common Tones Between:")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                
-                                HStack(spacing: 30) {
-                                    ForEach(0..<min(2, chordsToSpell.count), id: \.self) { index in
-                                        VStack {
-                                            Text(chordsToSpell[index].displayName)
-                                                .font(.title2)
-                                                .fontWeight(.bold)
-                                            Text(chordsToSpell[index].chordTones.map { $0.name }.joined(separator: " "))
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        .padding()
-                                        .background(Color.blue.opacity(0.1))
-                                        .cornerRadius(12)
-                                    }
-                                }
-                                
-                                Text("→")
-                                    .font(.title)
-                                    .foregroundColor(.gray)
-                            }
-                        } else if isGuideTonesMode {
-                            // Guide tones mode - display all three chords with guide tone emphasis
-                            VStack(spacing: 10) {
-                                Text("Play ONLY the guide tones (3rd and 7th)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.orange)
-                                    .padding(8)
-                                    .background(Color.orange.opacity(0.1))
-                                    .cornerRadius(8)
-                                
-                                HStack(spacing: 20) {
-                                    ForEach(0..<chordsToSpell.count, id: \.self) { index in
-                                        VStack(spacing: 6) {
-                                            Text(chordsToSpell[index].displayName)
-                                                .font(.title3)
-                                                .fontWeight(.bold)
-                                                .foregroundColor(index == currentChordIndex ? .blue : .secondary)
-                                            
-                                            Text("3rd & 7th")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                            
-                                            // Show correct guide tones if answer submitted
-                                            if showingFeedback {
-                                                let guideTones = question.guideTonesForChord(index)
-                                                Text(guideTones.map { $0.name }.joined(separator: ", "))
-                                                    .font(.caption)
-                                                    .foregroundColor(.green)
-                                            }
-                                        }
-                                        .padding()
-                                        .background(index == currentChordIndex ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
-                                        .cornerRadius(12)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(index == currentChordIndex ? Color.blue : Color.clear, lineWidth: 2)
-                                        )
-                                    }
-                                }
-                            }
-                        } else if isResolutionTargetsMode {
-                            // Resolution targets mode - show source and target chords
-                            VStack(spacing: 15) {
-                                if let pairs = question.resolutionPairs,
-                                   let currentIndex = question.currentResolutionIndex,
-                                   currentIndex < pairs.count {
-                                    let pair = pairs[currentIndex]
-                                    let sourceChord = question.cadence.chords[pair.sourceChordIndex]
-                                    let targetChord = question.cadence.chords[pair.targetChordIndex]
-                                    
-                                    VStack(spacing: 10) {
-                                        Text("The \(pair.sourceRole.rawValue) of \(sourceChord.displayName) is \(pair.sourceNote.displayName)")
-                                            .font(.headline)
-                                            .foregroundColor(.blue)
-                                            .padding(12)
-                                            .background(Color.blue.opacity(0.1))
-                                            .cornerRadius(8)
-                                        
-                                        HStack(spacing: 30) {
-                                            VStack {
-                                                Text(sourceChord.displayName)
-                                                    .font(.title2)
-                                                    .fontWeight(.bold)
-                                                Text(pair.sourceNote.displayName)
-                                                    .font(.title)
-                                                    .foregroundColor(.blue)
-                                            }
-                                            .padding()
-                                            .background(Color.blue.opacity(0.1))
-                                            .cornerRadius(12)
-                                            
-                                            Image(systemName: "arrow.right")
-                                                .font(.title)
-                                                .foregroundColor(.orange)
-                                            
-                                            VStack {
-                                                Text(targetChord.displayName)
-                                                    .font(.title2)
-                                                    .fontWeight(.bold)
-                                                Text(showingFeedback && pair.targetNote != nil ? pair.targetNote!.displayName : "?")
-                                                    .font(.title)
-                                                    .foregroundColor(showingFeedback ? .green : .orange)
-                                            }
-                                            .padding()
-                                            .background(Color.orange.opacity(0.1))
-                                            .cornerRadius(12)
-                                        }
-                                        
-                                        Text("Where does this note resolve?")
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                            }
-                        } else if isSmoothVoicingMode {
-                            // Smooth voicing mode - display constraint and all chords
-                            VStack(spacing: 15) {
-                                if let constraint = question.voicingConstraint {
-                                    VStack(spacing: 8) {
-                                        Text("Voice with minimal motion")
-                                            .font(.headline)
-                                            .foregroundColor(.purple)
-                                        
-                                        Text("Top voice: \(constraint.topVoiceMotion.rawValue)  •  Max total motion: \(constraint.maxTotalMotion) semitones")
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .padding(12)
-                                    .background(Color.purple.opacity(0.1))
-                                    .cornerRadius(8)
-                                }
-                                
-                                HStack(spacing: 15) {
-                                    ForEach(0..<chordsToSpell.count, id: \.self) { index in
-                                        VStack(spacing: 6) {
-                                            Text(chordsToSpell[index].displayName)
-                                                .font(.title3)
-                                                .fontWeight(.bold)
-                                                .foregroundColor(index == currentChordIndex ? .purple : .secondary)
-                                            
-                                            // Show user's voicing if already selected
-                                            if !chordSpellings[index].isEmpty {
-                                                Text(chordSpellings[index].map { $0.name }.joined(separator: ", "))
-                                                    .font(.caption2)
-                                                    .foregroundColor(.green)
-                                            }
-                                        }
-                                        .padding()
-                                        .background(index == currentChordIndex ? Color.purple.opacity(0.1) : Color.gray.opacity(0.1))
-                                        .cornerRadius(12)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(index == currentChordIndex ? Color.purple : Color.clear, lineWidth: 2)
-                                        )
-                                        
-                                        if index < chordsToSpell.count - 1 {
-                                            Image(systemName: "arrow.right")
-                                                .foregroundColor(.gray)
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            // Display all chords for full progression or speed round
-                            HStack(spacing: 20) {
-                                ForEach(0..<chordsToSpell.count, id: \.self) { index in
-                                    chordDisplayCard(
-                                        chord: chordsToSpell[index],
-                                        index: index,
-                                        isActive: index == currentChordIndex,
-                                        isCompleted: !chordSpellings[index].isEmpty && index < currentChordIndex
-                                    )
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-
-                        // Question text
-                        if isCommonTonesMode {
-                            Text("Select the note(s) that appear in both chords")
-                                .font(.headline)
-                                .foregroundColor(settings.primaryAccent(for: colorScheme))
-                        } else if isGuideTonesMode {
-                            Text("Spell: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName) (3rd & 7th only)")
-                                .font(.headline)
-                                .foregroundColor(settings.primaryAccent(for: colorScheme))
-                        } else if isResolutionTargetsMode {
-                            Text("Select the resolution target")
-                                .font(.headline)
-                                .foregroundColor(settings.primaryAccent(for: colorScheme))
-                        } else if isSmoothVoicingMode {
-                            Text("Voice: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName)")
-                                .font(.headline)
-                                .foregroundColor(settings.primaryAccent(for: colorScheme))
-                        } else {
-                            Text("Spell: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName)")
-                                .font(.headline)
-                                .foregroundColor(settings.primaryAccent(for: colorScheme))
-                        }
-                        
-                        // Hint display
-                        if let hint = currentHintText {
-                            Text(hint)
-                                .font(.subheadline)
-                                .foregroundColor(.orange)
-                                .padding(8)
-                                .background(Color.orange.opacity(0.1))
-                                .cornerRadius(8)
-                        }
-                        
-                        // Hint button (not for modes where it would give away the answer)
-                        if cadenceGame.canRequestHint && !isCommonTonesMode && !isResolutionTargetsMode {
-                            Button(action: requestHint) {
-                                HStack {
-                                    Image(systemName: "lightbulb")
-                                    Text("Hint (\(3 - cadenceGame.currentHintLevel) left)")
-                                }
-                                .font(.caption)
-                                .foregroundColor(.orange)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.orange.opacity(0.1))
-                                .cornerRadius(8)
-                            }
-                        }
-                        }  // End of VStack for visual display
-                    }  // End of else block
+                        visualDisplayContentView(question: question, chordsToSpell: chordsToSpell)
+                    }
                 }
 
                 // Piano Keyboard (only for non-ear training modes)

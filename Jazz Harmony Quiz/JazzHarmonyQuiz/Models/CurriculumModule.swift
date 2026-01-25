@@ -11,7 +11,7 @@ struct CurriculumModule: Identifiable, Codable, Equatable {
     let pathway: CurriculumPathway
     let level: Int  // Order within pathway (1, 2, 3...)
     
-    let mode: PracticeMode
+    let mode: CurriculumPracticeMode
     let recommendedConfig: ModuleConfig
     
     let prerequisiteModuleIDs: [UUID]
@@ -24,7 +24,7 @@ struct CurriculumModule: Identifiable, Codable, Equatable {
         emoji: String,
         pathway: CurriculumPathway,
         level: Int,
-        mode: PracticeMode,
+        mode: CurriculumPracticeMode,
         recommendedConfig: ModuleConfig,
         prerequisiteModuleIDs: [UUID] = [],
         completionCriteria: CompletionCriteria
@@ -86,7 +86,7 @@ enum CurriculumPathway: String, CaseIterable, Codable, Equatable {
 // MARK: - Practice Mode
 
 /// Which drill mode this module uses
-enum PracticeMode: String, Codable, Equatable {
+enum CurriculumPracticeMode: String, Codable, Equatable {
     case chords = "Chords"
     case scales = "Scales"
     case cadences = "Cadences"

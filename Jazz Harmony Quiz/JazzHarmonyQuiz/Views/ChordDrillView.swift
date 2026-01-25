@@ -1157,6 +1157,10 @@ struct ActiveQuizView: View {
             return "Select all the chord tones for this chord"
         case .earTraining:
             return "Identify the chord quality by ear"
+        case .auralQuality:
+            return "Identify the chord quality by ear"
+        case .auralSpelling:
+            return "Spell the chord you hear"
         }
     }
 

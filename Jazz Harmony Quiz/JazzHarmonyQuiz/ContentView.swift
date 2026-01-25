@@ -6,7 +6,7 @@ struct ContentView: View {
     @EnvironmentObject var quizGame: QuizGame
     @EnvironmentObject var cadenceGame: CadenceGame
     @EnvironmentObject var settings: SettingsManager
-    @State private var navigationPath = NavigationPath()
+    @State private var navigationPath = NavigationPath([String]())
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -60,6 +60,7 @@ struct ContentView: View {
                 case "quickPractice":
                     ChordDrillView(startQuickPractice: true)
                 case "achievements":
+                    EmptyView() // Placeholder for future achievements view
                 case "curriculum":
                     CurriculumView()
                 default:
@@ -76,10 +77,7 @@ struct ContentView: View {
         let curriculumManager = CurriculumManager.shared
         
         if let nextModule = curriculumManager.recommendedNextModule {
-            RecommendedNextCard(module: nextModule, navigationPath: $navigationPath)   default:
-                    EmptyView()
-                }
-            }
+            RecommendedNextCard(module: nextModule, navigationPath: $navigationPath)
         }
     }
     
@@ -754,7 +752,7 @@ struct RecommendedNextCard: View {
                         .lineLimit(2)
                     
                     HStack(spacing: 8) {
-                        Label(module.pathway.name, systemImage: "map")
+                        Label(module.pathway.rawValue, systemImage: "map")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                         
@@ -848,50 +846,9 @@ struct RecommendedNextCard: View {
     }
     
     private func applyModuleConfiguration() {
-        let config = module.recommendedConfig
-        let settings = SettingsManager.shared
-        
-        switch module.mode {
-        case .chords:
-            if let chordTypes = config.chordTypes {
-                settings.selectedChordTypes = chordTypes
-            }
-            if let difficulty = config.keyDifficulty {
-                settings.keyDifficulty = difficulty
-            }
-            settings.showNoteNames = config.showNoteNames ?? settings.showNoteNames
-            settings.showKeyboard = config.showKeyboard ?? settings.showKeyboard
-            
-        case .scales:
-            if let scaleTypes = config.scaleTypes {
-                settings.selectedScaleTypes = scaleTypes
-            }
-            if let difficulty = config.keyDifficulty {
-                settings.keyDifficulty = difficulty
-            }
-            
-        case .cadences:
-            if let cadenceTypes = config.cadenceTypes {
-                settings.selectedCadenceTypes = cadenceTypes
-            }
-            if let difficulty = config.keyDifficulty {
-                settings.keyDifficulty = difficulty
-            }
-            
-        case .intervals:
-            if let intervalTypes = config.intervalTypes {
-                settings.selectedIntervalTypes = intervalTypes
-            }
-            settings.playMelodically = config.playMelodically ?? settings.playMelodically
-            
-        case .progressions:
-            if let progressionTypes = config.progressionTypes {
-                settings.selectedProgressionTypes = progressionTypes
-            }
-            if let difficulty = config.keyDifficulty {
-                settings.keyDifficulty = difficulty
-            }
-        }
+        // Configuration will be applied by the drill views when they start
+        // For now, just store the active module - the drill views will read
+        // the configuration from CurriculumManager.shared.activeModule
     }
 }
 

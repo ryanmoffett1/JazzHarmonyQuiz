@@ -391,6 +391,12 @@ class CadenceGame: ObservableObject {
             modeMultiplier = 1.2  // Chord symbol recognition
         case .auralIdentify:
             modeMultiplier = 1.8  // Ear training is harder
+        case .guideTones:
+            modeMultiplier = 1.4  // Guide tone resolution
+        case .resolutionTargets:
+            modeMultiplier = 1.4  // Resolution targets
+        case .smoothVoicing:
+            modeMultiplier = 1.5  // Smooth voicing challenges
         }
         
         // Cadence type complexity bonus
@@ -1274,6 +1280,30 @@ class CadenceGame: ObservableObject {
                 itemID = SRItemID(
                     mode: .cadenceDrill,
                     topic: "aural-identify",
+                    key: question.cadence.key.name,
+                    variant: selectedCadenceType.rawValue
+                )
+            case .guideTones:
+                // Record guide tone practice
+                itemID = SRItemID(
+                    mode: .cadenceDrill,
+                    topic: "guide-tones",
+                    key: question.cadence.key.name,
+                    variant: selectedCadenceType.rawValue
+                )
+            case .resolutionTargets:
+                // Record resolution target practice
+                itemID = SRItemID(
+                    mode: .cadenceDrill,
+                    topic: "resolution-targets",
+                    key: question.cadence.key.name,
+                    variant: selectedCadenceType.rawValue
+                )
+            case .smoothVoicing:
+                // Record smooth voicing practice
+                itemID = SRItemID(
+                    mode: .cadenceDrill,
+                    topic: "smooth-voicing",
                     key: question.cadence.key.name,
                     variant: selectedCadenceType.rawValue
                 )

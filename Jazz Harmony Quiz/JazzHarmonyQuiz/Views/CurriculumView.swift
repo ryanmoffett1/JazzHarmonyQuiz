@@ -58,60 +58,11 @@ struct CurriculumView: View {
     }
     
     private func startModule(_ module: CurriculumModule) {
-        // Set active module
+        // Set active module - drill views will read configuration from this
         curriculumManager.setActiveModule(module.id)
-        
-        // Apply module configuration
-        applyModuleConfiguration(module)
         
         // Dismiss curriculum view - parent ContentView will handle navigation
         dismiss()
-    }
-    
-    private func applyModuleConfiguration(_ module: CurriculumModule) {
-        let config = module.recommendedConfig
-        
-        switch module.mode {
-        case .chords:
-            if let chordTypes = config.chordTypes {
-                settings.selectedChordTypes = chordTypes
-            }
-            if let difficulty = config.keyDifficulty {
-                settings.keyDifficulty = difficulty
-            }
-            settings.showNoteNames = config.showNoteNames ?? settings.showNoteNames
-            settings.showKeyboard = config.showKeyboard ?? settings.showKeyboard
-            
-        case .scales:
-            if let scaleTypes = config.scaleTypes {
-                settings.selectedScaleTypes = scaleTypes
-            }
-            if let difficulty = config.keyDifficulty {
-                settings.keyDifficulty = difficulty
-            }
-            
-        case .cadences:
-            if let cadenceTypes = config.cadenceTypes {
-                settings.selectedCadenceTypes = cadenceTypes
-            }
-            if let difficulty = config.keyDifficulty {
-                settings.keyDifficulty = difficulty
-            }
-            
-        case .intervals:
-            if let intervalTypes = config.intervalTypes {
-                settings.selectedIntervalTypes = intervalTypes
-            }
-            settings.playMelodically = config.playMelodically ?? settings.playMelodically
-            
-        case .progressions:
-            if let progressionTypes = config.progressionTypes {
-                settings.selectedProgressionTypes = progressionTypes
-            }
-            if let difficulty = config.keyDifficulty {
-                settings.keyDifficulty = difficulty
-            }
-        }
     }
 }
 
@@ -453,6 +404,6 @@ struct CriteriaRow: View {
 struct CurriculumView_Previews: PreviewProvider {
     static var previews: some View {
         CurriculumView()
-            .environmentObject(SettingsManager())
+            .environmentObject(SettingsManager.shared)
     }
 }

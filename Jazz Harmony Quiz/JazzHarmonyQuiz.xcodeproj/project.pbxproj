@@ -13,6 +13,12 @@
 		9400DEB82F2516A900BDBF25 /* ProgressionProgression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB72F2516A900BDBF25 /* ProgressionProgression.swift */; };
 		9400DEB92F2516A900BDBF25 /* ProgressionGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB62F2516A900BDBF25 /* ProgressionGame.swift */; };
 		9400DEBA2F2516A900BDBF25 /* ProgressionDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB52F2516A900BDBF25 /* ProgressionDatabase.swift */; };
+		9400DEBF2F256F8800BDBF25 /* CurriculumManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEBD2F256F8800BDBF25 /* CurriculumManager.swift */; };
+		9400DEC02F256F8800BDBF25 /* CurriculumModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEBE2F256F8800BDBF25 /* CurriculumModule.swift */; };
+		9400DEC12F256F8800BDBF25 /* CurriculumDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEBC2F256F8800BDBF25 /* CurriculumDatabase.swift */; };
+		9400DEC22F256F8800BDBF25 /* ConceptualExplanations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEBB2F256F8800BDBF25 /* ConceptualExplanations.swift */; };
+		9400DEC42F256FBD00BDBF25 /* CurriculumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEC32F256FBD00BDBF25 /* CurriculumView.swift */; };
+		9400DEC62F256FCA00BDBF25 /* HarmonyDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEC52F256FCA00BDBF25 /* HarmonyDrillView.swift */; };
 		941565132F186B14001C0BC2 /* IntervalDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941565122F186B14001C0BC2 /* IntervalDrillView.swift */; };
 		9434133B2F1EDD1D009235D1 /* PlayerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9434133A2F1EDD1C009235D1 /* PlayerProfile.swift */; };
 		9434133D2F1EDD74009235D1 /* PlayerProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9434133C2F1EDD74009235D1 /* PlayerProfileView.swift */; };
@@ -51,6 +57,12 @@
 		9400DEB52F2516A900BDBF25 /* ProgressionDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionDatabase.swift; sourceTree = "<group>"; };
 		9400DEB62F2516A900BDBF25 /* ProgressionGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionGame.swift; sourceTree = "<group>"; };
 		9400DEB72F2516A900BDBF25 /* ProgressionProgression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionProgression.swift; sourceTree = "<group>"; };
+		9400DEBB2F256F8800BDBF25 /* ConceptualExplanations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptualExplanations.swift; sourceTree = "<group>"; };
+		9400DEBC2F256F8800BDBF25 /* CurriculumDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumDatabase.swift; sourceTree = "<group>"; };
+		9400DEBD2F256F8800BDBF25 /* CurriculumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumManager.swift; sourceTree = "<group>"; };
+		9400DEBE2F256F8800BDBF25 /* CurriculumModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumModule.swift; sourceTree = "<group>"; };
+		9400DEC32F256FBD00BDBF25 /* CurriculumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumView.swift; sourceTree = "<group>"; };
+		9400DEC52F256FCA00BDBF25 /* HarmonyDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonyDrillView.swift; sourceTree = "<group>"; };
 		941565122F186B14001C0BC2 /* IntervalDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillView.swift; sourceTree = "<group>"; };
 		9434133A2F1EDD1C009235D1 /* PlayerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfile.swift; sourceTree = "<group>"; };
 		9434133C2F1EDD74009235D1 /* PlayerProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileView.swift; sourceTree = "<group>"; };
@@ -148,6 +160,10 @@
 			children = (
 				944280242F12A0230035FE8B /* CadenceGame.swift */,
 				A1234567890ABCDEF009 /* ChordModel.swift */,
+				9400DEBB2F256F8800BDBF25 /* ConceptualExplanations.swift */,
+				9400DEBC2F256F8800BDBF25 /* CurriculumDatabase.swift */,
+				9400DEBD2F256F8800BDBF25 /* CurriculumManager.swift */,
+				9400DEBE2F256F8800BDBF25 /* CurriculumModule.swift */,
 				94E4E7922F149D6E009754EE /* IntervalDatabase.swift */,
 				94E4E7942F149D7E009754EE /* IntervalGame.swift */,
 				94E4E7962F149D9C009754EE /* IntervalModel.swift */,
@@ -173,6 +189,8 @@
 				944280282F12A0770035FE8B /* CadenceScoreboardView.swift */,
 				A1234567890ABCDEF015 /* ChordDrillView.swift */,
 				94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */,
+				9400DEC32F256FBD00BDBF25 /* CurriculumView.swift */,
+				9400DEC52F256FCA00BDBF25 /* HarmonyDrillView.swift */,
 				941565122F186B14001C0BC2 /* IntervalDrillView.swift */,
 				A1234567890ABCDEF011 /* PianoKeyboard.swift */,
 				9434133C2F1EDD74009235D1 /* PlayerProfileView.swift */,
@@ -278,6 +296,10 @@
 				A1234567890ABCDEF012 /* PianoKeyboard.swift in Sources */,
 				944280252F12A0230035FE8B /* CadenceGame.swift in Sources */,
 				A1234567890ABCDEF016 /* ChordDrillView.swift in Sources */,
+				9400DEBF2F256F8800BDBF25 /* CurriculumManager.swift in Sources */,
+				9400DEC02F256F8800BDBF25 /* CurriculumModule.swift in Sources */,
+				9400DEC12F256F8800BDBF25 /* CurriculumDatabase.swift in Sources */,
+				9400DEC22F256F8800BDBF25 /* ConceptualExplanations.swift in Sources */,
 				9442802F2F12A19E0035FE8B /* FlowLayout.swift in Sources */,
 				9400DEB42F2515E100BDBF25 /* ProgressionDrillView.swift in Sources */,
 				941565132F186B14001C0BC2 /* IntervalDrillView.swift in Sources */,
@@ -289,7 +311,9 @@
 				94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */,
 				9442802B2F12A08C0035FE8B /* CadenceDrillView.swift in Sources */,
 				94E4E7932F149D6E009754EE /* IntervalDatabase.swift in Sources */,
+				9400DEC42F256FBD00BDBF25 /* CurriculumView.swift in Sources */,
 				94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */,
+				9400DEC62F256FCA00BDBF25 /* HarmonyDrillView.swift in Sources */,
 				94E4E7972F149D9C009754EE /* IntervalModel.swift in Sources */,
 				A1234567890ABCDEF020 /* ScoreboardView.swift in Sources */,
 				944280292F12A0770035FE8B /* CadenceScoreboardView.swift in Sources */,

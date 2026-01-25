@@ -543,9 +543,9 @@ struct ResolutionPair: Codable, Equatable, Identifiable {
     
     var description: String {
         if let target = targetNote {
-            return "\(sourceNote.displayName) (\(sourceRole.rawValue)) → \(target.displayName)"
+            return "\(sourceNote.name) (\(sourceRole.rawValue)) → \(target.name)"
         } else {
-            return "\(sourceNote.displayName) (\(sourceRole.rawValue)) → ?"
+            return "\(sourceNote.name) (\(sourceRole.rawValue)) → ?"
         }
     }
 }
@@ -973,7 +973,7 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
             let pair = pairs[index]
             let sourceChord = cadence.chords[pair.sourceChordIndex]
             let targetChord = cadence.chords[pair.targetChordIndex]
-            return "The \(pair.sourceRole.rawValue) of \(sourceChord.displayName) is \(pair.sourceNote.displayName). Where does it resolve in \(targetChord.displayName)?"
+            return "The \(pair.sourceRole.rawValue) of \(sourceChord.displayName) is \(pair.sourceNote.name). Where does it resolve in \(targetChord.displayName)?"
         case .smoothVoicing:
             guard let constraint = voicingConstraint else { return "Voice with minimal motion" }
             return "Voice \(cadence.chords[0].displayName) → \(cadence.chords[1].displayName) → \(cadence.chords[2].displayName) with top voice: \(constraint.topVoiceMotion.rawValue)"
@@ -1018,6 +1018,12 @@ struct CadenceQuestion: Identifiable, Codable, Equatable {
             self.timeLimit = 45.0
         case .auralIdentify:
             self.timeLimit = 60.0  // More time for ear training
+        case .guideTones:
+            self.timeLimit = 45.0  // Time for guide tone resolution
+        case .resolutionTargets:
+            self.timeLimit = 45.0  // Time for resolution targets
+        case .smoothVoicing:
+            self.timeLimit = 60.0  // Time for voicing with constraints
         }
     }
     

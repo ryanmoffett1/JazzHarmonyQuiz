@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct HarmonyDrillView: View {
+struct ProgressionDrillView: View {
     @StateObject private var game = ProgressionGame()
     @EnvironmentObject var settings: SettingsManager
     @State private var viewState: ViewState = .setup
@@ -38,18 +38,18 @@ struct HarmonyDrillView: View {
         ZStack {
             switch viewState {
             case .setup:
-                HarmonySetupView(onStartQuiz: { config in
+                ProgressionSetupView(onStartQuiz: { config in
                     startQuiz(config)
                 })
                 .environmentObject(game)
                 
             case .active:
-                HarmonyActiveView(viewState: $viewState, practiceMode: currentPracticeMode)
+                ProgressionActiveView(viewState: $viewState, practiceMode: currentPracticeMode)
                     .environmentObject(game)
                     .environmentObject(settings)
                 
             case .results:
-                HarmonyResultsView(onNewQuiz: {
+                ProgressionResultsView(onNewQuiz: {
                     game.resetQuizState()
                     viewState = .setup
                 })
@@ -113,7 +113,7 @@ struct HarmonyDrillView: View {
 
 // MARK: - Setup View
 
-struct HarmonySetupView: View {
+struct ProgressionSetupView: View {
     @EnvironmentObject var game: ProgressionGame
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
@@ -123,9 +123,9 @@ struct HarmonySetupView: View {
     @State private var selectedKeyDifficulty: KeyDifficulty = .easy
     @State private var useMixedCategories: Bool = false
     @State private var selectedCategories: Set<ProgressionCategory> = [.cadences]
-    @State private var practiceMode: HarmonyDrillView.PracticeMode = .visual
+    @State private var practiceMode: ProgressionDrillView.PracticeMode = .visual
     
-    let onStartQuiz: (HarmonyDrillView.QuizConfig) -> Void
+    let onStartQuiz: (ProgressionDrillView.QuizConfig) -> Void
     
     var body: some View {
         ScrollView {
@@ -148,7 +148,7 @@ struct HarmonySetupView: View {
                             .font(.headline)
                         
                         Picker("Practice Mode", selection: $practiceMode) {
-                            ForEach(HarmonyDrillView.PracticeMode.allCases, id: \.self) { mode in
+                            ForEach(ProgressionDrillView.PracticeMode.allCases, id: \.self) { mode in
                                 Label(mode.rawValue, systemImage: mode.icon).tag(mode)
                             }
                         }
@@ -248,7 +248,7 @@ struct HarmonySetupView: View {
                 
                 // Start Button
                 Button(action: {
-                    let config = HarmonyDrillView.QuizConfig(
+                    let config = ProgressionDrillView.QuizConfig(
                         numberOfQuestions: numberOfQuestions,
                         category: selectedCategory,
                         difficulty: selectedDifficulty,
@@ -284,11 +284,11 @@ struct HarmonySetupView: View {
 
 // MARK: - Active View
 
-struct HarmonyActiveView: View {
+struct ProgressionActiveView: View {
     @EnvironmentObject var game: ProgressionGame
     @EnvironmentObject var settings: SettingsManager
-    @Binding var viewState: HarmonyDrillView.ViewState
-    let practiceMode: HarmonyDrillView.PracticeMode
+    @Binding var viewState: ProgressionDrillView.ViewState
+    let practiceMode: ProgressionDrillView.PracticeMode
     @State private var userChords: [Chord?] = []
     @State private var selectedSlotIndex = 0
     @State private var showingAnswer = false
@@ -380,7 +380,7 @@ struct HarmonyActiveView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 12) {
                                 ForEach(Array(question.progression.chords.enumerated()), id: \.offset) { index, chord in
-                                    ChordSlotView(
+                                    ProgressionChordSlotView(
                                         index: index,
                                         symbol: (practiceMode == .visual) ? (question.progression.template.chords[safe: index]?.romanNumeral ?? "?") : "?",
                                         userChord: userChords[safe: index] ?? nil,
@@ -424,7 +424,7 @@ struct HarmonyActiveView: View {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 12) {
                                     ForEach(Array(question.progression.chords.enumerated()), id: \.offset) { index, chord in
-                                        ChordSlotView(
+                                        ProgressionChordSlotView(
                                             index: index,
                                             symbol: question.progression.template.chords[safe: index]?.romanNumeral ?? "?",
                                             userChord: userChords[safe: index] ?? nil,
@@ -471,7 +471,7 @@ struct HarmonyActiveView: View {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 12) {
                                     ForEach(Array(question.progression.chords.enumerated()), id: \.offset) { index, chord in
-                                        ChordSlotView(
+                                        ProgressionChordSlotView(
                                             index: index,
                                             symbol: question.progression.template.chords[safe: index]?.romanNumeral ?? "?",
                                             userChord: chord,
@@ -497,7 +497,7 @@ struct HarmonyActiveView: View {
                 
                 // Chord builder
                 if !showingAnswer {
-                    ChordBuilderView(
+                    ProgressionChordBuilderView(
                         selectedChord: Binding(
                             get: { userChords[safe: selectedSlotIndex] ?? nil },
                             set: { newChord in
@@ -617,7 +617,7 @@ struct HarmonyActiveView: View {
 }
 
 // Helper view for chord slots
-struct ChordSlotView: View {
+struct ProgressionChordSlotView: View {
     let index: Int
     let symbol: String
     let userChord: Chord?
@@ -810,7 +810,7 @@ struct ChordSlotView: View {
 }
 
 // Simple chord builder
-struct ChordBuilderView: View {
+struct ProgressionChordBuilderView: View {
     @Binding var selectedChord: Chord?
     let key: Note
     @State private var selectedRoot: Note = Note.allNotes.first { $0.name == "C" }!
@@ -923,7 +923,7 @@ struct ChordBuilderView: View {
 
 // MARK: - Results View
 
-struct HarmonyResultsView: View {
+struct ProgressionResultsView: View {
     @EnvironmentObject var game: ProgressionGame
     let onNewQuiz: () -> Void
     
@@ -946,13 +946,13 @@ struct HarmonyResultsView: View {
                     // Score card
                     VStack(spacing: 16) {
                         HStack(spacing: 40) {
-                            StatBox(
+                            ProgressionStatBox(
                                 label: "Accuracy",
                                 value: "\(Int(result.accuracy * 100))%",
                                 color: result.accuracy >= 0.8 ? .green : result.accuracy >= 0.6 ? .orange : .red
                             )
                             
-                            StatBox(
+                            ProgressionStatBox(
                                 label: "Correct",
                                 value: "\(result.correctAnswers)/\(result.totalQuestions)",
                                 color: .blue
@@ -1008,7 +1008,7 @@ struct HarmonyResultsView: View {
 }
 
 // Stat box helper view
-struct StatBox: View {
+struct ProgressionStatBox: View {
     let label: String
     let value: String
     let color: Color
