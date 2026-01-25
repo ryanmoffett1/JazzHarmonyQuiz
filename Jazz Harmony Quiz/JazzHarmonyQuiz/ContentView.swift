@@ -46,7 +46,7 @@ struct ContentView: View {
                 case "chordDrill":
                     ChordDrillView()
                 case "harmonyDrill":
-                    HarmonyDrillView()
+                    ProgressionDrillView()
                 case "scaleDrill":
                     ScaleDrillView()
                 case "intervalDrill":
