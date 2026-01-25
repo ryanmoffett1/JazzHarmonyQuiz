@@ -29,6 +29,13 @@
 		9442802F2F12A19E0035FE8B /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9442802D2F12A19E0035FE8B /* FlowLayout.swift */; };
 		944280302F12B0000035FE8B /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280312F12B0000035FE8B /* AudioManager.swift */; };
 		94629FCC2F1BD9CB0029B7F7 /* QuizGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */; };
+		946351E82F2665C300ABD609 /* ChordType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351E02F2665C300ABD609 /* ChordType.swift */; };
+		946351E92F2665C300ABD609 /* Chord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351DE2F2665C300ABD609 /* Chord.swift */; };
+		946351EA2F2665C300ABD609 /* PlayerLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351E32F2665C300ABD609 /* PlayerLevel.swift */; };
+		946351EB2F2665C300ABD609 /* Interval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351E12F2665C300ABD609 /* Interval.swift */; };
+		946351EC2F2665C300ABD609 /* ChordTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351DF2F2665C300ABD609 /* ChordTone.swift */; };
+		946351ED2F2665C300ABD609 /* Scale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351E42F2665C300ABD609 /* Scale.swift */; };
+		946351EE2F2665C300ABD609 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351E22F2665C300ABD609 /* Note.swift */; };
 		94ADBD0B2F1C01E900AD5DC0 /* ChordSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */; };
 		94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */; };
 		94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */; };
@@ -83,6 +90,13 @@
 		9442802D2F12A19E0035FE8B /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		944280312F12B0000035FE8B /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizGame.swift; sourceTree = "<group>"; };
+		946351DE2F2665C300ABD609 /* Chord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chord.swift; sourceTree = "<group>"; };
+		946351DF2F2665C300ABD609 /* ChordTone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordTone.swift; sourceTree = "<group>"; };
+		946351E02F2665C300ABD609 /* ChordType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordType.swift; sourceTree = "<group>"; };
+		946351E12F2665C300ABD609 /* Interval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Interval.swift; sourceTree = "<group>"; };
+		946351E22F2665C300ABD609 /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		946351E32F2665C300ABD609 /* PlayerLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerLevel.swift; sourceTree = "<group>"; };
+		946351E42F2665C300ABD609 /* Scale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scale.swift; sourceTree = "<group>"; };
 		94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
 		94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
 		94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
@@ -142,6 +156,44 @@
 			path = Helpers;
 			sourceTree = "<group>";
 		};
+		946351DD2F2665C300ABD609 /* Databases */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Databases;
+			sourceTree = "<group>";
+		};
+		946351E52F2665C300ABD609 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				946351DE2F2665C300ABD609 /* Chord.swift */,
+				946351DF2F2665C300ABD609 /* ChordTone.swift */,
+				946351E02F2665C300ABD609 /* ChordType.swift */,
+				946351E12F2665C300ABD609 /* Interval.swift */,
+				946351E22F2665C300ABD609 /* Note.swift */,
+				946351E32F2665C300ABD609 /* PlayerLevel.swift */,
+				946351E42F2665C300ABD609 /* Scale.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		946351E62F2665C300ABD609 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		946351E72F2665C300ABD609 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				946351DD2F2665C300ABD609 /* Databases */,
+				946351E52F2665C300ABD609 /* Models */,
+				946351E62F2665C300ABD609 /* Services */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
 		94TEST0001000000000006 /* JazzHarmonyQuizTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -163,6 +215,7 @@
 		A1234567890ABCDEF026 /* JazzHarmonyQuiz */ = {
 			isa = PBXGroup;
 			children = (
+				946351E72F2665C300ABD609 /* Core */,
 				A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */,
 				A1234567890ABCDEF002 /* ContentView.swift */,
 				A1234567890ABCDEF028 /* Models */,
@@ -362,6 +415,13 @@
 				944280252F12A0230035FE8B /* CadenceGame.swift in Sources */,
 				A1234567890ABCDEF016 /* ChordDrillView.swift in Sources */,
 				9400DEBF2F256F8800BDBF25 /* CurriculumManager.swift in Sources */,
+				946351E82F2665C300ABD609 /* ChordType.swift in Sources */,
+				946351E92F2665C300ABD609 /* Chord.swift in Sources */,
+				946351EA2F2665C300ABD609 /* PlayerLevel.swift in Sources */,
+				946351EB2F2665C300ABD609 /* Interval.swift in Sources */,
+				946351EC2F2665C300ABD609 /* ChordTone.swift in Sources */,
+				946351ED2F2665C300ABD609 /* Scale.swift in Sources */,
+				946351EE2F2665C300ABD609 /* Note.swift in Sources */,
 				9400DEC02F256F8800BDBF25 /* CurriculumModule.swift in Sources */,
 				9400DEC12F256F8800BDBF25 /* CurriculumDatabase.swift in Sources */,
 				9400DEC22F256F8800BDBF25 /* ConceptualExplanations.swift in Sources */,
