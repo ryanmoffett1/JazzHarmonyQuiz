@@ -370,8 +370,12 @@ final class CadenceGameTests: XCTestCase {
         }
         
         XCTAssertNotNil(game.currentResult)
-        XCTAssertEqual(game.currentResult?.correctAnswers, 2)
-        XCTAssertEqual(game.currentResult?.accuracy ?? 0.0, 1.0, accuracy: 0.01)
+        guard let result = game.currentResult else {
+            XCTFail("Expected currentResult to be non-nil")
+            return
+        }
+        XCTAssertEqual(result.correctAnswers, 2)
+        XCTAssertEqual(result.accuracy, 1.0, accuracy: 0.01)
     }
     
     // MARK: - Progress Tracking Tests
