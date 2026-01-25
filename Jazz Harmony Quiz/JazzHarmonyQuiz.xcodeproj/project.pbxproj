@@ -74,6 +74,7 @@
 		94CADNC072F29000000000007 /* CadenceDrillResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC082F29000000000008 /* CadenceDrillResults.swift */; };
 		94CADNC092F29000000000009 /* CadenceDrillComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC0A2F2900000000000A /* CadenceDrillComponents.swift */; };
 		94DRILL052F27000000000005 /* ChordDrillGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILL062F27000000000006 /* ChordDrillGameTests.swift */; };
+		94CADGT012F29100000000001 /* CadenceGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADGT022F29100000000002 /* CadenceGameTests.swift */; };
 		94ADBD0B2F1C01E900AD5DC0 /* ChordSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */; };
 		94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */; };
 		94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */; };
@@ -165,6 +166,7 @@
 		94CADNC082F29000000000008 /* CadenceDrillResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillResults.swift; sourceTree = "<group>"; };
 		94CADNC0A2F2900000000000A /* CadenceDrillComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillComponents.swift; sourceTree = "<group>"; };
 		94DRILL062F27000000000006 /* ChordDrillGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillGameTests.swift; sourceTree = "<group>"; };
+		94CADGT022F29100000000002 /* CadenceGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceGameTests.swift; sourceTree = "<group>"; };
 		94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
 		94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
 		94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
@@ -393,9 +395,18 @@
 		94DRILL082F27000000000008 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				94CADGT032F29100000000003 /* CadenceDrill */,
 				94DRILL092F27000000000009 /* ChordDrill */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		94CADGT032F29100000000003 /* CadenceDrill */ = {
+			isa = PBXGroup;
+			children = (
+				94CADGT022F29100000000002 /* CadenceGameTests.swift */,
+			);
+			path = CadenceDrill;
 			sourceTree = "<group>";
 		};
 		94DRILL092F27000000000009 /* ChordDrill */ = {
@@ -595,6 +606,7 @@
 				9463525F2F26792600ABD609 /* PlayerLevelTests.swift in Sources */,
 				946352602F26792600ABD609 /* ScaleTests.swift in Sources */,
 				94DRILL052F27000000000005 /* ChordDrillGameTests.swift in Sources */,
+				94CADGT012F29100000000001 /* CadenceGameTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

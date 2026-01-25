@@ -91,14 +91,12 @@ Before marking a phase complete and moving to the next:
 ## Current Status
 
 ```
-Last Updated: 2026-01-25 22:55 UTC
+Last Updated: 2026-01-25
 Current Phase: Phase 5 - Feature: Drill Modules
-Current Task: 5.2.2 - Consolidate drill modes from 9 to 6
-Overall Progress: Phases 0-4 COMPLETE, Phase 5.1 COMPLETE, Phase 5.2.1 COMPLETE
-Test Coverage: 210 tests passing, all green
-Blockers/Notes: Fixed infinite loop bug in ChordDrillGame.finishDrill()
-                Fixed ChordDrillGameTests async setUp/tearDown causing hangs
-                Tests now run reliably with code coverage enabled
+Current Task: 5.3 - Scale Drill Refactor
+Overall Progress: Phases 0-4 COMPLETE, Phase 5.1 COMPLETE, Phase 5.2 COMPLETE
+Test Coverage: 297 tests passing, all green
+Blockers/Notes: Phase 5.2.3 completed - CadenceGameTests.swift added with 87 new tests
 ```
 
 ### Quick Progress Overview
@@ -556,12 +554,14 @@ Required before proceeding to Phase 5:
   - `Features/CadenceDrill/CadenceDrillComponents.swift` (added for helpers)
   - **Note:** Also added HapticFeedback enum to Components/Feedback.swift for shared use
 
-- [ ] **5.2.2** Consolidate drill modes from 9 to 6
+- [x] **5.2.2** Consolidate drill modes from 9 to 6
   - **Remove:** Speed Round (make timed option), Smooth Voicing (future Voice Leading)
   - **Keep:** Per DESIGN.md Section 7.5.2
+  - **Note:** Removed isolatedChord, speedRound, smoothVoicing modes; kept fullProgression, chordIdentification, auralIdentify, guideTones, commonTones, resolutionTargets
 
-- [ ] **5.2.3** Create unit tests for CadenceDrillGame
+- [x] **5.2.3** Create unit tests for CadenceDrillGame
   - **Target:** 90%+ coverage
+  - **Note:** Created CadenceGameTests.swift with 87 comprehensive tests covering initialization, quiz flow, answer validation, hints, mistake review, drill modes, statistics, and encouragement system
 
 #### 5.3 Scale Drill Refactor
 - [ ] **5.3.1** Split `ScaleDrillView.swift` into:
