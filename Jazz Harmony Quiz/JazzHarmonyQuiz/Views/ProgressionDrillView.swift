@@ -1034,7 +1034,7 @@ struct ProgressionStatBox: View {
 
 #Preview {
     NavigationView {
-        HarmonyDrillView()
+        ProgressionDrillView()
             .environmentObject(SettingsManager.shared)
     }
 }
