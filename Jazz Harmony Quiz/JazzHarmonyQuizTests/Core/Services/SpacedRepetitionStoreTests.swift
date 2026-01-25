@@ -12,40 +12,40 @@ final class SpacedRepetitionStoreTests: XCTestCase {
         super.setUp()
         store = SpacedRepetitionStore()
         // Clear any existing data
-        store.resetAllProgress()
+        store.resetAll()
     }
     
     override func tearDown() {
-        store.resetAllProgress()
+        store.resetAll()
         super.tearDown()
     }
     
     // MARK: - Initial State Tests
     
     func testInitialEaseFactorIsDefault() {
-        let item = store.getItem(id: testChordID)
+        let item = store.schedule(for: testChordID)
         XCTAssertEqual(item.easeFactor, 2.5, accuracy: 0.01, "Initial ease factor should be 2.5")
     }
     
     func testInitialIntervalIsZero() {
-        let item = store.getItem(id: testChordID)
+        let item = store.schedule(for: testChordID)
         XCTAssertEqual(item.interval, 0, "Initial interval should be 0")
     }
     
     func testInitialRepetitionsIsZero() {
-        let item = store.getItem(id: testChordID)
+        let item = store.schedule(for: testChordID)
         XCTAssertEqual(item.repetitions, 0, "Initial repetitions should be 0")
     }
     
     func testNewItemNotDueYet() {
-        let item = store.getItem(id: testChordID)
+        let item = store.schedule(for: testChordID)
         XCTAssertTrue(store.isDue(item), "New items should be due immediately")
     }
     
     // MARK: - Correct Response Tests (SM-2 Algorithm)
     
     func testCorrectResponseQuality5() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         
         // First correct response (quality 5 = perfect)
         item = store.recordResponse(for: item, quality: 5)
@@ -56,7 +56,7 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     }
     
     func testCorrectResponseQuality4() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         
         // Correct response (quality 4 = correct with hesitation)
         item = store.recordResponse(for: item, quality: 4)
@@ -67,7 +67,7 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     }
     
     func testCorrectResponseQuality3() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         
         // Correct with difficulty (quality 3)
         item = store.recordResponse(for: item, quality: 3)
@@ -81,7 +81,7 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     // MARK: - Incorrect Response Tests
     
     func testIncorrectResponseQuality2() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         
         // Incorrect response (quality 2)
         item = store.recordResponse(for: item, quality: 2)
@@ -92,7 +92,7 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     }
     
     func testIncorrectResponseQuality0() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         
         // Complete failure (quality 0)
         item = store.recordResponse(for: item, quality: 0)
@@ -105,7 +105,7 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     // MARK: - Multiple Repetitions Tests
     
     func testMultipleCorrectResponses() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         
         // First repetition
         item = store.recordResponse(for: item, quality: 5)
@@ -126,7 +126,7 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     }
     
     func testIncorrectResponseResetsProgress() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         
         // Build up some progress
         item = store.recordResponse(for: item, quality: 5)
@@ -142,7 +142,7 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     // MARK: - Due Date Tests
     
     func testIsDueAfterCorrectResponse() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         item = store.recordResponse(for: item, quality: 5)
         
         // Item should not be due immediately after correct response
@@ -150,7 +150,7 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     }
     
     func testIsDueAfterIntervalPasses() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         item = store.recordResponse(for: item, quality: 5)
         
         // Manually set nextReviewDate to past
@@ -162,7 +162,7 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     // MARK: - Ease Factor Bounds Tests
     
     func testEaseFactorMinimum() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         
         // Repeatedly answer with quality 0 to try to push ease factor below minimum
         for _ in 0..<10 {
@@ -173,7 +173,7 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     }
     
     func testEaseFactorMaximum() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         
         // Repeatedly answer with quality 5 to try to push ease factor very high
         for _ in 0..<20 {
@@ -188,14 +188,14 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     // MARK: - Multiple Items Tests
     
     func testMultipleItemsIndependent() {
-        var chordItem = store.getItem(id: testChordID)
-        var intervalItem = store.getItem(id: testIntervalID)
+        var chordItem = store.schedule(for: testChordID)
+        var intervalItem = store.schedule(for: testIntervalID)
         
         // Progress one item
         chordItem = store.recordResponse(for: chordItem, quality: 5)
         
         // Other item should be unaffected
-        intervalItem = store.getItem(id: testIntervalID)
+        intervalItem = store.schedule(for: testIntervalID)
         XCTAssertEqual(intervalItem.repetitions, 0)
         XCTAssertEqual(intervalItem.interval, 0)
         XCTAssertEqual(intervalItem.easeFactor, 2.5, accuracy: 0.01)
@@ -203,9 +203,9 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     
     func testGetAllDueItems() {
         // Create several items with different due dates
-        var item1 = store.getItem(id: "item1")
-        var item2 = store.getItem(id: "item2")
-        var item3 = store.getItem(id: "item3")
+        var item1 = store.schedule(for: "item1")
+        var item2 = store.schedule(for: "item2")
+        var item3 = store.schedule(for: "item3")
         
         // Make item1 not due (recently reviewed)
         item1 = store.recordResponse(for: item1, quality: 5)
@@ -224,13 +224,13 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     // MARK: - Persistence Tests
     
     func testItemPersistence() {
-        var item = store.getItem(id: testChordID)
+        var item = store.schedule(for: testChordID)
         item = store.recordResponse(for: item, quality: 5)
         store.updateItem(item)
         
         // Create new store instance
         let newStore = SpacedRepetitionStore()
-        let retrievedItem = newStore.getItem(id: testChordID)
+        let retrievedItem = newStore.schedule(for: testChordID)
         
         XCTAssertEqual(retrievedItem.repetitions, item.repetitions)
         XCTAssertEqual(retrievedItem.interval, item.interval)
@@ -239,8 +239,8 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     
     func testResetAllProgress() {
         // Create and progress multiple items
-        var item1 = store.getItem(id: "item1")
-        var item2 = store.getItem(id: "item2")
+        var item1 = store.schedule(for: "item1")
+        var item2 = store.schedule(for: "item2")
         
         item1 = store.recordResponse(for: item1, quality: 5)
         item2 = store.recordResponse(for: item2, quality: 5)
@@ -248,11 +248,11 @@ final class SpacedRepetitionStoreTests: XCTestCase {
         store.updateItem(item2)
         
         // Reset all
-        store.resetAllProgress()
+        store.resetAll()
         
         // Verify reset
-        let newItem1 = store.getItem(id: "item1")
-        let newItem2 = store.getItem(id: "item2")
+        let newItem1 = store.schedule(for: "item1")
+        let newItem2 = store.schedule(for: "item2")
         
         XCTAssertEqual(newItem1.repetitions, 0)
         XCTAssertEqual(newItem2.repetitions, 0)

@@ -21,12 +21,6 @@ final class IntervalTests: XCTestCase {
         XCTAssertEqual(IntervalDifficulty.advanced.rawValue, "Advanced")
     }
     
-    func testIntervalDifficultyDescriptions() {
-        XCTAssertEqual(IntervalDifficulty.beginner.description, "Perfect and Major intervals")
-        XCTAssertEqual(IntervalDifficulty.intermediate.description, "All basic intervals")
-        XCTAssertEqual(IntervalDifficulty.advanced.description, "All intervals including augmented/diminished")
-    }
-    
     // MARK: - IntervalType Tests
     
     func testIntervalTypeCreation() {

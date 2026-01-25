@@ -43,6 +43,56 @@ class SettingsManager: ObservableObject {
         }
     }
     
+    // Computed property for test compatibility (volume as Double)
+    var volume: Double {
+        get { Double(audioVolume) }
+        set { audioVolume = Float(newValue) }
+    }
+    
+    // Practice difficulty settings
+    @Published var chordDifficulty: ChordType.ChordDifficulty {
+        didSet {
+            UserDefaults.standard.set(chordDifficulty.rawValue, forKey: "chordDifficulty")
+        }
+    }
+    
+    @Published var scaleDifficulty: ChordType.ChordDifficulty {
+        didSet {
+            UserDefaults.standard.set(scaleDifficulty.rawValue, forKey: "scaleDifficulty")
+        }
+    }
+    
+    @Published var intervalDifficulty: ChordType.ChordDifficulty {
+        didSet {
+            UserDefaults.standard.set(intervalDifficulty.rawValue, forKey: "intervalDifficulty")
+        }
+    }
+    
+    @Published var questionsPerSession: Int {
+        didSet {
+            UserDefaults.standard.set(questionsPerSession, forKey: "questionsPerSession")
+        }
+    }
+    
+    // Display settings
+    @Published var showNoteNames: Bool {
+        didSet {
+            UserDefaults.standard.set(showNoteNames, forKey: "showNoteNames")
+        }
+    }
+    
+    @Published var autoPlay: Bool {
+        didSet {
+            UserDefaults.standard.set(autoPlay, forKey: "autoPlay")
+        }
+    }
+    
+    @Published var showTimer: Bool {
+        didSet {
+            UserDefaults.standard.set(showTimer, forKey: "showTimer")
+        }
+    }
+    
     // Interval Ear Training settings
     @Published var autoPlayIntervals: Bool {
         didSet {
@@ -128,6 +178,33 @@ class SettingsManager: ObservableObject {
         self.audioEnabled = UserDefaults.standard.object(forKey: "audioEnabled") as? Bool ?? true
         self.playChordOnCorrect = UserDefaults.standard.object(forKey: "playChordOnCorrect") as? Bool ?? true
         self.audioVolume = UserDefaults.standard.object(forKey: "audioVolume") as? Float ?? 0.7
+        
+        // Practice difficulty settings
+        if let savedDifficulty = UserDefaults.standard.string(forKey: "chordDifficulty"),
+           let difficulty = ChordType.ChordDifficulty(rawValue: savedDifficulty) {
+            self.chordDifficulty = difficulty
+        } else {
+            self.chordDifficulty = .beginner
+        }
+        
+        if let savedDifficulty = UserDefaults.standard.string(forKey: "scaleDifficulty"),
+           let difficulty = ChordType.ChordDifficulty(rawValue: savedDifficulty) {
+            self.scaleDifficulty = difficulty
+        } else {
+            self.scaleDifficulty = .beginner
+        }
+        
+        if let savedDifficulty = UserDefaults.standard.string(forKey: "intervalDifficulty"),
+           let difficulty = ChordType.ChordDifficulty(rawValue: savedDifficulty) {
+            self.intervalDifficulty = difficulty
+        } else {
+            self.intervalDifficulty = .beginner
+        }
+        
+        self.questionsPerSession = UserDefaults.standard.object(forKey: "questionsPerSession") as? Int ?? 10
+        self.showNoteNames = UserDefaults.standard.object(forKey: "showNoteNames") as? Bool ?? true
+        self.autoPlay = UserDefaults.standard.object(forKey: "autoPlay") as? Bool ?? true
+        self.showTimer = UserDefaults.standard.object(forKey: "showTimer") as? Bool ?? false
         
         // Interval ear training settings
         self.autoPlayIntervals = UserDefaults.standard.object(forKey: "autoPlayIntervals") as? Bool ?? true
@@ -227,5 +304,30 @@ class SettingsManager: ObservableObject {
 
     func secondaryText(for colorScheme: ColorScheme) -> Color {
         colorScheme == .dark ? Color.white.opacity(0.7) : .secondary
+    }
+    
+    // MARK: - Reset
+    
+    func resetToDefaults() {
+        audioEnabled = true
+        playChordOnCorrect = true
+        audioVolume = 0.7
+        chordDifficulty = .beginner
+        scaleDifficulty = .beginner
+        intervalDifficulty = .beginner
+        questionsPerSession = 10
+        showNoteNames = true
+        autoPlay = true
+        showTimer = false
+        autoPlayIntervals = true
+        defaultIntervalStyle = .harmonic
+        intervalTempo = 120
+        autoPlayChords = true
+        defaultChordStyle = .block
+        chordTempo = 120
+        autoPlayCadences = true
+        cadenceBPM = 90
+        cadenceBeatsPerChord = 2.0
+        selectedTheme = .system
     }
 }
