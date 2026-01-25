@@ -6,25 +6,25 @@ final class ChordTests: XCTestCase {
     // MARK: - ChordTone Tests
     
     func testChordToneBasics() {
-        let root = ChordTone(name: "Root", interval: 0)
+        let root = ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false)
         XCTAssertEqual(root.name, "Root")
-        XCTAssertEqual(root.interval, 0)
+        XCTAssertEqual(root.semitonesFromRoot, 0)
     }
     
     func testAllTonesCount() {
-        // Root, b9, 9, #9, 3, b3, 11, #11, b5, 5, #5, b13, 13, b7, 7
-        XCTAssertEqual(ChordTone.allTones.count, 15)
+        // Root, 2nd, 3rd, 4th, 5th, 6th, 7th, 9th, 11th, 13th, b9, #9, b3, b5, #5, b13, #13, b7
+        XCTAssertEqual(ChordTone.allTones.count, 18)
     }
     
     func testAllTonesContainsEssentialTones() {
-        let essentialNames = ["Root", "3", "b3", "5", "b7", "7"]
+        let essentialNames = ["Root", "3rd", "b3", "5th", "b7", "7th"]
         for name in essentialNames {
             XCTAssertTrue(ChordTone.allTones.contains { $0.name == name }, "allTones should contain \(name)")
         }
     }
     
     func testAllTonesContainsExtensions() {
-        let extensionNames = ["9", "11", "13"]
+        let extensionNames = ["9th", "11th", "13th"]
         for name in extensionNames {
             XCTAssertTrue(ChordTone.allTones.contains { $0.name == name }, "allTones should contain \(name)")
         }
@@ -40,16 +40,20 @@ final class ChordTests: XCTestCase {
     // MARK: - ChordType Tests
     
     func testChordTypeBasics() {
+        let rootTone = ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false)
+        let thirdTone = ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false)
+        let fifthTone = ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
+        
         let major = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [.root, .third, .fifth],
+            chordTones: [rootTone, thirdTone, fifthTone],
             difficulty: .beginner
         )
         
         XCTAssertEqual(major.name, "Major")
         XCTAssertEqual(major.symbol, "maj")
-        XCTAssertEqual(major.tones.count, 3)
+        XCTAssertEqual(major.chordTones.count, 3)
         XCTAssertEqual(major.difficulty, .beginner)
     }
     
@@ -62,11 +66,15 @@ final class ChordTests: XCTestCase {
     // MARK: - Chord Tests
     
     func testChordInitialization() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let rootTone = ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false)
+        let thirdTone = ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false)
+        let fifthTone = ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
+        
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [.root, .third, .fifth],
+            chordTones: [rootTone, thirdTone, fifthTone],
             difficulty: .beginner
         )
         
@@ -74,97 +82,99 @@ final class ChordTests: XCTestCase {
         
         XCTAssertEqual(cMajor.root.name, "C")
         XCTAssertEqual(cMajor.chordType.name, "Major")
-        XCTAssertEqual(cMajor.chordNotes.count, 3)
+        XCTAssertEqual(cMajor.chordTones.count, 3)
     }
     
     func testChordDisplayName() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let majorType = ChordType(name: "Major", symbol: "maj", tones: [.root], difficulty: .beginner)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let rootTone = ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false)
+        let majorType = ChordType(name: "Major", symbol: "maj", chordTones: [rootTone], difficulty: .beginner)
         let chord = Chord(root: c, chordType: majorType)
         
-        XCTAssertEqual(chord.displayName, "C Major")
+        XCTAssertEqual(chord.displayName, "Cmaj")
     }
     
-    func testChordShortName() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let majorType = ChordType(name: "Major", symbol: "maj", tones: [.root], difficulty: .beginner)
+    func testChordFullName() {
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let rootTone = ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false)
+        let majorType = ChordType(name: "Major", symbol: "maj", chordTones: [rootTone], difficulty: .beginner)
         let chord = Chord(root: c, chordType: majorType)
         
-        XCTAssertEqual(chord.shortName, "Cmaj")
+        XCTAssertEqual(chord.fullName, "C Major")
     }
     
     func testChordNoteCalculation() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
         
         let cMajor = Chord(root: c, chordType: majorType)
         
-        XCTAssertEqual(cMajor.chordNotes.count, 3)
-        XCTAssertEqual(cMajor.chordNotes[0].name, "C")  // Root
-        XCTAssertEqual(cMajor.chordNotes[1].name, "E")  // Major 3rd
-        XCTAssertEqual(cMajor.chordNotes[2].name, "G")  // Perfect 5th
+        XCTAssertEqual(cMajor.chordTones.count, 3)
+        XCTAssertEqual(cMajor.chordTones[0].name, "C")  // Root
+        XCTAssertEqual(cMajor.chordTones[1].name, "E")  // Major 3rd
+        XCTAssertEqual(cMajor.chordTones[2].name, "G")  // Perfect 5th
     }
     
     func testChordNoteCalculationWithSharps() {
-        let d = Note(name: "D", midiNumber: 62, pitchClass: 2)
+        let d = Note(name: "D", midiNumber: 62, isSharp: false)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
         
         let dMajor = Chord(root: d, chordType: majorType)
         
-        XCTAssertEqual(dMajor.chordNotes[0].name, "D")   // Root
-        XCTAssertEqual(dMajor.chordNotes[1].name, "F#")  // Major 3rd
-        XCTAssertEqual(dMajor.chordNotes[2].name, "A")   // Perfect 5th
+        XCTAssertEqual(dMajor.chordTones[0].name, "D")   // Root
+        XCTAssertEqual(dMajor.chordTones[1].name, "F#")  // Major 3rd
+        XCTAssertEqual(dMajor.chordTones[2].name, "A")   // Perfect 5th
     }
     
     func testChordNoteCalculationWithFlats() {
-        let bb = Note(name: "Bb", midiNumber: 70, pitchClass: 10)
+        let bb = Note(name: "Bb", midiNumber: 70, isSharp: false)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
         
         let bbMajor = Chord(root: bb, chordType: majorType)
         
-        XCTAssertEqual(bbMajor.chordNotes[0].name, "Bb") // Root
-        XCTAssertEqual(bbMajor.chordNotes[1].name, "D")  // Major 3rd
-        XCTAssertEqual(bbMajor.chordNotes[2].name, "F")  // Perfect 5th
+        XCTAssertEqual(bbMajor.chordTones[0].name, "Bb") // Root
+        XCTAssertEqual(bbMajor.chordTones[1].name, "D")  // Major 3rd
+        XCTAssertEqual(bbMajor.chordTones[2].name, "F")  // Perfect 5th
     }
     
     // MARK: - Common Tones Tests
     
     func testCommonTonesIdenticalChords() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
@@ -177,24 +187,24 @@ final class ChordTests: XCTestCase {
     }
     
     func testCommonTonesRelatedChords() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
         let minorType = ChordType(
             name: "Minor",
             symbol: "min",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "b3", interval: 3),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "b3", semitonesFromRoot: 3, isAltered: true),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
@@ -207,15 +217,15 @@ final class ChordTests: XCTestCase {
     }
     
     func testCommonTonesNoOverlap() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let fSharp = Note(name: "F#", midiNumber: 66, pitchClass: 6)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let fSharp = Note(name: "F#", midiNumber: 66, isSharp: true)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
@@ -230,15 +240,15 @@ final class ChordTests: XCTestCase {
     // MARK: - Guide Tones Tests
     
     func testGuideTonesMajor7() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let maj7Type = ChordType(
             name: "Major 7",
             symbol: "maj7",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7),
-                ChordTone(name: "7", interval: 11)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false),
+                ChordTone(degree: 7, name: "7th", semitonesFromRoot: 11, isAltered: false)
             ],
             difficulty: .intermediate
         )
@@ -252,15 +262,15 @@ final class ChordTests: XCTestCase {
     }
     
     func testGuideTonesMinor7() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let min7Type = ChordType(
             name: "Minor 7",
             symbol: "min7",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "b3", interval: 3),
-                ChordTone(name: "5", interval: 7),
-                ChordTone(name: "b7", interval: 10)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "b3", semitonesFromRoot: 3, isAltered: true),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false),
+                ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true)
             ],
             difficulty: .intermediate
         )
@@ -273,15 +283,15 @@ final class ChordTests: XCTestCase {
         XCTAssertTrue(guides.contains { $0.name == "Bb" }) // b7th
     }
     
-    func testGuideTonesTriadHasNone() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+    func testGuideTonesTriadHasOne() {
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
@@ -289,20 +299,20 @@ final class ChordTests: XCTestCase {
         let cMajor = Chord(root: c, chordType: majorType)
         let guides = cMajor.guideTones
         
-        XCTAssertEqual(guides.count, 0) // No 7th, so no guide tones
+        XCTAssertEqual(guides.count, 1) // Has 3rd but no 7th, so 1 guide tone
     }
     
     // MARK: - Role of Note Tests
     
     func testRoleOfNoteRoot() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
@@ -314,15 +324,15 @@ final class ChordTests: XCTestCase {
     }
     
     func testRoleOfNoteThird() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let e = Note(name: "E", midiNumber: 64, pitchClass: 4)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let e = Note(name: "E", midiNumber: 64, isSharp: false)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
@@ -334,15 +344,15 @@ final class ChordTests: XCTestCase {
     }
     
     func testRoleOfNoteFifth() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let g = Note(name: "G", midiNumber: 67, pitchClass: 7)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let g = Note(name: "G", midiNumber: 67, isSharp: false)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )
@@ -354,16 +364,16 @@ final class ChordTests: XCTestCase {
     }
     
     func testRoleOfNoteSeventh() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let b = Note(name: "B", midiNumber: 71, pitchClass: 11)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let b = Note(name: "B", midiNumber: 71, isSharp: false)
         let maj7Type = ChordType(
             name: "Major 7",
             symbol: "maj7",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7),
-                ChordTone(name: "7", interval: 11)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false),
+                ChordTone(degree: 7, name: "7th", semitonesFromRoot: 11, isAltered: false)
             ],
             difficulty: .intermediate
         )
@@ -375,16 +385,16 @@ final class ChordTests: XCTestCase {
     }
     
     func testRoleOfNoteExtension() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let d = Note(name: "D", midiNumber: 62, pitchClass: 2)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let d = Note(name: "D", midiNumber: 62, isSharp: false)
         let add9Type = ChordType(
             name: "Add 9",
             symbol: "add9",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "9", interval: 2),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 9, name: "9th", semitonesFromRoot: 2, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .intermediate
         )
@@ -392,19 +402,19 @@ final class ChordTests: XCTestCase {
         let cAdd9 = Chord(root: c, chordType: add9Type)
         let role = cAdd9.roleOfNote(d)
         
-        XCTAssertEqual(role, .extension)
+        XCTAssertEqual(role, .ninth)
     }
     
     func testRoleOfNoteNotInChord() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let fSharp = Note(name: "F#", midiNumber: 66, pitchClass: 6)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let fSharp = Note(name: "F#", midiNumber: 66, isSharp: true)
         let majorType = ChordType(
             name: "Major",
             symbol: "maj",
-            tones: [
-                ChordTone(name: "Root", interval: 0),
-                ChordTone(name: "3", interval: 4),
-                ChordTone(name: "5", interval: 7)
+            chordTones: [
+                ChordTone(degree: 1, name: "Root", semitonesFromRoot: 0, isAltered: false),
+                ChordTone(degree: 3, name: "3rd", semitonesFromRoot: 4, isAltered: false),
+                ChordTone(degree: 5, name: "5th", semitonesFromRoot: 7, isAltered: false)
             ],
             difficulty: .beginner
         )

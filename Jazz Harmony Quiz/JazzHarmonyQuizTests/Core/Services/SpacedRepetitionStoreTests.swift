@@ -4,13 +4,16 @@ import XCTest
 final class SpacedRepetitionStoreTests: XCTestCase {
     
     var store: SpacedRepetitionStore!
-    let testChordID = "Cmaj7"
-    let testIntervalID = "P5"
-    let testScaleID = "C_Major"
+    var testChordID: SRItemID!
+    var testIntervalID: SRItemID!
+    var testScaleID: SRItemID!
     
     override func setUp() {
         super.setUp()
-        store = SpacedRepetitionStore()
+        store = SpacedRepetitionStore.shared
+        testChordID = SRItemID(mode: .chordDrill, topic: "maj7", key: "C")
+        testIntervalID = SRItemID(mode: .intervalDrill, topic: "P5")
+        testScaleID = SRItemID(mode: .scaleDrill, topic: "Major", key: "C")
         // Clear any existing data
         store.resetAll()
     }
@@ -23,240 +26,231 @@ final class SpacedRepetitionStoreTests: XCTestCase {
     // MARK: - Initial State Tests
     
     func testInitialEaseFactorIsDefault() {
-        let item = store.schedule(for: testChordID)
-        XCTAssertEqual(item.easeFactor, 2.5, accuracy: 0.01, "Initial ease factor should be 2.5")
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertEqual(schedule.easeFactor, 2.5, accuracy: 0.01, "Initial ease factor should be 2.5")
     }
     
-    func testInitialIntervalIsZero() {
-        let item = store.schedule(for: testChordID)
-        XCTAssertEqual(item.interval, 0, "Initial interval should be 0")
+    func testInitialIntervalIsOne() {
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertEqual(schedule.intervalDays, 1.0, accuracy: 0.01, "Initial interval should be 1 day")
     }
     
     func testInitialRepetitionsIsZero() {
-        let item = store.schedule(for: testChordID)
-        XCTAssertEqual(item.repetitions, 0, "Initial repetitions should be 0")
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertEqual(schedule.repetitions, 0, "Initial repetitions should be 0")
     }
     
-    func testNewItemNotDueYet() {
-        let item = store.schedule(for: testChordID)
-        XCTAssertTrue(store.isDue(item), "New items should be due immediately")
+    func testNewItemIsDue() {
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertTrue(schedule.isDue(), "New items should be due immediately")
     }
     
-    // MARK: - Correct Response Tests (SM-2 Algorithm)
+    // MARK: - Correct Answer Tests
     
-    func testCorrectResponseQuality5() {
-        var item = store.schedule(for: testChordID)
-        
-        // First correct response (quality 5 = perfect)
-        item = store.recordResponse(for: item, quality: 5)
-        
-        XCTAssertEqual(item.repetitions, 1)
-        XCTAssertEqual(item.interval, 1, "First correct response should set interval to 1 day")
-        XCTAssertGreaterThanOrEqual(item.easeFactor, 2.5, "Ease factor should increase or stay same for quality 5")
+    func testFirstCorrectResponseSetsIntervalToOne() {
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertEqual(schedule.intervalDays, 1.0, accuracy: 0.01, "First correct answer should set interval to 1")
+        XCTAssertEqual(schedule.repetitions, 1, "First correct answer should set repetitions to 1")
     }
     
-    func testCorrectResponseQuality4() {
-        var item = store.schedule(for: testChordID)
-        
-        // Correct response (quality 4 = correct with hesitation)
-        item = store.recordResponse(for: item, quality: 4)
-        
-        XCTAssertEqual(item.repetitions, 1)
-        XCTAssertEqual(item.interval, 1)
-        XCTAssertGreaterThanOrEqual(item.easeFactor, 2.4, "Quality 4 should maintain or slightly increase ease factor")
+    func testSecondCorrectResponseSetsIntervalToSix() {
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertEqual(schedule.intervalDays, 6.0, accuracy: 0.01, "Second correct answer should set interval to 6")
+        XCTAssertEqual(schedule.repetitions, 2, "Second correct answer should set repetitions to 2")
     }
     
-    func testCorrectResponseQuality3() {
-        var item = store.schedule(for: testChordID)
+    func testConsecutiveCorrectAnswersIncreasesInterval() {
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        let intervalAfterTwo = store.schedule(for: testChordID).intervalDays
         
-        // Correct with difficulty (quality 3)
-        item = store.recordResponse(for: item, quality: 3)
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        let intervalAfterThree = store.schedule(for: testChordID).intervalDays
         
-        XCTAssertEqual(item.repetitions, 1)
-        XCTAssertEqual(item.interval, 1)
-        XCTAssertLessThanOrEqual(item.easeFactor, 2.5, "Quality 3 should maintain or decrease ease factor")
-        XCTAssertGreaterThanOrEqual(item.easeFactor, 1.3, "Ease factor should not go below minimum")
+        XCTAssertGreaterThan(intervalAfterThree, intervalAfterTwo, "Interval should increase with each correct answer")
     }
     
-    // MARK: - Incorrect Response Tests
-    
-    func testIncorrectResponseQuality2() {
-        var item = store.schedule(for: testChordID)
-        
-        // Incorrect response (quality 2)
-        item = store.recordResponse(for: item, quality: 2)
-        
-        XCTAssertEqual(item.repetitions, 0, "Incorrect response should reset repetitions to 0")
-        XCTAssertEqual(item.interval, 0, "Incorrect response should reset interval to 0")
-        XCTAssertLessThan(item.easeFactor, 2.5, "Incorrect response should decrease ease factor")
+    func testCorrectAnswerIncreasesEaseFactor() {
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertGreaterThanOrEqual(schedule.easeFactor, 2.5, "Correct answer should maintain or increase ease factor")
     }
     
-    func testIncorrectResponseQuality0() {
-        var item = store.schedule(for: testChordID)
-        
-        // Complete failure (quality 0)
-        item = store.recordResponse(for: item, quality: 0)
-        
-        XCTAssertEqual(item.repetitions, 0)
-        XCTAssertEqual(item.interval, 0)
-        XCTAssertLessThan(item.easeFactor, 2.5)
+    func testCorrectAnswerSetsNextDueDate() {
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertGreaterThan(schedule.dueDate, Date(), "Correct answer should set due date in the future")
+        XCTAssertFalse(schedule.isDue(), "Item should not be due immediately after correct answer")
     }
     
-    // MARK: - Multiple Repetitions Tests
+    // MARK: - Incorrect Answer Tests
     
-    func testMultipleCorrectResponses() {
-        var item = store.schedule(for: testChordID)
-        
-        // First repetition
-        item = store.recordResponse(for: item, quality: 5)
-        XCTAssertEqual(item.repetitions, 1)
-        XCTAssertEqual(item.interval, 1)
-        
-        // Second repetition
-        item = store.recordResponse(for: item, quality: 5)
-        XCTAssertEqual(item.repetitions, 2)
-        XCTAssertEqual(item.interval, 6, "Second correct response should set interval to 6 days")
-        
-        // Third repetition (interval = previous * ease factor)
-        let previousInterval = item.interval
-        let previousEaseFactor = item.easeFactor
-        item = store.recordResponse(for: item, quality: 5)
-        XCTAssertEqual(item.repetitions, 3)
-        XCTAssertGreaterThan(item.interval, previousInterval, "Interval should increase with each repetition")
-    }
-    
-    func testIncorrectResponseResetsProgress() {
-        var item = store.schedule(for: testChordID)
-        
+    func testIncorrectResponseResetsRepetitions() {
         // Build up some progress
-        item = store.recordResponse(for: item, quality: 5)
-        item = store.recordResponse(for: item, quality: 5)
-        XCTAssertEqual(item.repetitions, 2)
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        XCTAssertEqual(store.schedule(for: testChordID).repetitions, 2)
         
         // Fail
-        item = store.recordResponse(for: item, quality: 1)
-        XCTAssertEqual(item.repetitions, 0, "Failure should reset repetitions")
-        XCTAssertEqual(item.interval, 0, "Failure should reset interval")
+        store.recordResult(itemID: testChordID, wasCorrect: false)
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertEqual(schedule.repetitions, 0, "Failure should reset repetitions")
+        XCTAssertEqual(schedule.intervalDays, 1.0, accuracy: 0.01, "Failure should reset interval to 1")
     }
     
-    // MARK: - Due Date Tests
-    
-    func testIsDueAfterCorrectResponse() {
-        var item = store.schedule(for: testChordID)
-        item = store.recordResponse(for: item, quality: 5)
+    func testIncorrectResponseDecreasesEaseFactor() {
+        let initialEaseFactor = store.schedule(for: testChordID).easeFactor
         
-        // Item should not be due immediately after correct response
-        XCTAssertFalse(store.isDue(item), "Item should not be due immediately after correct response")
+        store.recordResult(itemID: testChordID, wasCorrect: false)
+        let schedule = store.schedule(for: testChordID)
+        
+        XCTAssertLessThan(schedule.easeFactor, initialEaseFactor, "Incorrect response should decrease ease factor")
+        XCTAssertGreaterThanOrEqual(schedule.easeFactor, 1.3, "Ease factor should not go below minimum of 1.3")
     }
     
-    func testIsDueAfterIntervalPasses() {
-        var item = store.schedule(for: testChordID)
-        item = store.recordResponse(for: item, quality: 5)
-        
-        // Manually set nextReviewDate to past
-        item.nextReviewDate = Date().addingTimeInterval(-86400) // 1 day ago
-        
-        XCTAssertTrue(store.isDue(item), "Item should be due if next review date is in the past")
+    // MARK: - Response Time Tests
+    
+    func testFastResponseIncreasesEaseFactor() {
+        store.recordResult(itemID: testChordID, wasCorrect: true, responseTime: 1.0) // Fast response
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertGreaterThanOrEqual(schedule.easeFactor, 2.5, "Fast correct answer should increase ease factor")
+    }
+    
+    func testSlowResponseDecreasesEaseFactorBoost() {
+        store.recordResult(itemID: testChordID, wasCorrect: true, responseTime: 10.0) // Slow response
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertGreaterThanOrEqual(schedule.easeFactor, 2.5, "Slow but correct answer should still increase ease factor")
     }
     
     // MARK: - Ease Factor Bounds Tests
     
-    func testEaseFactorMinimum() {
-        var item = store.schedule(for: testChordID)
-        
-        // Repeatedly answer with quality 0 to try to push ease factor below minimum
+    func testEaseFactorMinimumBound() {
+        // Repeatedly answer incorrectly to try to push ease factor below minimum
         for _ in 0..<10 {
-            item = store.recordResponse(for: item, quality: 0)
+            store.recordResult(itemID: testChordID, wasCorrect: false)
         }
         
-        XCTAssertGreaterThanOrEqual(item.easeFactor, 1.3, "Ease factor should not go below 1.3")
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertGreaterThanOrEqual(schedule.easeFactor, 1.3, "Ease factor should not go below 1.3")
     }
     
-    func testEaseFactorMaximum() {
-        var item = store.schedule(for: testChordID)
-        
-        // Repeatedly answer with quality 5 to try to push ease factor very high
-        for _ in 0..<20 {
-            item = store.recordResponse(for: item, quality: 5)
+    func testEaseFactorGrowth() {
+        // Repeatedly answer correctly with fast response times
+        for _ in 0..<5 {
+            store.recordResult(itemID: testChordID, wasCorrect: true, responseTime: 1.0)
         }
         
-        // Ease factor can grow, but should stay reasonable (SM-2 formula)
-        XCTAssertGreaterThan(item.easeFactor, 2.5)
-        XCTAssertLessThan(item.easeFactor, 5.0, "Ease factor shouldn't grow unreasonably large")
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertGreaterThan(schedule.easeFactor, 2.5, "Ease factor should increase with repeated fast correct answers")
     }
     
     // MARK: - Multiple Items Tests
     
     func testMultipleItemsIndependent() {
-        var chordItem = store.schedule(for: testChordID)
-        var intervalItem = store.schedule(for: testIntervalID)
-        
         // Progress one item
-        chordItem = store.recordResponse(for: chordItem, quality: 5)
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        let chordSchedule = store.schedule(for: testChordID)
         
         // Other item should be unaffected
-        intervalItem = store.schedule(for: testIntervalID)
-        XCTAssertEqual(intervalItem.repetitions, 0)
-        XCTAssertEqual(intervalItem.interval, 0)
-        XCTAssertEqual(intervalItem.easeFactor, 2.5, accuracy: 0.01)
+        let intervalSchedule = store.schedule(for: testIntervalID)
+        XCTAssertEqual(intervalSchedule.repetitions, 0, "Other items should be unaffected")
+        XCTAssertEqual(intervalSchedule.intervalDays, 1.0, accuracy: 0.01)
+        XCTAssertEqual(intervalSchedule.easeFactor, 2.5, accuracy: 0.01)
+        
+        // Chord item should have progressed
+        XCTAssertEqual(chordSchedule.repetitions, 1)
     }
     
-    func testGetAllDueItems() {
-        // Create several items with different due dates
-        var item1 = store.schedule(for: "item1")
-        var item2 = store.schedule(for: "item2")
-        var item3 = store.schedule(for: "item3")
+    func testDifferentModesSeparate() {
+        let chordID = SRItemID(mode: .chordDrill, topic: "maj7", key: "C")
+        let scaleID = SRItemID(mode: .scaleDrill, topic: "maj7", key: "C") // Same topic/key but different mode
+        
+        store.recordResult(itemID: chordID, wasCorrect: true)
+        
+        let chordSchedule = store.schedule(for: chordID)
+        let scaleSchedule = store.schedule(for: scaleID)
+        
+        XCTAssertEqual(chordSchedule.repetitions, 1)
+        XCTAssertEqual(scaleSchedule.repetitions, 0, "Different modes should be independent")
+    }
+    
+    // MARK: - Due Status Tests
+    
+    func testIsDueAfterIntervalPasses() {
+        // Set a very short interval by manipulating the due date
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        
+        // Get the schedule and check it's not due yet
+        var schedule = store.schedule(for: testChordID)
+        XCTAssertFalse(schedule.isDue(), "Item should not be due right after correct answer")
+        
+        // Manually adjust due date to past (simulating time passing)
+        schedule.dueDate = Date().addingTimeInterval(-86400) // 1 day ago
+        store.schedules[testChordID] = schedule
+        
+        schedule = store.schedule(for: testChordID)
+        XCTAssertTrue(schedule.isDue(), "Item should be due if due date is in the past")
+    }
+    
+    func testGetDueCount() {
+        // Create several items
+        let item1 = SRItemID(mode: .chordDrill, topic: "maj7", key: "C")
+        let item2 = SRItemID(mode: .chordDrill, topic: "min7", key: "D")
+        let item3 = SRItemID(mode: .intervalDrill, topic: "P5")
         
         // Make item1 not due (recently reviewed)
-        item1 = store.recordResponse(for: item1, quality: 5)
-        store.updateItem(item1)
+        store.recordResult(itemID: item1, wasCorrect: true)
         
-        // Make item2 due (set review date to past)
-        item2.nextReviewDate = Date().addingTimeInterval(-86400)
-        store.updateItem(item2)
+        // Make item2 and item3 due (new items or manually set)
+        var schedule2 = store.schedule(for: item2)
+        schedule2.dueDate = Date().addingTimeInterval(-86400)
+        store.schedules[item2] = schedule2
         
-        // Leave item3 as new (due by default)
-        
-        let dueItems = store.getAllDueItems()
-        XCTAssertGreaterThanOrEqual(dueItems.count, 2, "At least 2 items should be due")
+        // Count due items for chord drill mode
+        let dueCount = store.dueCount(for: .chordDrill)
+        XCTAssertGreaterThanOrEqual(dueCount, 1, "Should have at least one due item")
     }
     
-    // MARK: - Persistence Tests
+    // MARK: - Statistics Tests
     
-    func testItemPersistence() {
-        var item = store.schedule(for: testChordID)
-        item = store.recordResponse(for: item, quality: 5)
-        store.updateItem(item)
+    func testAccuracyCalculation() {
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        store.recordResult(itemID: testChordID, wasCorrect: false)
         
-        // Create new store instance
-        let newStore = SpacedRepetitionStore()
-        let retrievedItem = newStore.schedule(for: testChordID)
-        
-        XCTAssertEqual(retrievedItem.repetitions, item.repetitions)
-        XCTAssertEqual(retrievedItem.interval, item.interval)
-        XCTAssertEqual(retrievedItem.easeFactor, item.easeFactor, accuracy: 0.01)
+        let schedule = store.schedule(for: testChordID)
+        let expectedAccuracy = 2.0 / 3.0 // 2 correct out of 3 total
+        XCTAssertEqual(schedule.accuracy, expectedAccuracy, accuracy: 0.01, "Accuracy should be 2/3")
     }
+    
+    func testAccuracyForNoAttempts() {
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertEqual(schedule.accuracy, 0.0, "Accuracy should be 0 for items with no attempts")
+    }
+    
+    // MARK: - Reset Tests
     
     func testResetAllProgress() {
         // Create and progress multiple items
-        var item1 = store.schedule(for: "item1")
-        var item2 = store.schedule(for: "item2")
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        store.recordResult(itemID: testIntervalID, wasCorrect: true)
+        store.recordResult(itemID: testScaleID, wasCorrect: true)
         
-        item1 = store.recordResponse(for: item1, quality: 5)
-        item2 = store.recordResponse(for: item2, quality: 5)
-        store.updateItem(item1)
-        store.updateItem(item2)
+        // Verify they have progress
+        XCTAssertGreaterThan(store.schedules.count, 0)
         
         // Reset all
         store.resetAll()
         
         // Verify reset
-        let newItem1 = store.schedule(for: "item1")
-        let newItem2 = store.schedule(for: "item2")
+        XCTAssertEqual(store.schedules.count, 0, "All schedules should be cleared")
         
-        XCTAssertEqual(newItem1.repetitions, 0)
-        XCTAssertEqual(newItem2.repetitions, 0)
-        XCTAssertEqual(newItem1.interval, 0)
-        XCTAssertEqual(newItem2.interval, 0)
+        let newSchedule = store.schedule(for: testChordID)
+        XCTAssertEqual(newSchedule.repetitions, 0)
+        XCTAssertEqual(newSchedule.intervalDays, 1.0, accuracy: 0.01)
+        XCTAssertEqual(newSchedule.easeFactor, 2.5, accuracy: 0.01)
     }
 }

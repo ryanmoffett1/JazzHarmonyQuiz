@@ -88,7 +88,7 @@ final class ScaleTests: XCTestCase {
     // MARK: - Scale Tests - Major Scale
     
     func testCMajorScale() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",
@@ -108,7 +108,7 @@ final class ScaleTests: XCTestCase {
     }
     
     func testGMajorScaleUsesSharps() {
-        let g = Note(name: "G", midiNumber: 67, pitchClass: 7)
+        let g = Note(name: "G", midiNumber: 67, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",
@@ -124,7 +124,7 @@ final class ScaleTests: XCTestCase {
     }
     
     func testFMajorScaleUsesFlats() {
-        let f = Note(name: "F", midiNumber: 65, pitchClass: 5)
+        let f = Note(name: "F", midiNumber: 65, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",
@@ -140,7 +140,7 @@ final class ScaleTests: XCTestCase {
     }
     
     func testDbMajorScaleUsesFlats() {
-        let db = Note(name: "Db", midiNumber: 61, pitchClass: 1)
+        let db = Note(name: "Db", midiNumber: 61, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",
@@ -164,7 +164,7 @@ final class ScaleTests: XCTestCase {
     // MARK: - Scale Tests - Minor Scale
     
     func testAMinorScale() {
-        let a = Note(name: "A", midiNumber: 69, pitchClass: 9)
+        let a = Note(name: "A", midiNumber: 69, isSharp: false)
         let minorType = ScaleType(
             name: "Natural Minor",
             symbol: "Min",
@@ -179,7 +179,7 @@ final class ScaleTests: XCTestCase {
     }
     
     func testDMinorScaleUsesFlats() {
-        let d = Note(name: "D", midiNumber: 62, pitchClass: 2)
+        let d = Note(name: "D", midiNumber: 62, isSharp: false)
         let minorType = ScaleType(
             name: "Natural Minor",
             symbol: "Min",
@@ -196,7 +196,7 @@ final class ScaleTests: XCTestCase {
     }
     
     func testEMinorScaleUsesSharps() {
-        let e = Note(name: "E", midiNumber: 64, pitchClass: 4)
+        let e = Note(name: "E", midiNumber: 64, isSharp: false)
         let minorType = ScaleType(
             name: "Natural Minor",
             symbol: "Min",
@@ -215,7 +215,7 @@ final class ScaleTests: XCTestCase {
     // MARK: - Scale Note Retrieval
     
     func testNoteForDegree() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",
@@ -236,7 +236,7 @@ final class ScaleTests: XCTestCase {
     }
     
     func testNoteForDegreeNotInScale() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",
@@ -253,7 +253,7 @@ final class ScaleTests: XCTestCase {
     // MARK: - Scale Direction Methods
     
     func testNotesAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",
@@ -269,7 +269,7 @@ final class ScaleTests: XCTestCase {
     }
     
     func testNotesDescending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",
@@ -285,7 +285,7 @@ final class ScaleTests: XCTestCase {
     }
     
     func testNotesAscendingDescending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",
@@ -307,7 +307,7 @@ final class ScaleTests: XCTestCase {
     // MARK: - Chromatic and Altered Scales
     
     func testChromaticScale() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let chromaticType = ScaleType(
             name: "Chromatic",
             symbol: "Chrom",
@@ -324,7 +324,7 @@ final class ScaleTests: XCTestCase {
     }
     
     func testDorianMode() {
-        let d = Note(name: "D", midiNumber: 62, pitchClass: 2)
+        let d = Note(name: "D", midiNumber: 62, isSharp: false)
         let dorianType = ScaleType(
             name: "Dorian",
             symbol: "Dor",
@@ -344,7 +344,7 @@ final class ScaleTests: XCTestCase {
     // MARK: - Hashable & Codable
     
     func testScaleEquality() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",
@@ -359,7 +359,7 @@ final class ScaleTests: XCTestCase {
     }
     
     func testScaleCodable() throws {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorType = ScaleType(
             name: "Major",
             symbol: "Maj",

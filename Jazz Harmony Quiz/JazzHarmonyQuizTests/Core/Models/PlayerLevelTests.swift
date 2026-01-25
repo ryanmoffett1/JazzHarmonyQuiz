@@ -63,29 +63,23 @@ final class PlayerLevelTests: XCTestCase {
     func testPlayerLevelInit() {
         let player = PlayerLevel(xp: 500)
         
-        XCTAssertEqual(player.totalXP, 500)
+        XCTAssertEqual(player.xp, 500)
         XCTAssertEqual(player.level, 3) // sqrt(500/100) + 1 ≈ 3.23 → 3
     }
     
-    func testPlayerLevelCurrentLevelXP() {
+    func testPlayerLevelXPInCurrentLevel() {
         let player = PlayerLevel(xp: 500)
         
-        let currentLevelXP = player.currentLevelXP
         let xpForCurrentLevel = PlayerLevel.xpRequiredForLevel(player.level)
+        let xpInCurrentLevel = player.xp - xpForCurrentLevel
         
-        XCTAssertEqual(currentLevelXP, 500 - xpForCurrentLevel)
-        XCTAssertEqual(currentLevelXP, 100) // 500 - 400 = 100
+        XCTAssertEqual(xpInCurrentLevel, 100) // 500 - 400 = 100
     }
     
     func testPlayerLevelXPForNextLevel() {
         let player = PlayerLevel(xp: 500)
         
-        let xpForNext = player.xpForNextLevel
-        let xpForLevel4 = PlayerLevel.xpRequiredForLevel(4)
-        let xpForLevel3 = PlayerLevel.xpRequiredForLevel(3)
-        
-        XCTAssertEqual(xpForNext, xpForLevel4 - xpForLevel3)
-        XCTAssertEqual(xpForNext, 500) // Level 4 needs 900 - 400 = 500 XP
+        XCTAssertEqual(player.xpForNextLevel, 900) // Level 4 needs 900 total
     }
     
     func testPlayerLevelProgressToNextLevel() {
@@ -115,41 +109,46 @@ final class PlayerLevelTests: XCTestCase {
         XCTAssertEqual(player.progressToNextLevel, 0.98, accuracy: 0.001)
     }
     
-    // MARK: - Adding XP
-    
-    func testAddXPBasic() {
-        var player = PlayerLevel(xp: 100)
-        XCTAssertEqual(player.level, 2)
-        
-        player.addXP(300)
-        XCTAssertEqual(player.totalXP, 400)
-        XCTAssertEqual(player.level, 3)
+    func testPlayerLevelXPUntilNextLevel() {
+        let player = PlayerLevel(xp: 500)
+        XCTAssertEqual(player.xpUntilNextLevel, 400) // 900 - 500 = 400
     }
     
-    func testAddXPMultipleLevels() {
-        var player = PlayerLevel(xp: 100)
+    // MARK: - Adding XP (Immutable - creates new instance)
+    
+    func testCreatePlayerLevelWithMoreXP() {
+        let player = PlayerLevel(xp: 100)
         XCTAssertEqual(player.level, 2)
         
-        player.addXP(1500) // Jump to 1600 total
-        XCTAssertEqual(player.totalXP, 1600)
-        XCTAssertEqual(player.level, 5)
+        let newPlayer = PlayerLevel(xp: player.xp + 300)
+        XCTAssertEqual(newPlayer.xp, 400)
+        XCTAssertEqual(newPlayer.level, 3)
     }
     
-    func testAddXPZero() {
-        var player = PlayerLevel(xp: 500)
+    func testCreatePlayerLevelMultipleLevels() {
+        let player = PlayerLevel(xp: 100)
+        XCTAssertEqual(player.level, 2)
+        
+        let newPlayer = PlayerLevel(xp: player.xp + 1500) // Jump to 1600 total
+        XCTAssertEqual(newPlayer.xp, 1600)
+        XCTAssertEqual(newPlayer.level, 5)
+    }
+    
+    func testCreatePlayerLevelWithSameXP() {
+        let player = PlayerLevel(xp: 500)
         let originalLevel = player.level
         
-        player.addXP(0)
-        XCTAssertEqual(player.totalXP, 500)
-        XCTAssertEqual(player.level, originalLevel)
+        let newPlayer = PlayerLevel(xp: player.xp + 0)
+        XCTAssertEqual(newPlayer.xp, 500)
+        XCTAssertEqual(newPlayer.level, originalLevel)
     }
     
-    func testAddXPSmallIncrement() {
-        var player = PlayerLevel(xp: 500)
+    func testCreatePlayerLevelSmallIncrement() {
+        let player = PlayerLevel(xp: 500)
         
-        player.addXP(10)
-        XCTAssertEqual(player.totalXP, 510)
-        XCTAssertEqual(player.level, 3) // Still level 3
+        let newPlayer = PlayerLevel(xp: player.xp + 10)
+        XCTAssertEqual(newPlayer.xp, 510)
+        XCTAssertEqual(newPlayer.level, player.level) // Still level 3
     }
     
     // MARK: - XPAward Enum Tests
@@ -164,40 +163,36 @@ final class PlayerLevelTests: XCTestCase {
     }
     
     func testXPAwardUsage() {
-        var player = PlayerLevel(xp: 0)
+        let initialPlayer = PlayerLevel(xp: 0)
+        var currentXP = initialPlayer.xp
         
         // Answer 10 basic questions correctly
         for _ in 1...10 {
-            player.addXP(XPAward.correctBasic.rawValue)
+            currentXP += XPAward.correctBasic.rawValue
         }
         
-        XCTAssertEqual(player.totalXP, 100)
+        let player = PlayerLevel(xp: currentXP)
+        XCTAssertEqual(player.xp, 100)
         XCTAssertEqual(player.level, 2)
     }
     
     func testXPAwardPerfectSession() {
-        var player = PlayerLevel(xp: 50)
-        
-        player.addXP(XPAward.perfectSession.rawValue)
-        XCTAssertEqual(player.totalXP, 100)
+        let player = PlayerLevel(xp: 50 + XPAward.perfectSession.rawValue)
+        XCTAssertEqual(player.xp, 100)
         XCTAssertEqual(player.level, 2)
     }
     
     func testXPAwardCurriculumModule() {
-        var player = PlayerLevel(xp: 0)
-        
         // Complete a curriculum module
-        player.addXP(XPAward.curriculumModule.rawValue)
-        XCTAssertEqual(player.totalXP, 100)
+        let player = PlayerLevel(xp: XPAward.curriculumModule.rawValue)
+        XCTAssertEqual(player.xp, 100)
         XCTAssertEqual(player.level, 2)
     }
     
     func testXPAwardDailyStreak() {
-        var player = PlayerLevel(xp: 95)
-        
         // Daily streak bonus pushes to level 2
-        player.addXP(XPAward.dailyStreak.rawValue)
-        XCTAssertEqual(player.totalXP, 100)
+        let player = PlayerLevel(xp: 95 + XPAward.dailyStreak.rawValue)
+        XCTAssertEqual(player.xp, 100)
         XCTAssertEqual(player.level, 2)
     }
     
@@ -212,9 +207,8 @@ final class PlayerLevelTests: XCTestCase {
         let decoder = JSONDecoder()
         let decoded = try decoder.decode(PlayerLevel.self, from: data)
         
-        XCTAssertEqual(decoded.totalXP, original.totalXP)
+        XCTAssertEqual(decoded.xp, original.xp)
         XCTAssertEqual(decoded.level, original.level)
-        XCTAssertEqual(decoded.currentLevelXP, original.currentLevelXP)
         XCTAssertEqual(decoded.xpForNextLevel, original.xpForNextLevel)
         XCTAssertEqual(decoded.progressToNextLevel, original.progressToNextLevel, accuracy: 0.001)
     }

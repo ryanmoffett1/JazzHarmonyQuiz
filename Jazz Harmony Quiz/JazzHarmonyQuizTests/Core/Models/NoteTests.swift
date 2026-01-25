@@ -6,18 +6,17 @@ final class NoteTests: XCTestCase {
     // MARK: - Basic Note Properties
     
     func testNoteInitialization() {
-        let cNote = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let cNote = Note(name: "C", midiNumber: 60, isSharp: false)
         XCTAssertEqual(cNote.name, "C")
         XCTAssertEqual(cNote.midiNumber, 60)
-        XCTAssertEqual(cNote.pitchClass, 0)
         XCTAssertFalse(cNote.isSharp)
     }
     
     func testSharpNoteIdentification() {
-        let cSharp = Note(name: "C#", midiNumber: 61, pitchClass: 1, isSharp: true)
+        let cSharp = Note(name: "C#", midiNumber: 61, isSharp: true)
         XCTAssertTrue(cSharp.isSharp)
         
-        let dFlat = Note(name: "Db", midiNumber: 61, pitchClass: 1)
+        let dFlat = Note(name: "Db", midiNumber: 61, isSharp: false)
         XCTAssertFalse(dFlat.isSharp)
     }
     
@@ -70,7 +69,6 @@ final class NoteTests: XCTestCase {
         XCTAssertNotNil(note)
         XCTAssertEqual(note?.name, "C#")
         XCTAssertEqual(note?.midiNumber, 61)
-        XCTAssertEqual(note?.pitchClass, 1)
     }
     
     func testNoteFromMidiWithFlats() {
@@ -79,7 +77,6 @@ final class NoteTests: XCTestCase {
         XCTAssertNotNil(note)
         XCTAssertEqual(note?.name, "Db")
         XCTAssertEqual(note?.midiNumber, 61)
-        XCTAssertEqual(note?.pitchClass, 1)
     }
     
     func testNoteFromMidiNaturalNotes() {
@@ -101,7 +98,6 @@ final class NoteTests: XCTestCase {
             XCTAssertNotNil(flatNote)
             XCTAssertEqual(sharpNote?.name, expectedName)
             XCTAssertEqual(flatNote?.name, expectedName)
-            XCTAssertEqual(sharpNote?.pitchClass, expectedPitch)
         }
     }
     
@@ -165,27 +161,26 @@ final class NoteTests: XCTestCase {
             let sharpNote = Note.allNotes.first { $0.name == sharp }!
             let flatNote = Note.allNotes.first { $0.name == flat }!
             XCTAssertEqual(sharpNote.midiNumber, flatNote.midiNumber, "\(sharp) and \(flat) should share MIDI number")
-            XCTAssertEqual(sharpNote.pitchClass, flatNote.pitchClass, "\(sharp) and \(flat) should share pitch class")
         }
     }
     
     // MARK: - Hashable & Equatable
     
     func testNoteEquality() {
-        let c1 = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let c2 = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c1 = Note(name: "C", midiNumber: 60, isSharp: false)
+        let c2 = Note(name: "C", midiNumber: 60, isSharp: false)
         XCTAssertEqual(c1, c2)
     }
     
     func testNoteInequality() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let d = Note(name: "D", midiNumber: 62, pitchClass: 2)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let d = Note(name: "D", midiNumber: 62, isSharp: false)
         XCTAssertNotEqual(c, d)
     }
     
     func testNoteHashable() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
-        let d = Note(name: "D", midiNumber: 62, pitchClass: 2)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
+        let d = Note(name: "D", midiNumber: 62, isSharp: false)
         
         let noteSet: Set<Note> = [c, d, c] // Duplicate c should be removed
         XCTAssertEqual(noteSet.count, 2)
@@ -194,7 +189,7 @@ final class NoteTests: XCTestCase {
     // MARK: - Codable
     
     func testNoteCodable() throws {
-        let original = Note(name: "C#", midiNumber: 61, pitchClass: 1, isSharp: true)
+        let original = Note(name: "C#", midiNumber: 61, isSharp: true)
         
         let encoder = JSONEncoder()
         let data = try encoder.encode(original)
@@ -204,7 +199,6 @@ final class NoteTests: XCTestCase {
         
         XCTAssertEqual(decoded.name, original.name)
         XCTAssertEqual(decoded.midiNumber, original.midiNumber)
-        XCTAssertEqual(decoded.pitchClass, original.pitchClass)
         XCTAssertEqual(decoded.isSharp, original.isSharp)
     }
 }
