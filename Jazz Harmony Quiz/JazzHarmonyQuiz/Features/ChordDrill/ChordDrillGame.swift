@@ -302,6 +302,8 @@ class ChordDrillGame: ObservableObject {
         )
         
         state = .results
+        // Clear currentIndex to prevent currentQuestion from returning a value
+        currentIndex = questions.count
     }
     
     private func generateQuestions(config: ChordDrillConfig) -> [ChordDrillQuestion] {

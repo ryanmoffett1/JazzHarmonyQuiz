@@ -6,12 +6,14 @@ final class ChordDrillGameTests: XCTestCase {
     
     var game: ChordDrillGame!
     
-    override func setUp() async throws {
+    override func setUpWithError() throws {
+        try super.setUpWithError()
         game = ChordDrillGame()
     }
     
-    override func tearDown() async throws {
+    override func tearDownWithError() throws {
         game = nil
+        try super.tearDownWithError()
     }
     
     // MARK: - Initial State Tests
