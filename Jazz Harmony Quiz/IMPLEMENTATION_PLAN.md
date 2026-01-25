@@ -6,6 +6,9 @@
 **Target Test Coverage:** 90%+
 **Development Environment:** GitHub Copilot in VS Code, Build in Xcode
 
+> **⚠️ IMPORTANT:** Read [CONTRIBUTING.md](CONTRIBUTING.md) for SDLC rules before starting work.
+> Key rule: **Never modify a test to make it pass.** Fix the code instead.
+
 ---
 
 ## How to Use This Document
@@ -13,6 +16,7 @@
 ### For LLM Agents (Claude, Copilot, etc.)
 
 1. **Before Starting Work:**
+   - Read [CONTRIBUTING.md](CONTRIBUTING.md) for development rules
    - Read this entire document to understand scope
    - Check the `## Current Status` section for what's completed
    - Find the next `[ ]` (unchecked) task in the current phase
