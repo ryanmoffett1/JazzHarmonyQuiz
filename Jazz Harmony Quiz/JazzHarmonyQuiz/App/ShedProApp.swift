@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct JazzHarmonyQuizApp: App {
+struct ShedProApp: App {
     @StateObject private var quizGame = QuizGame()
     @StateObject private var cadenceGame = CadenceGame()
     @StateObject private var scaleGame = ScaleGame()

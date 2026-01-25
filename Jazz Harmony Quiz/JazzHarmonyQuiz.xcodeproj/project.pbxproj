@@ -22,37 +22,53 @@
 		944280292F12A0770035FE8B /* CadenceScoreboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280282F12A0770035FE8B /* CadenceScoreboardView.swift */; };
 		9442802B2F12A08C0035FE8B /* CadenceDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9442802A2F12A08C0035FE8B /* CadenceDrillView.swift */; };
 		94629FCC2F1BD9CB0029B7F7 /* QuizGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */; };
-		946351E82F2665C300ABD609 /* ChordType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351E02F2665C300ABD609 /* ChordType.swift */; };
-		946351E92F2665C300ABD609 /* Chord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351DE2F2665C300ABD609 /* Chord.swift */; };
-		946351EA2F2665C300ABD609 /* PlayerLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351E32F2665C300ABD609 /* PlayerLevel.swift */; };
-		946351EB2F2665C300ABD609 /* Interval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351E12F2665C300ABD609 /* Interval.swift */; };
-		946351EC2F2665C300ABD609 /* ChordTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351DF2F2665C300ABD609 /* ChordTone.swift */; };
-		946351ED2F2665C300ABD609 /* Scale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351E42F2665C300ABD609 /* Scale.swift */; };
-		946351EE2F2665C300ABD609 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351E22F2665C300ABD609 /* Note.swift */; };
-		946351F62F266D4900ABD609 /* ScaleDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351F52F266D4900ABD609 /* ScaleDatabase.swift */; };
-		946351F72F266D4900ABD609 /* CurriculumDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351F32F266D4900ABD609 /* CurriculumDatabase.swift */; };
-		946351F82F266D4900ABD609 /* ChordDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351F22F266D4900ABD609 /* ChordDatabase.swift */; };
-		946351F92F266D4900ABD609 /* IntervalDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351F42F266D4900ABD609 /* IntervalDatabase.swift */; };
-		946351FA2F266D4900ABD609 /* CadenceDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351F12F266D4900ABD609 /* CadenceDatabase.swift */; };
-		946351FF2F266D6300ABD609 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351FD2F266D6300ABD609 /* SettingsManager.swift */; };
-		946352002F266D6300ABD609 /* CurriculumManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351FC2F266D6300ABD609 /* CurriculumManager.swift */; };
-		946352012F266D6300ABD609 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351FB2F266D6300ABD609 /* AudioManager.swift */; };
-		946352022F266D6300ABD609 /* SpacedRepetitionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946351FE2F266D6300ABD609 /* SpacedRepetitionStore.swift */; };
 		9463520A2F26727A00ABD609 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352032F26727A00ABD609 /* Buttons.swift */; };
 		9463520B2F26727A00ABD609 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352062F26727A00ABD609 /* FlowLayout.swift */; };
 		9463520C2F26727A00ABD609 /* PianoKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352072F26727A00ABD609 /* PianoKeyboard.swift */; };
 		9463520D2F26727A00ABD609 /* Cards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352042F26727A00ABD609 /* Cards.swift */; };
 		9463520E2F26727A00ABD609 /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352082F26727A00ABD609 /* Progress.swift */; };
 		9463520F2F26727A00ABD609 /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352052F26727A00ABD609 /* Feedback.swift */; };
+		946352132F26752C00ABD609 /* ShedProApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352112F26752C00ABD609 /* ShedProApp.swift */; };
+		946352142F26752C00ABD609 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352102F26752C00ABD609 /* ContentView.swift */; };
+		946352212F26786500ABD609 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352172F26786500ABD609 /* HomeView.swift */; };
+		946352222F26786500ABD609 /* WeeklyStreakView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463521A2F26786500ABD609 /* WeeklyStreakView.swift */; };
+		946352232F26786500ABD609 /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463521C2F26786500ABD609 /* PracticeView.swift */; };
+		946352242F26786500ABD609 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463521E2F26786500ABD609 /* ProgressView.swift */; };
+		946352252F26786500ABD609 /* QuickStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352192F26786500ABD609 /* QuickStatsView.swift */; };
+		946352262F26786500ABD609 /* ContinueLearningCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352152F26786500ABD609 /* ContinueLearningCard.swift */; };
+		946352272F26786500ABD609 /* DailyFocusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352162F26786500ABD609 /* DailyFocusCard.swift */; };
+		946352282F26786500ABD609 /* QuickPracticeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352182F26786500ABD609 /* QuickPracticeCard.swift */; };
+		9463523D2F26789900ABD609 /* ChordType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352312F26789900ABD609 /* ChordType.swift */; };
+		9463523E2F26789900ABD609 /* SpacedRepetitionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463523B2F26789900ABD609 /* SpacedRepetitionStore.swift */; };
+		9463523F2F26789900ABD609 /* PlayerLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352342F26789900ABD609 /* PlayerLevel.swift */; };
+		946352402F26789900ABD609 /* QuickPracticeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352392F26789900ABD609 /* QuickPracticeGenerator.swift */; };
+		946352412F26789900ABD609 /* Chord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463522F2F26789900ABD609 /* Chord.swift */; };
+		946352422F26789900ABD609 /* Scale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352352F26789900ABD609 /* Scale.swift */; };
+		946352432F26789900ABD609 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352372F26789900ABD609 /* AudioManager.swift */; };
+		946352442F26789900ABD609 /* CurriculumManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352382F26789900ABD609 /* CurriculumManager.swift */; };
+		946352452F26789900ABD609 /* ChordTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352302F26789900ABD609 /* ChordTone.swift */; };
+		946352462F26789900ABD609 /* ChordDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463522A2F26789900ABD609 /* ChordDatabase.swift */; };
+		946352472F26789900ABD609 /* ScaleDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463522D2F26789900ABD609 /* ScaleDatabase.swift */; };
+		946352482F26789900ABD609 /* CadenceDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352292F26789900ABD609 /* CadenceDatabase.swift */; };
+		946352492F26789900ABD609 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352332F26789900ABD609 /* Note.swift */; };
+		9463524A2F26789900ABD609 /* CurriculumDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463522B2F26789900ABD609 /* CurriculumDatabase.swift */; };
+		9463524B2F26789900ABD609 /* Interval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352322F26789900ABD609 /* Interval.swift */; };
+		9463524C2F26789900ABD609 /* IntervalDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463522C2F26789900ABD609 /* IntervalDatabase.swift */; };
+		9463524D2F26789900ABD609 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463523A2F26789900ABD609 /* SettingsManager.swift */; };
+		946352592F26792600ABD609 /* SettingsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352552F26792600ABD609 /* SettingsManagerTests.swift */; };
+		9463525A2F26792600ABD609 /* ChordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463524E2F26792600ABD609 /* ChordTests.swift */; };
+		9463525B2F26792600ABD609 /* SpacedRepetitionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352562F26792600ABD609 /* SpacedRepetitionStoreTests.swift */; };
+		9463525C2F26792600ABD609 /* NoteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352502F26792600ABD609 /* NoteTests.swift */; };
+		9463525D2F26792600ABD609 /* IntervalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463524F2F26792600ABD609 /* IntervalTests.swift */; };
+		9463525E2F26792600ABD609 /* QuickPracticeGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352542F26792600ABD609 /* QuickPracticeGeneratorTests.swift */; };
+		9463525F2F26792600ABD609 /* PlayerLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352512F26792600ABD609 /* PlayerLevelTests.swift */; };
+		946352602F26792600ABD609 /* ScaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352522F26792600ABD609 /* ScaleTests.swift */; };
 		94ADBD0B2F1C01E900AD5DC0 /* ChordSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */; };
 		94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */; };
 		94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */; };
 		94DFCCE52F13E13F00FBC0C2 /* ScaleDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCE42F13E13F00FBC0C2 /* ScaleDrillView.swift */; };
 		94E4E7952F149D7E009754EE /* IntervalGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E4E7942F149D7E009754EE /* IntervalGame.swift */; };
 		94E4E7972F149D9C009754EE /* IntervalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E4E7962F149D9C009754EE /* IntervalModel.swift */; };
-		94TEST0001000000000001 /* NoteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94TEST0001000000000002 /* NoteTests.swift */; };
-		A1234567890ABCDEF001 /* JazzHarmonyQuizApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */; };
-		A1234567890ABCDEF003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF002 /* ContentView.swift */; };
 		A1234567890ABCDEF005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF004 /* Assets.xcassets */; };
 		A1234567890ABCDEF008 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF007 /* Preview Assets.xcassets */; };
 		A1234567890ABCDEF010 /* ChordModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF009 /* ChordModel.swift */; };
@@ -87,28 +103,47 @@
 		944280282F12A0770035FE8B /* CadenceScoreboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceScoreboardView.swift; sourceTree = "<group>"; };
 		9442802A2F12A08C0035FE8B /* CadenceDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillView.swift; sourceTree = "<group>"; };
 		94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizGame.swift; sourceTree = "<group>"; };
-		946351DE2F2665C300ABD609 /* Chord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chord.swift; sourceTree = "<group>"; };
-		946351DF2F2665C300ABD609 /* ChordTone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordTone.swift; sourceTree = "<group>"; };
-		946351E02F2665C300ABD609 /* ChordType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordType.swift; sourceTree = "<group>"; };
-		946351E12F2665C300ABD609 /* Interval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Interval.swift; sourceTree = "<group>"; };
-		946351E22F2665C300ABD609 /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
-		946351E32F2665C300ABD609 /* PlayerLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerLevel.swift; sourceTree = "<group>"; };
-		946351E42F2665C300ABD609 /* Scale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scale.swift; sourceTree = "<group>"; };
-		946351F12F266D4900ABD609 /* CadenceDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDatabase.swift; sourceTree = "<group>"; };
-		946351F22F266D4900ABD609 /* ChordDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDatabase.swift; sourceTree = "<group>"; };
-		946351F32F266D4900ABD609 /* CurriculumDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumDatabase.swift; sourceTree = "<group>"; };
-		946351F42F266D4900ABD609 /* IntervalDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDatabase.swift; sourceTree = "<group>"; };
-		946351F52F266D4900ABD609 /* ScaleDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDatabase.swift; sourceTree = "<group>"; };
-		946351FB2F266D6300ABD609 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
-		946351FC2F266D6300ABD609 /* CurriculumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumManager.swift; sourceTree = "<group>"; };
-		946351FD2F266D6300ABD609 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
-		946351FE2F266D6300ABD609 /* SpacedRepetitionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacedRepetitionStore.swift; sourceTree = "<group>"; };
 		946352032F26727A00ABD609 /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
 		946352042F26727A00ABD609 /* Cards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cards.swift; sourceTree = "<group>"; };
 		946352052F26727A00ABD609 /* Feedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
 		946352062F26727A00ABD609 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		946352072F26727A00ABD609 /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
 		946352082F26727A00ABD609 /* Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progress.swift; sourceTree = "<group>"; };
+		946352102F26752C00ABD609 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		946352112F26752C00ABD609 /* ShedProApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShedProApp.swift; sourceTree = "<group>"; };
+		946352152F26786500ABD609 /* ContinueLearningCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueLearningCard.swift; sourceTree = "<group>"; };
+		946352162F26786500ABD609 /* DailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyFocusCard.swift; sourceTree = "<group>"; };
+		946352172F26786500ABD609 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		946352182F26786500ABD609 /* QuickPracticeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeCard.swift; sourceTree = "<group>"; };
+		946352192F26786500ABD609 /* QuickStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickStatsView.swift; sourceTree = "<group>"; };
+		9463521A2F26786500ABD609 /* WeeklyStreakView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyStreakView.swift; sourceTree = "<group>"; };
+		9463521C2F26786500ABD609 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
+		9463521E2F26786500ABD609 /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
+		946352292F26789900ABD609 /* CadenceDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDatabase.swift; sourceTree = "<group>"; };
+		9463522A2F26789900ABD609 /* ChordDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDatabase.swift; sourceTree = "<group>"; };
+		9463522B2F26789900ABD609 /* CurriculumDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumDatabase.swift; sourceTree = "<group>"; };
+		9463522C2F26789900ABD609 /* IntervalDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDatabase.swift; sourceTree = "<group>"; };
+		9463522D2F26789900ABD609 /* ScaleDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDatabase.swift; sourceTree = "<group>"; };
+		9463522F2F26789900ABD609 /* Chord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chord.swift; sourceTree = "<group>"; };
+		946352302F26789900ABD609 /* ChordTone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordTone.swift; sourceTree = "<group>"; };
+		946352312F26789900ABD609 /* ChordType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordType.swift; sourceTree = "<group>"; };
+		946352322F26789900ABD609 /* Interval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Interval.swift; sourceTree = "<group>"; };
+		946352332F26789900ABD609 /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		946352342F26789900ABD609 /* PlayerLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerLevel.swift; sourceTree = "<group>"; };
+		946352352F26789900ABD609 /* Scale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scale.swift; sourceTree = "<group>"; };
+		946352372F26789900ABD609 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		946352382F26789900ABD609 /* CurriculumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumManager.swift; sourceTree = "<group>"; };
+		946352392F26789900ABD609 /* QuickPracticeGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeGenerator.swift; sourceTree = "<group>"; };
+		9463523A2F26789900ABD609 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
+		9463523B2F26789900ABD609 /* SpacedRepetitionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacedRepetitionStore.swift; sourceTree = "<group>"; };
+		9463524E2F26792600ABD609 /* ChordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordTests.swift; sourceTree = "<group>"; };
+		9463524F2F26792600ABD609 /* IntervalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalTests.swift; sourceTree = "<group>"; };
+		946352502F26792600ABD609 /* NoteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteTests.swift; sourceTree = "<group>"; };
+		946352512F26792600ABD609 /* PlayerLevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerLevelTests.swift; sourceTree = "<group>"; };
+		946352522F26792600ABD609 /* ScaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleTests.swift; sourceTree = "<group>"; };
+		946352542F26792600ABD609 /* QuickPracticeGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeGeneratorTests.swift; sourceTree = "<group>"; };
+		946352552F26792600ABD609 /* SettingsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManagerTests.swift; sourceTree = "<group>"; };
+		946352562F26792600ABD609 /* SpacedRepetitionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacedRepetitionStoreTests.swift; sourceTree = "<group>"; };
 		94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
 		94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
 		94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
@@ -116,10 +151,7 @@
 		94DFCCE42F13E13F00FBC0C2 /* ScaleDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillView.swift; sourceTree = "<group>"; };
 		94E4E7942F149D7E009754EE /* IntervalGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalGame.swift; sourceTree = "<group>"; };
 		94E4E7962F149D9C009754EE /* IntervalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalModel.swift; sourceTree = "<group>"; };
-		94TEST0001000000000002 /* NoteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteTests.swift; sourceTree = "<group>"; };
 		94TEST0001000000000004 /* JazzHarmonyQuizTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JazzHarmonyQuizTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzHarmonyQuizApp.swift; sourceTree = "<group>"; };
-		A1234567890ABCDEF002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1234567890ABCDEF007 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		A1234567890ABCDEF009 /* ChordModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordModel.swift; sourceTree = "<group>"; };
@@ -162,49 +194,12 @@
 			path = Helpers;
 			sourceTree = "<group>";
 		};
-		946351DD2F2665C300ABD609 /* Databases */ = {
-			isa = PBXGroup;
-			children = (
-				946351F12F266D4900ABD609 /* CadenceDatabase.swift */,
-				946351F22F266D4900ABD609 /* ChordDatabase.swift */,
-				946351F32F266D4900ABD609 /* CurriculumDatabase.swift */,
-				946351F42F266D4900ABD609 /* IntervalDatabase.swift */,
-				946351F52F266D4900ABD609 /* ScaleDatabase.swift */,
-			);
-			path = Databases;
-			sourceTree = "<group>";
-		};
-		946351E52F2665C300ABD609 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				946351DE2F2665C300ABD609 /* Chord.swift */,
-				946351DF2F2665C300ABD609 /* ChordTone.swift */,
-				946351E02F2665C300ABD609 /* ChordType.swift */,
-				946351E12F2665C300ABD609 /* Interval.swift */,
-				946351E22F2665C300ABD609 /* Note.swift */,
-				946351E32F2665C300ABD609 /* PlayerLevel.swift */,
-				946351E42F2665C300ABD609 /* Scale.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		946351E62F2665C300ABD609 /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				946351FB2F266D6300ABD609 /* AudioManager.swift */,
-				946351FC2F266D6300ABD609 /* CurriculumManager.swift */,
-				946351FD2F266D6300ABD609 /* SettingsManager.swift */,
-				946351FE2F266D6300ABD609 /* SpacedRepetitionStore.swift */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
 		946351E72F2665C300ABD609 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				946351DD2F2665C300ABD609 /* Databases */,
-				946351E52F2665C300ABD609 /* Models */,
-				946351E62F2665C300ABD609 /* Services */,
+				9463522E2F26789900ABD609 /* Databases */,
+				946352362F26789900ABD609 /* Models */,
+				9463523C2F26789900ABD609 /* Services */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -222,10 +217,127 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		946352122F26752C00ABD609 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				946352102F26752C00ABD609 /* ContentView.swift */,
+				946352112F26752C00ABD609 /* ShedProApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		9463521B2F26786500ABD609 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				946352152F26786500ABD609 /* ContinueLearningCard.swift */,
+				946352162F26786500ABD609 /* DailyFocusCard.swift */,
+				946352172F26786500ABD609 /* HomeView.swift */,
+				946352182F26786500ABD609 /* QuickPracticeCard.swift */,
+				946352192F26786500ABD609 /* QuickStatsView.swift */,
+				9463521A2F26786500ABD609 /* WeeklyStreakView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		9463521D2F26786500ABD609 /* Practice */ = {
+			isa = PBXGroup;
+			children = (
+				9463521C2F26786500ABD609 /* PracticeView.swift */,
+			);
+			path = Practice;
+			sourceTree = "<group>";
+		};
+		9463521F2F26786500ABD609 /* Progress */ = {
+			isa = PBXGroup;
+			children = (
+				9463521E2F26786500ABD609 /* ProgressView.swift */,
+			);
+			path = Progress;
+			sourceTree = "<group>";
+		};
+		946352202F26786500ABD609 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				9463521B2F26786500ABD609 /* Home */,
+				9463521D2F26786500ABD609 /* Practice */,
+				9463521F2F26786500ABD609 /* Progress */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		9463522E2F26789900ABD609 /* Databases */ = {
+			isa = PBXGroup;
+			children = (
+				946352292F26789900ABD609 /* CadenceDatabase.swift */,
+				9463522A2F26789900ABD609 /* ChordDatabase.swift */,
+				9463522B2F26789900ABD609 /* CurriculumDatabase.swift */,
+				9463522C2F26789900ABD609 /* IntervalDatabase.swift */,
+				9463522D2F26789900ABD609 /* ScaleDatabase.swift */,
+			);
+			path = Databases;
+			sourceTree = "<group>";
+		};
+		946352362F26789900ABD609 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				9463522F2F26789900ABD609 /* Chord.swift */,
+				946352302F26789900ABD609 /* ChordTone.swift */,
+				946352312F26789900ABD609 /* ChordType.swift */,
+				946352322F26789900ABD609 /* Interval.swift */,
+				946352332F26789900ABD609 /* Note.swift */,
+				946352342F26789900ABD609 /* PlayerLevel.swift */,
+				946352352F26789900ABD609 /* Scale.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		9463523C2F26789900ABD609 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				946352372F26789900ABD609 /* AudioManager.swift */,
+				946352382F26789900ABD609 /* CurriculumManager.swift */,
+				946352392F26789900ABD609 /* QuickPracticeGenerator.swift */,
+				9463523A2F26789900ABD609 /* SettingsManager.swift */,
+				9463523B2F26789900ABD609 /* SpacedRepetitionStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		946352532F26792600ABD609 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				9463524E2F26792600ABD609 /* ChordTests.swift */,
+				9463524F2F26792600ABD609 /* IntervalTests.swift */,
+				946352502F26792600ABD609 /* NoteTests.swift */,
+				946352512F26792600ABD609 /* PlayerLevelTests.swift */,
+				946352522F26792600ABD609 /* ScaleTests.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		946352572F26792600ABD609 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				946352542F26792600ABD609 /* QuickPracticeGeneratorTests.swift */,
+				946352552F26792600ABD609 /* SettingsManagerTests.swift */,
+				946352562F26792600ABD609 /* SpacedRepetitionStoreTests.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		946352582F26792600ABD609 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				946352532F26792600ABD609 /* Models */,
+				946352572F26792600ABD609 /* Services */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
 		94TEST0001000000000006 /* JazzHarmonyQuizTests */ = {
 			isa = PBXGroup;
 			children = (
-				94TEST0001000000000002 /* NoteTests.swift */,
+				946352582F26792600ABD609 /* Core */,
 			);
 			path = JazzHarmonyQuizTests;
 			sourceTree = "<group>";
@@ -243,10 +355,10 @@
 		A1234567890ABCDEF026 /* JazzHarmonyQuiz */ = {
 			isa = PBXGroup;
 			children = (
+				946352202F26786500ABD609 /* Features */,
+				946352122F26752C00ABD609 /* App */,
 				946352092F26727A00ABD609 /* Components */,
 				946351E72F2665C300ABD609 /* Core */,
-				A1234567890ABCDEF000 /* JazzHarmonyQuizApp.swift */,
-				A1234567890ABCDEF002 /* ContentView.swift */,
 				A1234567890ABCDEF028 /* Models */,
 				A1234567890ABCDEF029 /* Views */,
 				A1234567890ABCDEF004 /* Assets.xcassets */,
@@ -412,7 +524,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94TEST0001000000000001 /* NoteTests.swift in Sources */,
+				946352592F26792600ABD609 /* SettingsManagerTests.swift in Sources */,
+				9463525A2F26792600ABD609 /* ChordTests.swift in Sources */,
+				9463525B2F26792600ABD609 /* SpacedRepetitionStoreTests.swift in Sources */,
+				9463525C2F26792600ABD609 /* NoteTests.swift in Sources */,
+				9463525D2F26792600ABD609 /* IntervalTests.swift in Sources */,
+				9463525E2F26792600ABD609 /* QuickPracticeGeneratorTests.swift in Sources */,
+				9463525F2F26792600ABD609 /* PlayerLevelTests.swift in Sources */,
+				946352602F26792600ABD609 /* ScaleTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -420,7 +539,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1234567890ABCDEF003 /* ContentView.swift in Sources */,
 				9463520A2F26727A00ABD609 /* Buttons.swift in Sources */,
 				9463520B2F26727A00ABD609 /* FlowLayout.swift in Sources */,
 				9463520C2F26727A00ABD609 /* PianoKeyboard.swift in Sources */,
@@ -429,7 +547,6 @@
 				9463520F2F26727A00ABD609 /* Feedback.swift in Sources */,
 				9400DEB82F2516A900BDBF25 /* ProgressionProgression.swift in Sources */,
 				9400DEB92F2516A900BDBF25 /* ProgressionGame.swift in Sources */,
-				A1234567890ABCDEF001 /* JazzHarmonyQuizApp.swift in Sources */,
 				9434133D2F1EDD74009235D1 /* PlayerProfileView.swift in Sources */,
 				A1234567890ABCDEF010 /* ChordModel.swift in Sources */,
 				94DFCCE52F13E13F00FBC0C2 /* ScaleDrillView.swift in Sources */,
@@ -437,22 +554,37 @@
 				9434133B2F1EDD1D009235D1 /* PlayerProfile.swift in Sources */,
 				944280252F12A0230035FE8B /* CadenceGame.swift in Sources */,
 				A1234567890ABCDEF016 /* ChordDrillView.swift in Sources */,
-				946351E82F2665C300ABD609 /* ChordType.swift in Sources */,
-				946351E92F2665C300ABD609 /* Chord.swift in Sources */,
-				946351EA2F2665C300ABD609 /* PlayerLevel.swift in Sources */,
-				946351EB2F2665C300ABD609 /* Interval.swift in Sources */,
-				946351EC2F2665C300ABD609 /* ChordTone.swift in Sources */,
-				946351ED2F2665C300ABD609 /* Scale.swift in Sources */,
-				946351EE2F2665C300ABD609 /* Note.swift in Sources */,
 				9400DEC02F256F8800BDBF25 /* CurriculumModule.swift in Sources */,
 				9400DEC22F256F8800BDBF25 /* ConceptualExplanations.swift in Sources */,
-				946351F62F266D4900ABD609 /* ScaleDatabase.swift in Sources */,
-				946351F72F266D4900ABD609 /* CurriculumDatabase.swift in Sources */,
-				946351F82F266D4900ABD609 /* ChordDatabase.swift in Sources */,
-				946351F92F266D4900ABD609 /* IntervalDatabase.swift in Sources */,
-				946351FA2F266D4900ABD609 /* CadenceDatabase.swift in Sources */,
+				946352212F26786500ABD609 /* HomeView.swift in Sources */,
+				946352222F26786500ABD609 /* WeeklyStreakView.swift in Sources */,
+				946352232F26786500ABD609 /* PracticeView.swift in Sources */,
+				946352242F26786500ABD609 /* ProgressView.swift in Sources */,
+				946352252F26786500ABD609 /* QuickStatsView.swift in Sources */,
+				946352262F26786500ABD609 /* ContinueLearningCard.swift in Sources */,
+				946352272F26786500ABD609 /* DailyFocusCard.swift in Sources */,
+				946352282F26786500ABD609 /* QuickPracticeCard.swift in Sources */,
 				9400DEB42F2515E100BDBF25 /* ProgressionDrillView.swift in Sources */,
+				9463523D2F26789900ABD609 /* ChordType.swift in Sources */,
+				9463523E2F26789900ABD609 /* SpacedRepetitionStore.swift in Sources */,
+				9463523F2F26789900ABD609 /* PlayerLevel.swift in Sources */,
+				946352402F26789900ABD609 /* QuickPracticeGenerator.swift in Sources */,
+				946352412F26789900ABD609 /* Chord.swift in Sources */,
+				946352422F26789900ABD609 /* Scale.swift in Sources */,
+				946352432F26789900ABD609 /* AudioManager.swift in Sources */,
+				946352442F26789900ABD609 /* CurriculumManager.swift in Sources */,
+				946352452F26789900ABD609 /* ChordTone.swift in Sources */,
+				946352462F26789900ABD609 /* ChordDatabase.swift in Sources */,
+				946352472F26789900ABD609 /* ScaleDatabase.swift in Sources */,
+				946352482F26789900ABD609 /* CadenceDatabase.swift in Sources */,
+				946352492F26789900ABD609 /* Note.swift in Sources */,
+				9463524A2F26789900ABD609 /* CurriculumDatabase.swift in Sources */,
+				9463524B2F26789900ABD609 /* Interval.swift in Sources */,
+				9463524C2F26789900ABD609 /* IntervalDatabase.swift in Sources */,
+				9463524D2F26789900ABD609 /* SettingsManager.swift in Sources */,
 				941565132F186B14001C0BC2 /* IntervalDrillView.swift in Sources */,
+				946352132F26752C00ABD609 /* ShedProApp.swift in Sources */,
+				946352142F26752C00ABD609 /* ContentView.swift in Sources */,
 				94E4E7952F149D7E009754EE /* IntervalGame.swift in Sources */,
 				A1234567890ABCDEF018 /* ResultsView.swift in Sources */,
 				944280272F12A0630035FE8B /* SettingsView.swift in Sources */,
@@ -462,10 +594,6 @@
 				94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */,
 				94E4E7972F149D9C009754EE /* IntervalModel.swift in Sources */,
 				A1234567890ABCDEF020 /* ScoreboardView.swift in Sources */,
-				946351FF2F266D6300ABD609 /* SettingsManager.swift in Sources */,
-				946352002F266D6300ABD609 /* CurriculumManager.swift in Sources */,
-				946352012F266D6300ABD609 /* AudioManager.swift in Sources */,
-				946352022F266D6300ABD609 /* SpacedRepetitionStore.swift in Sources */,
 				944280292F12A0770035FE8B /* CadenceScoreboardView.swift in Sources */,
 				94ADBD0B2F1C01E900AD5DC0 /* ChordSelectorView.swift in Sources */,
 				5A634891227C479190B2BAC9 /* PracticeDueCard.swift in Sources */,

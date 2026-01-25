@@ -68,7 +68,7 @@ final class IntervalTests: XCTestCase {
     // MARK: - Interval Tests - Basic Construction
     
     func testIntervalAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let perfectFifth = IntervalType(
             name: "Perfect 5th",
             shortName: "P5",
@@ -78,7 +78,7 @@ final class IntervalTests: XCTestCase {
         )
         
         let interval = Interval(
-            startNote: c,
+            rootNote: c,
             intervalType: perfectFifth,
             direction: .ascending
         )
@@ -90,7 +90,7 @@ final class IntervalTests: XCTestCase {
     }
     
     func testIntervalDescending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let perfectFifth = IntervalType(
             name: "Perfect 5th",
             shortName: "P5",
@@ -100,7 +100,7 @@ final class IntervalTests: XCTestCase {
         )
         
         let interval = Interval(
-            startNote: c,
+            rootNote: c,
             intervalType: perfectFifth,
             direction: .descending
         )
@@ -110,7 +110,7 @@ final class IntervalTests: XCTestCase {
     }
     
     func testIntervalHarmonic() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorThird = IntervalType(
             name: "Major 3rd",
             shortName: "M3",
@@ -120,7 +120,7 @@ final class IntervalTests: XCTestCase {
         )
         
         let interval = Interval(
-            startNote: c,
+            rootNote: c,
             intervalType: majorThird,
             direction: .harmonic
         )
@@ -133,7 +133,7 @@ final class IntervalTests: XCTestCase {
     // MARK: - Target Note Calculation Tests
     
     func testMajorThirdAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorThird = IntervalType(
             name: "Major 3rd",
             shortName: "M3",
@@ -142,12 +142,12 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let interval = Interval(startNote: c, intervalType: majorThird, direction: .ascending)
+        let interval = Interval(rootNote: c, intervalType: majorThird, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "E")
     }
     
     func testMinorThirdAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let minorThird = IntervalType(
             name: "Minor 3rd",
             shortName: "m3",
@@ -156,12 +156,12 @@ final class IntervalTests: XCTestCase {
             difficulty: .intermediate
         )
         
-        let interval = Interval(startNote: c, intervalType: minorThird, direction: .ascending)
+        let interval = Interval(rootNote: c, intervalType: minorThird, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "Eb")
     }
     
     func testPerfectFourthAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let perfectFourth = IntervalType(
             name: "Perfect 4th",
             shortName: "P4",
@@ -170,12 +170,12 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let interval = Interval(startNote: c, intervalType: perfectFourth, direction: .ascending)
+        let interval = Interval(rootNote: c, intervalType: perfectFourth, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "F")
     }
     
     func testTritoneAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let tritone = IntervalType(
             name: "Tritone",
             shortName: "TT",
@@ -184,12 +184,12 @@ final class IntervalTests: XCTestCase {
             difficulty: .advanced
         )
         
-        let interval = Interval(startNote: c, intervalType: tritone, direction: .ascending)
+        let interval = Interval(rootNote: c, intervalType: tritone, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "F#")
     }
     
     func testOctaveAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let octave = IntervalType(
             name: "Octave",
             shortName: "P8",
@@ -198,13 +198,13 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let interval = Interval(startNote: c, intervalType: octave, direction: .ascending)
+        let interval = Interval(rootNote: c, intervalType: octave, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "C")
         XCTAssertEqual(interval.targetNote.midiNumber, 72)
     }
     
     func testMajorSeventhAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorSeventh = IntervalType(
             name: "Major 7th",
             shortName: "M7",
@@ -213,12 +213,12 @@ final class IntervalTests: XCTestCase {
             difficulty: .intermediate
         )
         
-        let interval = Interval(startNote: c, intervalType: majorSeventh, direction: .ascending)
+        let interval = Interval(rootNote: c, intervalType: majorSeventh, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "B")
     }
     
     func testMinorSeventhAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let minorSeventh = IntervalType(
             name: "Minor 7th",
             shortName: "m7",
@@ -227,14 +227,14 @@ final class IntervalTests: XCTestCase {
             difficulty: .intermediate
         )
         
-        let interval = Interval(startNote: c, intervalType: minorSeventh, direction: .ascending)
+        let interval = Interval(rootNote: c, intervalType: minorSeventh, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "Bb")
     }
     
     // MARK: - Descending Interval Tests
     
     func testMajorThirdDescending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorThird = IntervalType(
             name: "Major 3rd",
             shortName: "M3",
@@ -243,12 +243,12 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let interval = Interval(startNote: c, intervalType: majorThird, direction: .descending)
+        let interval = Interval(rootNote: c, intervalType: majorThird, direction: .descending)
         XCTAssertEqual(interval.targetNote.name, "Ab")
     }
     
     func testPerfectFifthDescending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let perfectFifth = IntervalType(
             name: "Perfect 5th",
             shortName: "P5",
@@ -257,12 +257,12 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let interval = Interval(startNote: c, intervalType: perfectFifth, direction: .descending)
+        let interval = Interval(rootNote: c, intervalType: perfectFifth, direction: .descending)
         XCTAssertEqual(interval.targetNote.name, "F")
     }
     
     func testOctaveDescending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let octave = IntervalType(
             name: "Octave",
             shortName: "P8",
@@ -271,7 +271,7 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let interval = Interval(startNote: c, intervalType: octave, direction: .descending)
+        let interval = Interval(rootNote: c, intervalType: octave, direction: .descending)
         XCTAssertEqual(interval.targetNote.name, "C")
         XCTAssertEqual(interval.targetNote.midiNumber, 48)
     }
@@ -279,7 +279,7 @@ final class IntervalTests: XCTestCase {
     // MARK: - Sharp and Flat Root Note Tests
     
     func testIntervalFromSharpRoot() {
-        let cSharp = Note(name: "C#", midiNumber: 61, pitchClass: 1, isSharp: true)
+        let cSharp = Note(name: "C#", midiNumber: 61, isSharp: true, isSharp: true)
         let perfectFifth = IntervalType(
             name: "Perfect 5th",
             shortName: "P5",
@@ -288,12 +288,12 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let interval = Interval(startNote: cSharp, intervalType: perfectFifth, direction: .ascending)
+        let interval = Interval(rootNote: cSharp, intervalType: perfectFifth, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "G#")
     }
     
     func testIntervalFromFlatRoot() {
-        let db = Note(name: "Db", midiNumber: 61, pitchClass: 1)
+        let db = Note(name: "Db", midiNumber: 61, isSharp: true)
         let perfectFifth = IntervalType(
             name: "Perfect 5th",
             shortName: "P5",
@@ -302,7 +302,7 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let interval = Interval(startNote: db, intervalType: perfectFifth, direction: .ascending)
+        let interval = Interval(rootNote: db, intervalType: perfectFifth, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "Ab")
     }
     
@@ -317,19 +317,19 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let interval = Interval(startNote: fSharp, intervalType: majorSecond, direction: .ascending)
+        let interval = Interval(rootNote: fSharp, intervalType: majorSecond, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "G#")
         
         // If start note is flat, target should prefer flats
         let gb = Note(name: "Gb", midiNumber: 66, pitchClass: 6)
-        let interval2 = Interval(startNote: gb, intervalType: majorSecond, direction: .ascending)
+        let interval2 = Interval(rootNote: gb, intervalType: majorSecond, direction: .ascending)
         XCTAssertEqual(interval2.targetNote.name, "Ab")
     }
     
     // MARK: - Display Name Tests
     
     func testIntervalDisplayName() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let perfectFifth = IntervalType(
             name: "Perfect 5th",
             shortName: "P5",
@@ -338,20 +338,20 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let ascending = Interval(startNote: c, intervalType: perfectFifth, direction: .ascending)
+        let ascending = Interval(rootNote: c, intervalType: perfectFifth, direction: .ascending)
         XCTAssertEqual(ascending.displayName, "C → G (Perfect 5th)")
         
-        let descending = Interval(startNote: c, intervalType: perfectFifth, direction: .descending)
+        let descending = Interval(rootNote: c, intervalType: perfectFifth, direction: .descending)
         XCTAssertEqual(descending.displayName, "C → F (Perfect 5th)")
         
-        let harmonic = Interval(startNote: c, intervalType: perfectFifth, direction: .harmonic)
+        let harmonic = Interval(rootNote: c, intervalType: perfectFifth, direction: .harmonic)
         XCTAssertEqual(harmonic.displayName, "C + G (Perfect 5th)")
     }
     
     // MARK: - Compound Intervals
     
     func testMajorNinthAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorNinth = IntervalType(
             name: "Major 9th",
             shortName: "M9",
@@ -360,13 +360,13 @@ final class IntervalTests: XCTestCase {
             difficulty: .advanced
         )
         
-        let interval = Interval(startNote: c, intervalType: majorNinth, direction: .ascending)
+        let interval = Interval(rootNote: c, intervalType: majorNinth, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "D")
         XCTAssertEqual(interval.targetNote.midiNumber, 74) // One octave + major 2nd
     }
     
     func testMajorThirteenthAscending() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let majorThirteenth = IntervalType(
             name: "Major 13th",
             shortName: "M13",
@@ -375,7 +375,7 @@ final class IntervalTests: XCTestCase {
             difficulty: .advanced
         )
         
-        let interval = Interval(startNote: c, intervalType: majorThirteenth, direction: .ascending)
+        let interval = Interval(rootNote: c, intervalType: majorThirteenth, direction: .ascending)
         XCTAssertEqual(interval.targetNote.name, "A")
         XCTAssertEqual(interval.targetNote.midiNumber, 81) // One octave + major 6th
     }
@@ -383,7 +383,7 @@ final class IntervalTests: XCTestCase {
     // MARK: - Hashable & Codable
     
     func testIntervalEquality() {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let perfectFifth = IntervalType(
             name: "Perfect 5th",
             shortName: "P5",
@@ -392,14 +392,14 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let interval1 = Interval(startNote: c, intervalType: perfectFifth, direction: .ascending)
-        let interval2 = Interval(startNote: c, intervalType: perfectFifth, direction: .ascending)
+        let interval1 = Interval(rootNote: c, intervalType: perfectFifth, direction: .ascending)
+        let interval2 = Interval(rootNote: c, intervalType: perfectFifth, direction: .ascending)
         
         XCTAssertEqual(interval1, interval2)
     }
     
     func testIntervalCodable() throws {
-        let c = Note(name: "C", midiNumber: 60, pitchClass: 0)
+        let c = Note(name: "C", midiNumber: 60, isSharp: false)
         let perfectFifth = IntervalType(
             name: "Perfect 5th",
             shortName: "P5",
@@ -408,7 +408,7 @@ final class IntervalTests: XCTestCase {
             difficulty: .beginner
         )
         
-        let original = Interval(startNote: c, intervalType: perfectFifth, direction: .ascending)
+        let original = Interval(rootNote: c, intervalType: perfectFifth, direction: .ascending)
         
         let encoder = JSONEncoder()
         let data = try encoder.encode(original)

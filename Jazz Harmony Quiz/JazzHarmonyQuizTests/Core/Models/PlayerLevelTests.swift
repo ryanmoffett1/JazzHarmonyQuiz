@@ -40,18 +40,18 @@ final class PlayerLevelTests: XCTestCase {
     
     func testXPForLevel() {
         // Reverse of level formula: xp = (level - 1)^2 * 100
-        XCTAssertEqual(PlayerLevel.xpForLevel(1), 0)
-        XCTAssertEqual(PlayerLevel.xpForLevel(2), 100)    // (2-1)^2 * 100 = 100
-        XCTAssertEqual(PlayerLevel.xpForLevel(3), 400)    // (3-1)^2 * 100 = 400
-        XCTAssertEqual(PlayerLevel.xpForLevel(5), 1600)   // (5-1)^2 * 100 = 1600
-        XCTAssertEqual(PlayerLevel.xpForLevel(10), 8100)  // (10-1)^2 * 100 = 8100
+        XCTAssertEqual(PlayerLevel.xpRequiredForLevel(1), 0)
+        XCTAssertEqual(PlayerLevel.xpRequiredForLevel(2), 100)    // (2-1)^2 * 100 = 100
+        XCTAssertEqual(PlayerLevel.xpRequiredForLevel(3), 400)    // (3-1)^2 * 100 = 400
+        XCTAssertEqual(PlayerLevel.xpRequiredForLevel(5), 1600)   // (5-1)^2 * 100 = 1600
+        XCTAssertEqual(PlayerLevel.xpRequiredForLevel(10), 8100)  // (10-1)^2 * 100 = 8100
     }
     
     func testXPForLevelProgression() {
         // Verify that XP required increases quadratically
-        let xp5 = PlayerLevel.xpForLevel(5)
-        let xp10 = PlayerLevel.xpForLevel(10)
-        let xp20 = PlayerLevel.xpForLevel(20)
+        let xp5 = PlayerLevel.xpRequiredForLevel(5)
+        let xp10 = PlayerLevel.xpRequiredForLevel(10)
+        let xp20 = PlayerLevel.xpRequiredForLevel(20)
         
         XCTAssertEqual(xp5, 1600)
         XCTAssertEqual(xp10, 8100)
@@ -61,35 +61,35 @@ final class PlayerLevelTests: XCTestCase {
     // MARK: - PlayerLevel Initialization and Properties
     
     func testPlayerLevelInit() {
-        let player = PlayerLevel(totalXP: 500)
+        let player = PlayerLevel(xp: 500)
         
         XCTAssertEqual(player.totalXP, 500)
         XCTAssertEqual(player.level, 3) // sqrt(500/100) + 1 ≈ 3.23 → 3
     }
     
     func testPlayerLevelCurrentLevelXP() {
-        let player = PlayerLevel(totalXP: 500)
+        let player = PlayerLevel(xp: 500)
         
         let currentLevelXP = player.currentLevelXP
-        let xpForCurrentLevel = PlayerLevel.xpForLevel(player.level)
+        let xpForCurrentLevel = PlayerLevel.xpRequiredForLevel(player.level)
         
         XCTAssertEqual(currentLevelXP, 500 - xpForCurrentLevel)
         XCTAssertEqual(currentLevelXP, 100) // 500 - 400 = 100
     }
     
     func testPlayerLevelXPForNextLevel() {
-        let player = PlayerLevel(totalXP: 500)
+        let player = PlayerLevel(xp: 500)
         
         let xpForNext = player.xpForNextLevel
-        let xpForLevel4 = PlayerLevel.xpForLevel(4)
-        let xpForLevel3 = PlayerLevel.xpForLevel(3)
+        let xpForLevel4 = PlayerLevel.xpRequiredForLevel(4)
+        let xpForLevel3 = PlayerLevel.xpRequiredForLevel(3)
         
         XCTAssertEqual(xpForNext, xpForLevel4 - xpForLevel3)
         XCTAssertEqual(xpForNext, 500) // Level 4 needs 900 - 400 = 500 XP
     }
     
     func testPlayerLevelProgressToNextLevel() {
-        let player = PlayerLevel(totalXP: 500)
+        let player = PlayerLevel(xp: 500)
         
         // At 500 XP total, level 3 (needs 400), level 4 needs 900
         // Current level XP: 500 - 400 = 100
@@ -100,12 +100,12 @@ final class PlayerLevelTests: XCTestCase {
     }
     
     func testPlayerLevelProgressAtLevelStart() {
-        let player = PlayerLevel(totalXP: 400) // Exactly at level 3 start
+        let player = PlayerLevel(xp: 400) // Exactly at level 3 start
         XCTAssertEqual(player.progressToNextLevel, 0.0)
     }
     
     func testPlayerLevelProgressNearLevelEnd() {
-        let player = PlayerLevel(totalXP: 890) // Almost at level 4 (needs 900)
+        let player = PlayerLevel(xp: 890) // Almost at level 4 (needs 900)
         
         // Level 3 needs 400, level 4 needs 900
         // Current: 890 - 400 = 490
@@ -118,7 +118,7 @@ final class PlayerLevelTests: XCTestCase {
     // MARK: - Adding XP
     
     func testAddXPBasic() {
-        var player = PlayerLevel(totalXP: 100)
+        var player = PlayerLevel(xp: 100)
         XCTAssertEqual(player.level, 2)
         
         player.addXP(300)
@@ -127,7 +127,7 @@ final class PlayerLevelTests: XCTestCase {
     }
     
     func testAddXPMultipleLevels() {
-        var player = PlayerLevel(totalXP: 100)
+        var player = PlayerLevel(xp: 100)
         XCTAssertEqual(player.level, 2)
         
         player.addXP(1500) // Jump to 1600 total
@@ -136,7 +136,7 @@ final class PlayerLevelTests: XCTestCase {
     }
     
     func testAddXPZero() {
-        var player = PlayerLevel(totalXP: 500)
+        var player = PlayerLevel(xp: 500)
         let originalLevel = player.level
         
         player.addXP(0)
@@ -145,7 +145,7 @@ final class PlayerLevelTests: XCTestCase {
     }
     
     func testAddXPSmallIncrement() {
-        var player = PlayerLevel(totalXP: 500)
+        var player = PlayerLevel(xp: 500)
         
         player.addXP(10)
         XCTAssertEqual(player.totalXP, 510)
@@ -164,7 +164,7 @@ final class PlayerLevelTests: XCTestCase {
     }
     
     func testXPAwardUsage() {
-        var player = PlayerLevel(totalXP: 0)
+        var player = PlayerLevel(xp: 0)
         
         // Answer 10 basic questions correctly
         for _ in 1...10 {
@@ -176,7 +176,7 @@ final class PlayerLevelTests: XCTestCase {
     }
     
     func testXPAwardPerfectSession() {
-        var player = PlayerLevel(totalXP: 50)
+        var player = PlayerLevel(xp: 50)
         
         player.addXP(XPAward.perfectSession.rawValue)
         XCTAssertEqual(player.totalXP, 100)
@@ -184,7 +184,7 @@ final class PlayerLevelTests: XCTestCase {
     }
     
     func testXPAwardCurriculumModule() {
-        var player = PlayerLevel(totalXP: 0)
+        var player = PlayerLevel(xp: 0)
         
         // Complete a curriculum module
         player.addXP(XPAward.curriculumModule.rawValue)
@@ -193,7 +193,7 @@ final class PlayerLevelTests: XCTestCase {
     }
     
     func testXPAwardDailyStreak() {
-        var player = PlayerLevel(totalXP: 95)
+        var player = PlayerLevel(xp: 95)
         
         // Daily streak bonus pushes to level 2
         player.addXP(XPAward.dailyStreak.rawValue)
@@ -204,7 +204,7 @@ final class PlayerLevelTests: XCTestCase {
     // MARK: - Codable Tests
     
     func testPlayerLevelCodable() throws {
-        let original = PlayerLevel(totalXP: 1234)
+        let original = PlayerLevel(xp: 1234)
         
         let encoder = JSONEncoder()
         let data = try encoder.encode(original)
@@ -222,15 +222,15 @@ final class PlayerLevelTests: XCTestCase {
     // MARK: - Equatable Tests
     
     func testPlayerLevelEquality() {
-        let player1 = PlayerLevel(totalXP: 500)
-        let player2 = PlayerLevel(totalXP: 500)
+        let player1 = PlayerLevel(xp: 500)
+        let player2 = PlayerLevel(xp: 500)
         
         XCTAssertEqual(player1, player2)
     }
     
     func testPlayerLevelInequality() {
-        let player1 = PlayerLevel(totalXP: 500)
-        let player2 = PlayerLevel(totalXP: 600)
+        let player1 = PlayerLevel(xp: 500)
+        let player2 = PlayerLevel(xp: 600)
         
         XCTAssertNotEqual(player1, player2)
     }
@@ -239,12 +239,12 @@ final class PlayerLevelTests: XCTestCase {
     
     func testPlayerLevelNegativeXP() {
         // Ensure level doesn't go below 1 even with negative values
-        let player = PlayerLevel(totalXP: -100)
+        let player = PlayerLevel(xp: -100)
         XCTAssertEqual(player.level, 1)
     }
     
     func testPlayerLevelVeryHighXP() {
-        let player = PlayerLevel(totalXP: 100000)
+        let player = PlayerLevel(xp: 100000)
         let expectedLevel = PlayerLevel.levelFromXP(100000)
         
         XCTAssertEqual(player.level, expectedLevel)
@@ -254,7 +254,7 @@ final class PlayerLevelTests: XCTestCase {
     func testProgressToNextLevelNeverExceedsOne() {
         // Test various XP values
         for xp in stride(from: 0, to: 10000, by: 50) {
-            let player = PlayerLevel(totalXP: xp)
+            let player = PlayerLevel(xp: xp)
             XCTAssertLessThanOrEqual(player.progressToNextLevel, 1.0)
             XCTAssertGreaterThanOrEqual(player.progressToNextLevel, 0.0)
         }
