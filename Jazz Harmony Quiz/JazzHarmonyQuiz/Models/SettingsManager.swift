@@ -11,22 +11,6 @@ enum AppTheme: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-enum ChordFont: String, CaseIterable, Identifiable {
-    case system = "System"
-    case caveat = "Caveat"
-
-    var id: String { rawValue }
-
-    var displayName: String {
-        switch self {
-        case .system:
-            return "Default"
-        case .caveat:
-            return "Jazz (Handwritten)"
-        }
-    }
-}
-
 // MARK: - Settings Manager
 
 class SettingsManager: ObservableObject {
@@ -35,12 +19,6 @@ class SettingsManager: ObservableObject {
     @Published var selectedTheme: AppTheme {
         didSet {
             UserDefaults.standard.set(selectedTheme.rawValue, forKey: "selectedTheme")
-        }
-    }
-
-    @Published var selectedChordFont: ChordFont {
-        didSet {
-            UserDefaults.standard.set(selectedChordFont.rawValue, forKey: "selectedChordFont")
         }
     }
     
@@ -145,13 +123,6 @@ class SettingsManager: ObservableObject {
         } else {
             self.selectedTheme = .system
         }
-
-        if let savedFont = UserDefaults.standard.string(forKey: "selectedChordFont"),
-           let font = ChordFont(rawValue: savedFont) {
-            self.selectedChordFont = font
-        } else {
-            self.selectedChordFont = .system
-        }
         
         // Audio settings - load from UserDefaults
         self.audioEnabled = UserDefaults.standard.object(forKey: "audioEnabled") as? Bool ?? true
@@ -205,12 +176,7 @@ class SettingsManager: ObservableObject {
     // MARK: - Font Helpers
 
     func chordDisplayFont(size: CGFloat = 28, weight: Font.Weight = .bold) -> Font {
-        switch selectedChordFont {
-        case .system:
-            return .system(size: size, weight: weight)
-        case .caveat:
-            return .custom("Caveat", size: size + 4) // Slightly larger for handwritten feel
-        }
+        return .system(size: size, weight: weight, design: .rounded)
     }
 
     // MARK: - Dark Mode Colors

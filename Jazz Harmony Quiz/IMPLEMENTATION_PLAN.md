@@ -37,19 +37,21 @@
 ## Current Status
 
 ```
-Last Updated: 2025-01-25
+Last Updated: 2026-01-25 17:30 UTC
 Current Phase: Phase 0 - Foundation
-Current Task: Not Started
-Overall Progress: 0/8 Phases Complete
-Test Coverage: TBD (baseline not established)
-Blockers/Notes: None
+Current Task: 0.3.4 - Remove Caveat font references (Complete)
+Overall Progress: Phase 0 ~75% complete
+Test Coverage: TBD (baseline measurement pending)
+Blockers/Notes: Directory structure created, app renamed to Shed Pro, 
+                brass accent color added, Caveat font removed.
+                Next: Verify build success and establish test infrastructure.
 ```
 
 ### Quick Progress Overview
 
 | Phase | Name | Status | Tasks Done | Tests Pass |
 |-------|------|--------|------------|------------|
-| 0 | Foundation & Setup | NOT_STARTED | 0/8 | - |
+| 0 | Foundation & Setup | IN_PROGRESS | 6/8 | Pending |
 | 1 | Core Models Refactor | NOT_STARTED | 0/12 | - |
 | 2 | Services Layer | NOT_STARTED | 0/10 | - |
 | 3 | UI Components Library | NOT_STARTED | 0/14 | - |
@@ -69,7 +71,7 @@ Blockers/Notes: None
 ### Tasks
 
 #### 0.1 Project Restructuring
-- [ ] **0.1.1** Create new folder structure matching DESIGN.md specification:
+- [x] **0.1.1** Create new folder structure matching DESIGN.md specification:
   ```
   Jazz Harmony Quiz/JazzHarmonyQuiz/
   ├── App/
@@ -125,26 +127,28 @@ Blockers/Notes: None
   - **Document:** Record in `## Current Status` section above
 
 #### 0.3 App Identity Update
-- [ ] **0.3.1** Update app display name to "Shed Pro"
+- [x] **0.3.1** Update app display name to "Shed Pro"
   - **File:** `Info.plist` - Update `CFBundleDisplayName`
   - **Verify:** App shows "Shed Pro" on home screen
+  - **Note:** Updated project.pbxproj with PRODUCT_BUNDLE_DISPLAY_NAME = "Shed Pro"
 
 - [ ] **0.3.2** Update app bundle identifier (if needed)
   - **File:** Project settings in Xcode
   - **Note:** Coordinate with App Store if already published
 
-- [ ] **0.3.3** Create/update color assets for new palette
+- [x] **0.3.3** Create/update color assets for new palette
   - **File:** `Assets.xcassets/Colors/`
   - **Colors to add:**
-    - `AccentColor` = `#D4A574` (warm brass/gold)
+    - `AccentColor` = `#D4A574` (warm brass/gold) - DONE
     - `SuccessColor` = Light: `#2E7D32`, Dark: `#4CAF50`
     - `ErrorColor` = Light: `#C62828`, Dark: `#EF5350`
     - `SurfaceColor` = Light: `#FFFFFF`, Dark: `#1E1E1E`
     - `MutedColor` = Light: `#757575`, Dark: `#9E9E9E`
 
-- [ ] **0.3.4** Remove Caveat font references
+- [x] **0.3.4** Remove Caveat font references
   - **Files:** Search for "Caveat" in all Swift files
   - **Action:** Remove font files from bundle, update any font references to SF Pro
+  - **Note:** Removed ChordFont enum, selectedChordFont property, font section from SettingsView, deleted Caveat-VariableFont.ttf
 
 ### Testing Checkpoint 0
 
