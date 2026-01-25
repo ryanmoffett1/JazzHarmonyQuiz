@@ -528,6 +528,7 @@ struct ActiveQuizView: View {
     @State private var isLastQuestion = false
     @State private var feedbackPhase: FeedbackPhase = .showingUserAnswer
     @State private var userAnswerForFeedback: [Note] = []
+    @State private var selectedChordTypeForFeedback: ChordType? = nil
     
     enum FeedbackPhase {
         case showingUserAnswer
@@ -1209,26 +1210,27 @@ struct ActiveQuizView: View {
         let correctAnswer = question.correctAnswer
 
         // Handle answer based on question type
+        // NOTE: We do NOT call quizGame.submitAnswer() here - that happens in continueToNextQuestion()
+        // after feedback is shown. Otherwise the question index advances twice.
         if question.questionType == .earTraining || question.questionType == .auralQuality {
             // For aural quality recognition, check chord type selection
             if let selectedType = selectedChordType {
                 isCorrect = selectedType.id == question.chord.chordType.id
-                // Submit chord type answer to quiz game
-                quizGame.submitChordTypeAnswer(selectedType)
+                // Store selected type for later submission
+                selectedChordTypeForFeedback = selectedType
             } else {
                 isCorrect = false
+                selectedChordTypeForFeedback = nil
             }
             userAnswer = question.chord.chordTones  // Use chord tones for display
         } else if question.questionType == .auralSpelling {
             // For aural spelling, check selected notes
             userAnswer = Array(selectedNotes)
             isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
-            quizGame.submitAnswer(userAnswer)
         } else {
             // For visual questions, use selected notes
             userAnswer = Array(selectedNotes)
             isCorrect = isAnswerCorrect(userAnswer: userAnswer, question: question)
-            quizGame.submitAnswer(userAnswer)
         }
 
         // Store current question, user's answer, and correct answer for feedback
@@ -1295,11 +1297,18 @@ struct ActiveQuizView: View {
     private func continueToNextQuestion() {
         // Submit the answer to QuizGame now (after showing feedback)
         if currentQuestionForFeedback != nil {
-            quizGame.submitAnswer(userAnswerForFeedback)
+            // Check if this was a chord type answer or a note answer
+            if let chordType = selectedChordTypeForFeedback {
+                quizGame.submitChordTypeAnswer(chordType)
+            } else {
+                quizGame.submitAnswer(userAnswerForFeedback)
+            }
         }
         
         // Reset state for next question
         selectedNotes.removeAll()
+        selectedChordType = nil
+        selectedChordTypeForFeedback = nil
         userAnswerForFeedback = []
         feedbackPhase = .showingUserAnswer
         showingFeedback = false
