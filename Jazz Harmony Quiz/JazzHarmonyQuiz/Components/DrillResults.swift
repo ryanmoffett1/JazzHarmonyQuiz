@@ -1,230 +1,108 @@
 import SwiftUI
 
-// MARK: - Drill Results Components
+// MARK: - Drill Results Data Protocol
 
-/// Shared components for displaying drill results across all drill modules
-/// Per DESIGN.md Section 6.3 SESSION COMPLETE layout
-
-// MARK: - Results Score Circle
-
-/// A circular score display showing accuracy percentage
-/// Used in all drill results screens
-struct ResultsScoreCircle: View {
-    let accuracy: Double
-    let correctCount: Int
-    let totalCount: Int
-    var accentColor: Color = .blue
-    
-    private var accuracyColor: Color {
-        if accuracy >= 0.9 { return .green }
-        if accuracy >= 0.7 { return .orange }
-        return .red
-    }
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                // Background circle
-                Circle()
-                    .stroke(Color.gray.opacity(0.2), lineWidth: 12)
-                    .frame(width: 140, height: 140)
-                
-                // Progress circle
-                Circle()
-                    .trim(from: 0, to: accuracy)
-                    .stroke(
-                        accuracyColor,
-                        style: StrokeStyle(lineWidth: 12, lineCap: .round)
-                    )
-                    .frame(width: 140, height: 140)
-                    .rotationEffect(.degrees(-90))
-                    .animation(.easeOut(duration: 0.5), value: accuracy)
-                
-                // Center content
-                VStack(spacing: 2) {
-                    Text("\(Int(accuracy * 100))%")
-                        .font(.system(size: 36, weight: .bold))
-                        .foregroundColor(accuracyColor)
-                    Text("\(correctCount)/\(totalCount)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-    }
+/// Protocol for drill result data that can be displayed in DrillResultsView
+protocol DrillResultData {
+    var correctAnswers: Int { get }
+    var totalQuestions: Int { get }
+    var accuracy: Double { get }
+    var totalTime: TimeInterval { get }
+    var averageTimePerQuestion: Double { get }
 }
 
-// MARK: - Results Stats Grid
+// MARK: - Drill Results View
 
-/// A grid showing key statistics from a drill session
-struct ResultsStatsGrid: View {
-    let stats: [ResultsStat]
-    
-    var body: some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible()),
-            GridItem(.flexible())
-        ], spacing: 12) {
-            ForEach(stats) { stat in
-                ResultsStatCard(stat: stat)
-            }
-        }
-    }
-}
-
-/// A single statistic to display in the results
-struct ResultsStat: Identifiable {
-    let id = UUID()
-    let icon: String
-    let title: String
-    let value: String
-    let valueColor: Color
-    
-    init(icon: String, title: String, value: String, valueColor: Color = .primary) {
-        self.icon = icon
-        self.title = title
-        self.value = value
-        self.valueColor = valueColor
-    }
-}
-
-/// Card view for a single statistic
-struct ResultsStatCard: View {
-    let stat: ResultsStat
-    
-    var body: some View {
-        VStack(spacing: 6) {
-            HStack(spacing: 4) {
-                Image(systemName: stat.icon)
-                    .foregroundColor(.secondary)
-                Text(stat.title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            Text(stat.value)
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundColor(stat.valueColor)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
-    }
-}
-
-// MARK: - Results XP Change
-
-/// Display for XP/rating change after a drill session
-struct ResultsXPChange: View {
+/// Shared results view component for all drill types
+/// Per DESIGN.md Section 6.3 (SESSION COMPLETE layout)
+struct DrillResultsView<Content: View>: View {
+    let result: DrillResultData
     let ratingChange: Int
-    let newRating: Int
-    
-    private var changeColor: Color {
-        ratingChange >= 0 ? .green : .red
-    }
-    
-    var body: some View {
-        HStack(spacing: 20) {
-            // Change
-            VStack(spacing: 2) {
-                HStack(spacing: 2) {
-                    Text(ratingChange >= 0 ? "+" : "")
-                    Text("\(ratingChange)")
-                }
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundColor(changeColor)
-                
-                Text("XP")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            Divider()
-                .frame(height: 40)
-            
-            // New total
-            VStack(spacing: 2) {
-                Text("\(newRating)")
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(.blue)
-                
-                Text("Total")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(.horizontal)
-    }
-}
-
-// MARK: - Results Level Up Celebration
-
-/// Celebratory display when player levels up (simplified per DESIGN.md Section 9.3.1)
-struct ResultsLevelUpCelebration: View {
-    let previousLevel: Int
-    let newLevel: Int
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            Text("Level Up!")
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            HStack(spacing: 20) {
-                VStack {
-                    Text("Lv.\(previousLevel)")
-                        .font(.system(size: 32))
-                        .fontWeight(.bold)
-                        .foregroundColor(.secondary)
-                }
-                
-                Image(systemName: "arrow.right")
-                    .font(.title3)
-                    .foregroundColor(.green)
-                
-                VStack {
-                    Text("Lv.\(newLevel)")
-                        .font(.system(size: 40))
-                        .fontWeight(.bold)
-                        .foregroundColor(Color("BrassAccent"))
-                }
-            }
-        }
-        .padding()
-        .frame(maxWidth: .infinity)
-        .background(
-            LinearGradient(
-                colors: [Color("BrassAccent").opacity(0.3), .orange.opacity(0.3)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .cornerRadius(16)
-    }
-}
-
-// MARK: - Legacy Rank Up Celebration (kept for compatibility)
-
-/// Legacy celebratory display when player ranks up
-/// Deprecated: Use ResultsLevelUpCelebration instead
-struct ResultsRankUpCelebration: View {
+    let didRankUp: Bool
     let previousRank: Rank?
-    let newRank: Rank
+    let currentRank: Rank
+    let currentRating: Int
+    let currentStreak: Int
+    let onNewQuiz: () -> Void
+    let onBackToSetup: () -> Void
+    let additionalContent: (() -> Content)?
+    
+    init(
+        result: DrillResultData,
+        ratingChange: Int,
+        didRankUp: Bool,
+        previousRank: Rank?,
+        currentRank: Rank,
+        currentRating: Int,
+        currentStreak: Int = 0,
+        onNewQuiz: @escaping () -> Void,
+        onBackToSetup: @escaping () -> Void,
+        @ViewBuilder additionalContent: @escaping () -> Content
+    ) {
+        self.result = result
+        self.ratingChange = ratingChange
+        self.didRankUp = didRankUp
+        self.previousRank = previousRank
+        self.currentRank = currentRank
+        self.currentRating = currentRating
+        self.currentStreak = currentStreak
+        self.onNewQuiz = onNewQuiz
+        self.onBackToSetup = onBackToSetup
+        self.additionalContent = additionalContent
+    }
     
     var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                // Rank Up Celebration (if applicable)
+                if didRankUp {
+                    rankUpCelebration
+                }
+                
+                // Header
+                resultsHeader
+                
+                // Score Display
+                scoreDisplay
+                
+                // XP and Rating Info
+                xpRatingSection
+                
+                // Streak Info
+                if currentStreak > 1 {
+                    streakBadge
+                }
+                
+                // Time Info
+                timeSection
+                
+                // Additional content (e.g., missed questions, scoreboard)
+                if let content = additionalContent {
+                    content()
+                }
+                
+                // Action Buttons
+                actionButtons
+                
+                Spacer(minLength: 20)
+            }
+            .padding()
+        }
+    }
+    
+    // MARK: - Rank Up Celebration
+    
+    private var rankUpCelebration: some View {
         VStack(spacing: 12) {
             Text("🎉 Rank Up! 🎉")
-                .font(.title2)
+                .font(.title)
                 .fontWeight(.bold)
             
             HStack(spacing: 20) {
                 if let prev = previousRank {
                     VStack {
                         Text(prev.emoji)
-                            .font(.system(size: 36))
+                            .font(.system(size: 40))
                         Text(prev.title)
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -232,13 +110,13 @@ struct ResultsRankUpCelebration: View {
                 }
                 
                 Image(systemName: "arrow.right")
-                    .font(.title3)
+                    .font(.title2)
                     .foregroundColor(.green)
                 
                 VStack {
-                    Text(newRank.emoji)
-                        .font(.system(size: 44))
-                    Text(newRank.title)
+                    Text(currentRank.emoji)
+                        .font(.system(size: 50))
+                    Text(currentRank.title)
                         .font(.subheadline)
                         .fontWeight(.bold)
                 }
@@ -255,117 +133,15 @@ struct ResultsRankUpCelebration: View {
         )
         .cornerRadius(16)
     }
-}
-
-// MARK: - Results Action Buttons
-
-/// Standard action buttons for drill results screens
-struct ResultsActionButtons: View {
-    let primaryAction: () -> Void
-    let primaryTitle: String
-    let primaryIcon: String
-    let primaryColor: Color
-    let secondaryDestination: AnyView?
-    let secondaryTitle: String
-    let secondaryIcon: String
-    let secondaryColor: Color
     
-    init(
-        primaryTitle: String = "New Quiz",
-        primaryIcon: String = "arrow.counterclockwise",
-        primaryColor: Color = .blue,
-        primaryAction: @escaping () -> Void,
-        secondaryTitle: String = "View Scoreboard",
-        secondaryIcon: String = "trophy.fill",
-        secondaryColor: Color = .orange,
-        secondaryDestination: AnyView? = nil
-    ) {
-        self.primaryTitle = primaryTitle
-        self.primaryIcon = primaryIcon
-        self.primaryColor = primaryColor
-        self.primaryAction = primaryAction
-        self.secondaryTitle = secondaryTitle
-        self.secondaryIcon = secondaryIcon
-        self.secondaryColor = secondaryColor
-        self.secondaryDestination = secondaryDestination
-    }
+    // MARK: - Results Header
     
-    var body: some View {
-        VStack(spacing: 12) {
-            // Primary button (New Quiz)
-            Button(action: primaryAction) {
-                HStack {
-                    Image(systemName: primaryIcon)
-                    Text(primaryTitle)
-                }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(primaryColor)
-                .cornerRadius(12)
-            }
-            
-            // Secondary button (Scoreboard)
-            if let destination = secondaryDestination {
-                NavigationLink(destination: destination) {
-                    HStack {
-                        Image(systemName: secondaryIcon)
-                        Text(secondaryTitle)
-                    }
-                    .font(.headline)
-                    .foregroundColor(secondaryColor)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(secondaryColor.opacity(0.1))
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(secondaryColor, lineWidth: 1.5)
-                    )
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Results Header
-
-/// Standard header for drill results with emoji and title
-struct ResultsHeader: View {
-    let accuracy: Double
-    let drillName: String
-    
-    private var resultEmoji: String {
-        if accuracy >= 0.95 { return "🏆" }
-        if accuracy >= 0.9 { return "🌟" }
-        if accuracy >= 0.8 { return "👏" }
-        if accuracy >= 0.7 { return "👍" }
-        if accuracy >= 0.5 { return "💪" }
-        return "📚"
-    }
-    
-    private var resultTitle: String {
-        if accuracy >= 0.95 { return "Perfect!" }
-        if accuracy >= 0.9 { return "Excellent!" }
-        if accuracy >= 0.8 { return "Great Job!" }
-        if accuracy >= 0.7 { return "Good Work!" }
-        if accuracy >= 0.5 { return "Keep Practicing!" }
-        return "Keep Learning!"
-    }
-    
-    private var resultSubtitle: String {
-        if accuracy >= 0.9 { return "Outstanding \(drillName) skills!" }
-        if accuracy >= 0.7 { return "You're making great progress!" }
-        return "Practice makes perfect!"
-    }
-    
-    var body: some View {
+    private var resultsHeader: some View {
         VStack(spacing: 12) {
             Text(resultEmoji)
-                .font(.system(size: 70))
+                .font(.system(size: 60))
             
-            Text(resultTitle)
+            Text("Session Complete!")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
@@ -374,81 +150,234 @@ struct ResultsHeader: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
-        .padding(.top)
-    }
-}
-
-// MARK: - Results Time Display
-
-/// Standard time display showing duration and average time per question
-struct ResultsTimeDisplay: View {
-    let totalTime: TimeInterval
-    let questionCount: Int
-    
-    private var formattedTime: String {
-        let minutes = Int(totalTime) / 60
-        let seconds = Int(totalTime) % 60
-        return String(format: "%d:%02d", minutes, seconds)
     }
     
-    private var averageTime: Double {
-        guard questionCount > 0 else { return 0 }
-        return totalTime / Double(questionCount)
-    }
+    // MARK: - Score Display
     
-    var body: some View {
-        HStack {
-            Image(systemName: "clock")
-            Text(formattedTime)
-            Spacer()
-            Text("(\(String(format: "%.1f", averageTime))s avg)")
+    private var scoreDisplay: some View {
+        VStack(spacing: 16) {
+            // Accuracy percentage
+            Text("\(Int(result.accuracy * 100))%")
+                .font(.system(size: 72, weight: .bold))
+                .foregroundColor(accuracyColor)
+            
+            // Correct count
+            Text("\(result.correctAnswers) of \(result.totalQuestions) correct")
+                .font(.headline)
                 .foregroundColor(.secondary)
+        }
+    }
+    
+    // MARK: - XP and Rating Section
+    
+    private var xpRatingSection: some View {
+        HStack(spacing: 16) {
+            // XP Change
+            VStack {
+                HStack(spacing: 4) {
+                    Text(ratingChange >= 0 ? "+" : "")
+                    Text("\(ratingChange)")
+                }
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(ratingChange >= 0 ? .green : .red)
+                
+                Text("XP")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Divider()
+                .frame(height: 40)
+            
+            // Total Rating
+            VStack {
+                Text("\(currentRating)")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.blue)
+                
+                Text("Total")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Divider()
+                .frame(height: 40)
+            
+            // Current Rank
+            VStack {
+                Text(currentRank.emoji)
+                    .font(.title)
+                Text(currentRank.title)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+    
+    // MARK: - Streak Badge
+    
+    private var streakBadge: some View {
+        HStack {
+            Text("🔥")
+            Text("\(currentStreak) day streak!")
+        }
+        .font(.headline)
+        .foregroundColor(.orange)
+    }
+    
+    // MARK: - Time Section
+    
+    private var timeSection: some View {
+        HStack(spacing: 20) {
+            HStack {
+                Image(systemName: "clock")
+                Text(formatTime(result.totalTime))
+            }
+            
+            HStack {
+                Image(systemName: "timer")
+                Text("\(String(format: "%.1f", result.averageTimePerQuestion))s avg")
+            }
         }
         .font(.subheadline)
         .foregroundColor(.secondary)
     }
-}
-
-// MARK: - Previews
-
-#Preview("Score Circle") {
-    VStack(spacing: 20) {
-        ResultsScoreCircle(accuracy: 0.95, correctCount: 19, totalCount: 20)
-        ResultsScoreCircle(accuracy: 0.75, correctCount: 15, totalCount: 20)
-        ResultsScoreCircle(accuracy: 0.45, correctCount: 9, totalCount: 20)
+    
+    // MARK: - Action Buttons
+    
+    private var actionButtons: some View {
+        VStack(spacing: 12) {
+            // New Quiz (Primary)
+            Button(action: onNewQuiz) {
+                HStack {
+                    Image(systemName: "arrow.counterclockwise")
+                    Text("New Quiz")
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(12)
+            }
+            
+            // Back to Setup (Secondary)
+            Button(action: onBackToSetup) {
+                HStack {
+                    Image(systemName: "slider.horizontal.3")
+                    Text("Change Settings")
+                }
+                .font(.subheadline)
+                .foregroundColor(.blue)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(12)
+            }
+        }
     }
-    .padding()
+    
+    // MARK: - Computed Properties
+    
+    private var resultEmoji: String {
+        let accuracy = result.accuracy
+        if accuracy >= 0.9 { return "🌟" }
+        if accuracy >= 0.8 { return "🎉" }
+        if accuracy >= 0.7 { return "👍" }
+        if accuracy >= 0.5 { return "💪" }
+        return "📚"
+    }
+    
+    private var resultSubtitle: String {
+        let accuracy = result.accuracy
+        if accuracy >= 0.9 { return "Outstanding performance!" }
+        if accuracy >= 0.8 { return "Great job!" }
+        if accuracy >= 0.7 { return "Good work!" }
+        if accuracy >= 0.5 { return "Keep practicing!" }
+        return "Room for improvement"
+    }
+    
+    private var accuracyColor: Color {
+        let accuracy = result.accuracy
+        if accuracy >= 0.9 { return .green }
+        if accuracy >= 0.7 { return .orange }
+        return .red
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
 }
 
-#Preview("Stats Grid") {
-    ResultsStatsGrid(stats: [
-        ResultsStat(icon: "checkmark.circle", title: "Correct", value: "15/20", valueColor: .green),
-        ResultsStat(icon: "clock", title: "Time", value: "3:45"),
-        ResultsStat(icon: "bolt", title: "XP", value: "+25", valueColor: .yellow),
-        ResultsStat(icon: "flame", title: "Streak", value: "5 days", valueColor: .orange)
-    ])
-    .padding()
+// MARK: - Convenience Initializer (No Additional Content)
+
+extension DrillResultsView where Content == EmptyView {
+    init(
+        result: DrillResultData,
+        ratingChange: Int,
+        didRankUp: Bool,
+        previousRank: Rank?,
+        currentRank: Rank,
+        currentRating: Int,
+        currentStreak: Int = 0,
+        onNewQuiz: @escaping () -> Void,
+        onBackToSetup: @escaping () -> Void
+    ) {
+        self.result = result
+        self.ratingChange = ratingChange
+        self.didRankUp = didRankUp
+        self.previousRank = previousRank
+        self.currentRank = currentRank
+        self.currentRating = currentRating
+        self.currentStreak = currentStreak
+        self.onNewQuiz = onNewQuiz
+        self.onBackToSetup = onBackToSetup
+        self.additionalContent = nil
+    }
 }
 
-#Preview("Level Up") {
-    ResultsLevelUpCelebration(
-        previousLevel: 4,
-        newLevel: 5
-    )
-    .padding()
+// MARK: - Simple Result Struct
+
+/// Simple struct for basic drill results that don't have a custom result type
+struct SimpleDrillResult: DrillResultData {
+    let correctAnswers: Int
+    let totalQuestions: Int
+    let totalTime: TimeInterval
+    
+    var accuracy: Double {
+        guard totalQuestions > 0 else { return 0 }
+        return Double(correctAnswers) / Double(totalQuestions)
+    }
+    
+    var averageTimePerQuestion: Double {
+        guard totalQuestions > 0 else { return 0 }
+        return totalTime / Double(totalQuestions)
+    }
 }
 
-#Preview("Rank Up (Legacy)") {
-    ResultsRankUpCelebration(
-        previousRank: Rank.allRanks[2],
-        newRank: Rank.allRanks[3]
-    )
-    .padding()
-}
+// MARK: - Preview
 
-#Preview("Results Header") {
-    VStack(spacing: 30) {
-        ResultsHeader(accuracy: 0.95, drillName: "chord")
-        ResultsHeader(accuracy: 0.65, drillName: "scale")
+#Preview {
+    NavigationStack {
+        DrillResultsView(
+            result: SimpleDrillResult(correctAnswers: 8, totalQuestions: 10, totalTime: 120),
+            ratingChange: 25,
+            didRankUp: false,
+            previousRank: nil,
+            currentRank: Rank.forRating(1250),
+            currentRating: 1250,
+            currentStreak: 3,
+            onNewQuiz: {},
+            onBackToSetup: {}
+        )
     }
 }

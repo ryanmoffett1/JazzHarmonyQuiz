@@ -1,422 +1,368 @@
 import SwiftUI
 
-// MARK: - Drill Setup Components
+// MARK: - Drill Setup Protocol
 
-/// Shared components for drill setup screens across all drill modules
-/// Per DESIGN.md Section 7.3 Setup Screen Pattern
+/// Protocol for drill-specific configuration that can be used with DrillSetupContainer
+protocol DrillSetupConfiguration {
+    var numberOfQuestions: Int { get set }
+    var isValid: Bool { get }
+}
 
-// MARK: - Quick Start Preset Card
+// MARK: - Quick Start Preset
 
-/// A card for quick start presets in drill setup screens
-struct QuickStartPresetCard<Preset: DrillPreset>: View {
-    let preset: Preset
-    let isSelected: Bool
+/// Represents a quick start preset for drill configuration
+struct QuickStartPreset: Identifiable {
+    let id = UUID()
+    let name: String
+    let description: String
+    let icon: String
+    let color: Color
     let action: () -> Void
-    var accentColor: Color = .blue
+}
+
+// MARK: - Drill Setup Container
+
+/// Shared container view for drill setup screens
+/// Per DESIGN.md Section 7.4.1 (Quick Start Presets + Custom Configuration)
+struct DrillSetupContainer<CustomContent: View>: View {
+    let title: String
+    let presets: [QuickStartPreset]
+    let onStartQuiz: () -> Void
+    let isStartEnabled: Bool
+    let customContent: () -> CustomContent
+    
+    @EnvironmentObject var settings: SettingsManager
+    @State private var showingSettings = false
+    
+    private var playerStats: PlayerStats { PlayerStats.shared }
     
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: preset.icon)
-                    .font(.title2)
-                    .foregroundColor(isSelected ? .white : accentColor)
+        ScrollView {
+            VStack(spacing: 24) {
+                // Header with rank and streak
+                headerView
                 
-                Text(preset.name)
-                    .font(.headline)
-                    .foregroundColor(isSelected ? .white : .primary)
+                // Quick Start Presets
+                quickStartSection
                 
-                Text(preset.description)
-                    .font(.caption)
-                    .foregroundColor(isSelected ? .white.opacity(0.8) : .secondary)
-                    .multilineTextAlignment(.center)
+                // Custom Configuration
+                customConfigSection
+                
+                // Start Button
+                startButton
+                
+                // Settings Button
+                settingsButton
+                
+                Spacer(minLength: 20)
             }
             .padding()
-            .frame(maxWidth: .infinity)
-            .background(isSelected ? accentColor : Color(.systemGray6))
-            .cornerRadius(12)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-// MARK: - Quick Start Section Header
-
-/// Section header for quick start presets area
-struct QuickStartSectionHeader: View {
-    var title: String = "Quick Start"
-    var subtitle: String? = nil
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.headline)
-                .foregroundColor(.primary)
-            
-            if let subtitle = subtitle {
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-// MARK: - Collapsible Custom Options Section
-
-/// A collapsible section for custom drill configuration
-struct CollapsibleCustomOptions<Content: View>: View {
-    @Binding var isExpanded: Bool
-    var title: String = "Custom Options"
-    let content: () -> Content
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            // Header button
-            Button(action: { withAnimation { isExpanded.toggle() } }) {
-                HStack {
-                    Text(title)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    Spacer()
-                    
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-            }
-            .buttonStyle(PlainButtonStyle())
-            
-            // Collapsible content
-            if isExpanded {
-                VStack(spacing: 16) {
-                    content()
-                }
-                .padding()
-                .background(Color(.systemGray6).opacity(0.5))
-                .cornerRadius(12)
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
         }
     }
-}
-
-// MARK: - Setup Option Row
-
-/// A row for displaying a setup option with label and picker
-struct SetupOptionRow<Content: View>: View {
-    let icon: String
-    let label: String
-    let content: () -> Content
     
-    var body: some View {
-        HStack {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .foregroundColor(.secondary)
-                    .frame(width: 24)
-                Text(label)
-                    .font(.subheadline)
-            }
-            
-            Spacer()
-            
-            content()
-        }
-        .padding(.vertical, 4)
-    }
-}
-
-// MARK: - Question Count Slider
-
-/// Standard slider for selecting number of questions
-struct QuestionCountSlider: View {
-    @Binding var count: Int
-    var range: ClosedRange<Int> = 5...30
-    var step: Int = 5
-    var accentColor: Color = .blue
+    // MARK: - Header View
     
-    var body: some View {
+    private var headerView: some View {
         VStack(spacing: 8) {
-            HStack {
-                Text("Questions")
-                    .font(.subheadline)
-                Spacer()
-                Text("\(count)")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(accentColor)
-            }
-            
-            Slider(
-                value: Binding(
-                    get: { Double(count) },
-                    set: { count = Int($0) }
-                ),
-                in: Double(range.lowerBound)...Double(range.upperBound),
-                step: Double(step)
-            )
-            .tint(accentColor)
-            
-            HStack {
-                Text("\(range.lowerBound)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Spacer()
-                Text("\(range.upperBound)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-    }
-}
-
-// MARK: - Setup Difficulty Picker
-
-/// Standard picker for selecting drill difficulty
-struct SetupDifficultyPicker<Difficulty: Hashable & CaseIterable & RawRepresentable>: View where Difficulty.RawValue == String, Difficulty.AllCases: RandomAccessCollection {
-    @Binding var selection: Difficulty
-    var accentColor: Color = .blue
-    
-    var body: some View {
-        Picker("Difficulty", selection: $selection) {
-            ForEach(Array(Difficulty.allCases), id: \.self) { difficulty in
-                Text(difficulty.rawValue).tag(difficulty)
-            }
-        }
-        .pickerStyle(.segmented)
-    }
-}
-
-// MARK: - Setup Header View
-
-/// Standard header for drill setup screens with stats
-/// Updated per DESIGN.md Section 9.3.1 to use simple level instead of ranks
-struct SetupHeaderView: View {
-    let title: String
-    let subtitle: String?
-    let currentRating: Int
-    let currentStreak: Int
-    
-    // Computed level from XP
-    private var level: PlayerLevel {
-        PlayerLevel(xp: currentRating)
-    }
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            // Title
             Text(title)
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
-            if let subtitle = subtitle {
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
             // Stats row
             HStack(spacing: 20) {
-                // Level (simplified from rank)
-                VStack(spacing: 2) {
-                    Text("Lv.\(level.level)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color("BrassAccent"))
-                    Text("Level")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                // Rank
+                HStack(spacing: 4) {
+                    Text(playerStats.currentRank.emoji)
+                    Text("\(playerStats.currentRating)")
+                        .fontWeight(.semibold)
                 }
+                .font(.subheadline)
+                .foregroundColor(.blue)
                 
-                Divider()
-                    .frame(height: 40)
-                
-                // Rating
-                VStack(spacing: 2) {
-                    Text("\(currentRating)")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.blue)
-                    Text("XP")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                // Streak (if active)
-                if currentStreak > 1 {
-                    Divider()
-                        .frame(height: 40)
-                    
-                    VStack(spacing: 2) {
-                        Text("🔥 \(currentStreak)")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundColor(.orange)
-                        Text("Day Streak")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                // Streak
+                if playerStats.currentStreak > 0 {
+                    HStack(spacing: 4) {
+                        Text("🔥")
+                        Text("\(playerStats.currentStreak)")
+                            .fontWeight(.semibold)
                     }
+                    .font(.subheadline)
+                    .foregroundColor(.orange)
                 }
+            }
+        }
+    }
+    
+    // MARK: - Quick Start Section
+    
+    private var quickStartSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Quick Start")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            ForEach(presets) { preset in
+                QuickStartPresetButton(preset: preset)
+            }
+        }
+    }
+    
+    // MARK: - Custom Config Section
+    
+    private var customConfigSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Custom Configuration")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            VStack(alignment: .leading, spacing: 16) {
+                customContent()
             }
             .padding()
             .background(Color(.systemGray6))
             .cornerRadius(12)
         }
     }
+    
+    // MARK: - Start Button
+    
+    private var startButton: some View {
+        Button(action: onStartQuiz) {
+            Text("Start Quiz")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(isStartEnabled ? Color.blue : Color.gray)
+                .cornerRadius(12)
+        }
+        .disabled(!isStartEnabled)
+    }
+    
+    // MARK: - Settings Button
+    
+    private var settingsButton: some View {
+        Button(action: { showingSettings = true }) {
+            HStack {
+                Image(systemName: "gear")
+                Text("Settings")
+            }
+            .font(.subheadline)
+            .foregroundColor(.purple)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color.purple.opacity(0.1))
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.purple, lineWidth: 1.5)
+            )
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView(showDoneButton: true)
+                .environmentObject(settings)
+        }
+    }
 }
 
-// MARK: - Setup Start Button
+// MARK: - Quick Start Preset Button
 
-/// Standard start button for drill setup screens
-struct SetupStartButton: View {
+/// Individual button for a quick start preset
+/// Supports both preset-based and inline parameter initialization
+struct QuickStartPresetButton: View {
     let title: String
-    let isEnabled: Bool
+    let subtitle: String
+    let icon: String
     let color: Color
     let action: () -> Void
     
-    init(
-        title: String = "Start Quiz",
-        isEnabled: Bool = true,
-        color: Color = .blue,
-        action: @escaping () -> Void
-    ) {
+    /// Initialize with a QuickStartPreset
+    init(preset: QuickStartPreset) {
+        self.title = preset.name
+        self.subtitle = preset.description
+        self.icon = preset.icon
+        self.color = preset.color
+        self.action = preset.action
+    }
+    
+    /// Initialize with individual parameters
+    init(title: String, subtitle: String, icon: String, color: Color, action: @escaping () -> Void) {
         self.title = title
-        self.isEnabled = isEnabled
+        self.subtitle = subtitle
+        self.icon = icon
         self.color = color
         self.action = action
     }
     
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(isEnabled ? color : Color.gray)
-                .cornerRadius(12)
-        }
-        .disabled(!isEnabled)
-    }
-}
-
-// MARK: - Setup Section Divider
-
-/// A styled divider for separating setup sections
-struct SetupSectionDivider: View {
-    var text: String? = nil
-    
-    var body: some View {
-        HStack {
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(height: 1)
-            
-            if let text = text {
-                Text(text)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 8)
-                
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(height: 1)
-            }
-        }
-    }
-}
-
-// MARK: - Question Type Toggle Button
-
-/// A toggle button for selecting question types in setup
-struct QuestionTypeToggleButton: View {
-    let icon: String
-    let title: String
-    let isSelected: Bool
-    var accentColor: Color = .blue
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 6) {
+            HStack(spacing: 16) {
                 Image(systemName: icon)
-                    .font(.title3)
-                Text(title)
-                    .font(.caption)
+                    .font(.title2)
+                    .foregroundColor(color)
+                    .frame(width: 44, height: 44)
+                    .background(color.opacity(0.15))
+                    .cornerRadius(10)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(isSelected ? accentColor : Color(.systemGray5))
-            .foregroundColor(isSelected ? .white : .primary)
-            .cornerRadius(10)
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
         }
         .buttonStyle(PlainButtonStyle())
     }
 }
 
-// MARK: - Previews
+// MARK: - Common Setup Components
 
-#Preview("Quick Start Presets") {
-    VStack(spacing: 12) {
-        QuickStartSectionHeader(title: "Quick Start", subtitle: "Choose a preset to begin")
-        
-        HStack(spacing: 12) {
-            QuickStartPresetCard(
-                preset: ChordDrillPreset.basicTriads,
-                isSelected: true,
-                action: {}
+/// Picker for number of questions
+struct QuestionCountPicker: View {
+    @Binding var numberOfQuestions: Int
+    let range: ClosedRange<Int>
+    
+    init(numberOfQuestions: Binding<Int>, range: ClosedRange<Int> = 5...20) {
+        self._numberOfQuestions = numberOfQuestions
+        self.range = range
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Number of Questions: \(numberOfQuestions)")
+                .font(.subheadline)
+                .fontWeight(.medium)
+            
+            Slider(
+                value: Binding(
+                    get: { Double(numberOfQuestions) },
+                    set: { numberOfQuestions = Int($0) }
+                ),
+                in: Double(range.lowerBound)...Double(range.upperBound),
+                step: 1
             )
-            QuickStartPresetCard(
-                preset: ChordDrillPreset.seventhChords,
-                isSelected: false,
-                action: {}
-            )
+            .tint(.blue)
         }
     }
-    .padding()
 }
 
-#Preview("Question Count Slider") {
-    @Previewable @State var count = 10
-    QuestionCountSlider(count: $count)
-        .padding()
-}
-
-#Preview("Setup Header") {
-    SetupHeaderView(
-        title: "Chord Drill",
-        subtitle: "Spell chord tones from symbols",
-        currentRating: 1250,
-        currentStreak: 5
-    )
-    .padding()
-}
-
-#Preview("Question Type Toggles") {
-    HStack(spacing: 8) {
-        QuestionTypeToggleButton(
-            icon: "music.note.list",
-            title: "All Tones",
-            isSelected: true,
-            action: {}
-        )
-        QuestionTypeToggleButton(
-            icon: "music.note",
-            title: "Single",
-            isSelected: false,
-            action: {}
-        )
-        QuestionTypeToggleButton(
-            icon: "ear",
-            title: "Ear Training",
-            isSelected: false,
-            action: {}
-        )
+/// Picker for difficulty level
+struct DifficultyPicker<T: RawRepresentable & CaseIterable & Hashable>: View where T.RawValue == String {
+    let title: String
+    @Binding var selection: T
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.medium)
+            
+            Picker(title, selection: $selection) {
+                ForEach(Array(T.allCases), id: \.self) { difficulty in
+                    Text(difficulty.rawValue.capitalized).tag(difficulty)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
     }
-    .padding()
+}
+
+/// Standard Key Difficulty picker
+struct KeyDifficultyPicker: View {
+    @Binding var selection: KeyDifficulty
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Key Difficulty")
+                .font(.subheadline)
+                .fontWeight(.medium)
+            
+            Picker("Key Difficulty", selection: $selection) {
+                ForEach(KeyDifficulty.allCases, id: \.self) { difficulty in
+                    Text(difficulty.rawValue.capitalized).tag(difficulty)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+    }
+}
+
+// MARK: - Setup Section Header
+
+/// Standard section header for setup views
+struct SetupSectionHeader: View {
+    let title: String
+    let icon: String?
+    
+    init(_ title: String, icon: String? = nil) {
+        self.title = title
+        self.icon = icon
+    }
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            if let icon = icon {
+                Image(systemName: icon)
+                    .foregroundColor(.secondary)
+            }
+            
+            Text(title)
+                .font(.headline)
+                .foregroundColor(.secondary)
+        }
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    NavigationStack {
+        DrillSetupContainer(
+            title: "Chord Drill Setup",
+            presets: [
+                QuickStartPreset(
+                    name: "Basic Triads",
+                    description: "Major and minor triads in easy keys",
+                    icon: "music.note",
+                    color: .green,
+                    action: {}
+                ),
+                QuickStartPreset(
+                    name: "7th Chords",
+                    description: "Maj7, min7, dom7 in all keys",
+                    icon: "music.quarternote.3",
+                    color: .blue,
+                    action: {}
+                ),
+                QuickStartPreset(
+                    name: "Full Workout",
+                    description: "All chord types, 20 questions",
+                    icon: "flame.fill",
+                    color: .orange,
+                    action: {}
+                )
+            ],
+            onStartQuiz: {},
+            isStartEnabled: true
+        ) {
+            VStack(spacing: 16) {
+                QuestionCountPicker(numberOfQuestions: .constant(10))
+                KeyDifficultyPicker(selection: .constant(.easy))
+            }
+        }
+        .environmentObject(SettingsManager.shared)
+    }
 }

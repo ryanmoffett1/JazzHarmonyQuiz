@@ -114,7 +114,7 @@ struct ChordDrillSetup: View {
                 .font(.headline)
             
             HStack(spacing: 12) {
-                QuickStartPresetButton(
+                ChordQuickStartButton(
                     title: "Basic Triads",
                     subtitle: "Major, minor, dim, aug",
                     icon: "music.note",
@@ -124,7 +124,7 @@ struct ChordDrillSetup: View {
                     onStartQuiz()
                 }
                 
-                QuickStartPresetButton(
+                ChordQuickStartButton(
                     title: "7th Chords",
                     subtitle: "Dom7, maj7, min7",
                     icon: "music.note.list",
@@ -134,7 +134,7 @@ struct ChordDrillSetup: View {
                     onStartQuiz()
                 }
                 
-                QuickStartPresetButton(
+                ChordQuickStartButton(
                     title: "Full Workout",
                     subtitle: "All chord types",
                     icon: "flame.fill",
@@ -292,9 +292,9 @@ struct ChordDrillSetup: View {
     }
 }
 
-// MARK: - Quick Start Preset Button
+// MARK: - Chord Quick Start Button (Compact vertical style for HStack layout)
 
-struct QuickStartPresetButton: View {
+fileprivate struct ChordQuickStartButton: View {
     let title: String
     let subtitle: String
     let icon: String
