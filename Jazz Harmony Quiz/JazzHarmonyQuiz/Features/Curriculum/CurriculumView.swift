@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Main curriculum tab view showing learning pathways and modules
-/// Per DESIGN.md Section 8
+/// Per DESIGN.md Section 8 and Appendix C
 struct CurriculumView: View {
     @StateObject private var curriculumManager = CurriculumManager.shared
     @EnvironmentObject var settings: SettingsManager
@@ -11,7 +11,7 @@ struct CurriculumView: View {
     @State private var selectedPathway: CurriculumPathway = .harmonyFoundations
     @State private var showingModuleDetail: CurriculumModule?
     @State private var moduleToStart: CurriculumModule?
-    @State private var navigateToDrill: CurriculumPracticeMode?
+    @State private var navigateToModule: CurriculumModule?
     
     var body: some View {
         NavigationStack {
@@ -57,17 +57,22 @@ struct CurriculumView: View {
                     moduleToStart = nil
                 }
             }
-            .navigationDestination(item: $navigateToDrill) { mode in
-                drillView(for: mode)
+            .navigationDestination(item: $navigateToModule) { module in
+                drillView(for: module)
             }
         }
     }
     
+    /// Creates the appropriate drill view with curriculum mode locked config
+    /// Per DESIGN.md Appendix C.2: Curriculum mode locks drill configuration
     @ViewBuilder
-    private func drillView(for mode: CurriculumPracticeMode) -> some View {
-        switch mode {
+    private func drillView(for module: CurriculumModule) -> some View {
+        let launchMode = DrillLaunchMode.curriculum(moduleId: module.id)
+        
+        switch module.mode {
         case .chords:
-            ChordDrillView()
+            ChordDrillView(launchMode: launchMode)
+                .environmentObject(QuizGame())
         case .cadences:
             CadenceDrillView()
         case .scales:
@@ -83,8 +88,8 @@ struct CurriculumView: View {
         // Set active module - drill views will read configuration from this
         curriculumManager.setActiveModule(module.id)
         
-        // Navigate to the appropriate drill view
-        navigateToDrill = module.mode
+        // Navigate to the appropriate drill view with curriculum mode
+        navigateToModule = module
     }
 }
 

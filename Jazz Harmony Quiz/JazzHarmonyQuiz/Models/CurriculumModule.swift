@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Curriculum Module
 
 /// Represents a single learning module in the guided curriculum
-struct CurriculumModule: Identifiable, Codable, Equatable {
+struct CurriculumModule: Identifiable, Codable, Equatable, Hashable {
     let id: UUID
     let title: String
     let description: String
@@ -39,6 +39,11 @@ struct CurriculumModule: Identifiable, Codable, Equatable {
         self.recommendedConfig = recommendedConfig
         self.prerequisiteModuleIDs = prerequisiteModuleIDs
         self.completionCriteria = completionCriteria
+    }
+    
+    // Hashable conformance based on id
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
 

@@ -1,15 +1,11 @@
 import SwiftUI
 
 /// Continue Learning Card - shows active or recommended curriculum module
-/// Per DESIGN.md Section 5.3.2
+/// Per DESIGN.md Section 5.3.2 and Appendix C.3
+/// 
+/// DESIGN CONTRACT: This card launches drills in CURRICULUM mode with locked config.
 struct ContinueLearningCard: View {
-    @State private var selectedDrill: DrillDestination?
-    
-    enum DrillDestination: Identifiable {
-        case chord, cadence, scale, interval, progression
-        
-        var id: Self { self }
-    }
+    @State private var selectedModule: CurriculumModule?
     
     var body: some View {
         if shouldShowCard {
@@ -38,48 +34,39 @@ struct ContinueLearningCard: View {
                     )
                 }
             }
-            .navigationDestination(item: $selectedDrill) { drill in
-                drillView(for: drill)
+            .navigationDestination(item: $selectedModule) { module in
+                drillView(for: module)
             }
         }
     }
     
     // MARK: - Navigation
     
+    /// Creates drill view with curriculum mode - config is LOCKED to module
     @ViewBuilder
-    private func drillView(for drill: DrillDestination) -> some View {
-        switch drill {
-        case .chord:
-            ChordDrillView()
-        case .cadence:
+    private func drillView(for module: CurriculumModule) -> some View {
+        let launchMode = DrillLaunchMode.curriculum(moduleId: module.id)
+        
+        switch module.mode {
+        case .chords:
+            ChordDrillView(launchMode: launchMode)
+                .environmentObject(QuizGame())
+        case .cadences:
             CadenceDrillView()
-        case .scale:
+        case .scales:
             ScaleDrillView()
-        case .interval:
+        case .intervals:
             IntervalDrillView()
-        case .progression:
+        case .progressions:
             ProgressionDrillView()
         }
     }
     
     private func startModulePractice() {
-        // Set the module as active
+        // Set the module as active and navigate
         if let module = targetModule {
             CurriculumManager.shared.setActiveModule(module.id)
-            
-            // Navigate to appropriate drill based on module mode
-            switch module.mode {
-            case .chords:
-                selectedDrill = .chord
-            case .cadences:
-                selectedDrill = .cadence
-            case .scales:
-                selectedDrill = .scale
-            case .intervals:
-                selectedDrill = .interval
-            case .progressions:
-                selectedDrill = .progression
-            }
+            selectedModule = module
         }
     }
     

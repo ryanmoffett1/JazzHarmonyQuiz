@@ -63,7 +63,7 @@ struct ChordDrillSetup: View {
                     )
                 }
                 .sheet(isPresented: $showingSettings) {
-                    SettingsView()
+                    SettingsView(showDoneButton: true)
                         .environmentObject(settings)
                 }
 

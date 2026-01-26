@@ -77,6 +77,11 @@ struct Note: Identifiable, Hashable, Codable {
         
         return nil
     }
+    
+    /// Create a Note from a note name string (e.g., "C", "C#", "Db")
+    static func noteFromName(_ name: String) -> Note? {
+        return allNotes.first { $0.name == name }
+    }
 }
 
 // MARK: - Convenience Accessors

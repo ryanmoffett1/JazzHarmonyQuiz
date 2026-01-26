@@ -1,5 +1,49 @@
 import Foundation
 
+// MARK: - Drill Launch Mode
+
+/// Per DESIGN.md Appendix C: Every drill renders in one of three explicit modes
+/// This determines configuration source and UI behavior
+enum DrillLaunchMode: Equatable {
+    /// Launched from Curriculum tab or Continue Learning - config is locked
+    case curriculum(moduleId: UUID)
+    
+    /// Launched from Quick Practice - mixed session, no setup
+    case quickPractice
+    
+    /// Launched from Practice tab - full customization allowed
+    case freePractice
+    
+    var isConfigLocked: Bool {
+        switch self {
+        case .curriculum, .quickPractice:
+            return true
+        case .freePractice:
+            return false
+        }
+    }
+    
+    var showsSetupScreen: Bool {
+        switch self {
+        case .curriculum:
+            return false  // Skip directly to drill with module config
+        case .quickPractice:
+            return false  // Skip directly to mixed session
+        case .freePractice:
+            return true   // Show full setup
+        }
+    }
+    
+    var moduleId: UUID? {
+        switch self {
+        case .curriculum(let id):
+            return id
+        case .quickPractice, .freePractice:
+            return nil
+        }
+    }
+}
+
 // MARK: - Drill State
 
 /// Represents the current state of any drill session

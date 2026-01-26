@@ -1,7 +1,7 @@
 # Shed Pro: Next-Generation Design Document
 
 **Version:** 2.0
-**Last Updated:** January 2025
+**Last Updated:** January 2026
 **Status:** Authoritative Reference for Development
 
 ---
@@ -1538,12 +1538,57 @@ These features are explicitly **not in scope** for v2.0 but should be considered
 
 ---
 
+## Appendix C: Integration & Consistency Contract (2026 Update)
+
+This appendix resolves the integration gaps identified during QA. It is **binding** for v2.1 stabilization work.
+
+### C.1 Single Source of Truth Rules
+1. **Curriculum owns configuration** when a session is launched from curriculum or continue-learning. Drills must read `CurriculumManager.activeModule.recommendedConfig` and must **not** allow out-of-scope options.
+2. **Quick Practice owns session composition** and must generate a **mixed session** per §6.2. It must not route to setup screens.
+3. **Practice tab owns customization** and remains the only place full drill customization is exposed.
+
+### C.2 Drill Session Modes
+Every drill screen must render in one of three explicit modes:
+
+| Mode | Entry Point | Configuration | UI Behavior |
+|------|-------------|---------------|-------------|
+| **Curriculum** | Curriculum tab, Continue Learning | Locked to `recommendedConfig` | No setup screen or only read-only summary; show module title and progress |
+| **Quick Practice** | Home → Quick Practice | Generated mixed session | No setup screen; mixed items across categories |
+| **Free Practice** | Practice tab | User-configurable | Full setup + presets |
+
+### C.3 Navigation Consistency
+1. **Quick Practice card** on Home → **directly** starts session.
+2. **Continue Learning card** on Home → opens module drill in **Curriculum mode**.
+3. **Settings** must be presented as a sheet with a functional Done button.
+4. **Module Detail** → “Start” must open drill in **Curriculum mode** with module config applied.
+
+### C.4 Session Integrity
+1. The session that is validated must be the session that is recorded (no re-derivation of answers).
+2. Session results must record against the correct source (curriculum module, quick practice, or free practice).
+3. Question count and content must match the config source without overrides.
+
+### C.5 UI Consistency
+1. Titles and subtitles must reflect the active mode (e.g., “Module: Major & Minor Triads”).
+2. Avoid duplicate navigation paths that lead to the same screen without added value.
+3. Setup screens must clearly state when settings are locked by curriculum.
+
+### C.6 Audit Checklist (Required Before Release)
+- [ ] Home Quick Practice starts a mixed session without setup.
+- [ ] Continue Learning launches module with locked config.
+- [ ] Curriculum module “Start” launches locked config.
+- [ ] Practice tab remains fully customizable.
+- [ ] Settings Done dismisses reliably.
+- [ ] Curriculum modules cannot present out-of-scope chord types.
+
+---
+
 ## Document History
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2024 | Original | Initial implementation |
 | 2.0 | Jan 2025 | Consultation | Complete redesign per strategic review |
+| 2.1 | Jan 2026 | Integration Review | Added Integration & Consistency Contract |
 
 ---
 

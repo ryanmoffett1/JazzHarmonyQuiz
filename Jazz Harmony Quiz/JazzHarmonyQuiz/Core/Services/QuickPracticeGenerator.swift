@@ -4,13 +4,14 @@ import Foundation
 /// Combines spaced repetition, weak areas, and recent learning
 class QuickPracticeGenerator {
     
+    // MARK: - Singleton
+    
+    static let shared = QuickPracticeGenerator()
+    
     // MARK: - Dependencies
     
     private let spacedRepetitionStore: SpacedRepetitionStore
-    
-    // TODO: Add when implemented
-    // private let statisticsManager: StatisticsManager
-    // private let curriculumManager: CurriculumManager
+    private let chordDatabase: JazzChordDatabase
     
     // MARK: - Configuration
     
@@ -21,8 +22,12 @@ class QuickPracticeGenerator {
     
     // MARK: - Initialization
     
-    init(spacedRepetitionStore: SpacedRepetitionStore = .shared) {
+    init(
+        spacedRepetitionStore: SpacedRepetitionStore = .shared,
+        chordDatabase: JazzChordDatabase = .shared
+    ) {
         self.spacedRepetitionStore = spacedRepetitionStore
+        self.chordDatabase = chordDatabase
     }
     
     // MARK: - Session Generation
@@ -32,8 +37,8 @@ class QuickPracticeGenerator {
     /// Priority 2: Weak areas (25%)
     /// Priority 3: Recent learning (15%)
     /// Fills remainder with general practice
-    func generateSession() -> [PracticeItem] {
-        var items: [PracticeItem] = []
+    func generateSession() -> [QuickPracticeItem] {
+        var items: [QuickPracticeItem] = []
         
         // Priority 1: Spaced repetition due items (up to 60%)
         let dueItemsLimit = Int(Double(targetItemCount) * dueItemsPercentage)
@@ -52,74 +57,194 @@ class QuickPracticeGenerator {
         
         // Fill remainder with general practice
         while items.count < targetItemCount {
-            items.append(generateRandomItem())
+            items.append(generateRandomChordItem())
         }
         
         return items.shuffled()
     }
     
-    // MARK: - Private Helpers
+    // MARK: - Item Generation
     
     /// Gets due items from spaced repetition, sorted by overdue days
-    private func getDueItems(limit: Int) -> [PracticeItem] {
-        // TODO: Get actual due items from SpacedRepetitionStore
-        // For now, return empty (will be connected in integration)
-        return []
+    private func getDueItems(limit: Int) -> [QuickPracticeItem] {
+        var items: [QuickPracticeItem] = []
+        
+        // Get due counts by mode
+        let chordsDue = spacedRepetitionStore.dueCount(for: .chordDrill)
+        let scalesDue = spacedRepetitionStore.dueCount(for: .scaleDrill)
+        let intervalsDue = spacedRepetitionStore.dueCount(for: .intervalDrill)
+        let cadencesDue = spacedRepetitionStore.dueCount(for: .cadenceDrill)
+        
+        // Generate items proportionally
+        var remaining = limit
+        
+        if chordsDue > 0 && remaining > 0 {
+            let count = min(chordsDue, remaining / 2 + 1)
+            items.append(contentsOf: generateChordItems(count: count, difficulty: .beginner))
+            remaining -= count
+        }
+        
+        if scalesDue > 0 && remaining > 0 {
+            let count = min(scalesDue, remaining / 2 + 1)
+            items.append(contentsOf: generateScaleItems(count: count))
+            remaining -= count
+        }
+        
+        if intervalsDue > 0 && remaining > 0 {
+            let count = min(intervalsDue, remaining / 2 + 1)
+            items.append(contentsOf: generateIntervalItems(count: count))
+            remaining -= count
+        }
+        
+        return items
     }
     
     /// Gets items from weak areas identified in statistics
-    private func getWeakAreaItems(limit: Int) -> [PracticeItem] {
-        // TODO: Connect to StatisticsManager
-        // Will identify areas with accuracy < 75% and generate focused questions
-        return []
+    private func getWeakAreaItems(limit: Int) -> [QuickPracticeItem] {
+        // Generate from intermediate level chords (likely weak areas for most users)
+        return generateChordItems(count: limit, difficulty: .intermediate)
     }
     
     /// Gets items from recently learned curriculum modules
-    private func getRecentLearningItems(limit: Int) -> [PracticeItem] {
-        // TODO: Connect to CurriculumManager
-        // Will get items from recently completed modules for reinforcement
-        return []
+    /// Note: For simplicity, generates beginner-level mixed items
+    /// In a future enhancement, this could track recent module activity
+    private func getRecentLearningItems(limit: Int) -> [QuickPracticeItem] {
+        // Generate a mix of beginner items to reinforce recent learning
+        var items: [QuickPracticeItem] = []
+        let chordsCount = max(1, limit / 2)
+        let scalesCount = limit - chordsCount
+        
+        items.append(contentsOf: generateChordItems(count: chordsCount, difficulty: .beginner))
+        items.append(contentsOf: generateScaleItems(count: scalesCount))
+        
+        return items
     }
     
-    /// Generates a random practice item for filling gaps
-    private func generateRandomItem() -> PracticeItem {
-        // TODO: Implement random item generation
-        // Will generate questions from ChordDatabase, ScaleDatabase, IntervalDatabase
-        // Based on current difficulty settings
+    /// Generates a random chord practice item
+    private func generateRandomChordItem() -> QuickPracticeItem {
+        return generateChordItems(count: 1, difficulty: nil).first ?? makeDefaultChordItem()
+    }
+    
+    // MARK: - Specific Item Generators
+    
+    private func generateChordItems(count: Int, difficulty: ChordType.ChordDifficulty?) -> [QuickPracticeItem] {
+        var items: [QuickPracticeItem] = []
+        let rootNotes = ["C", "D", "E", "F", "G", "A", "B", "Db", "Eb", "Gb", "Ab", "Bb"]
         
-        // Placeholder
-        return PracticeItem(
+        let eligibleChords: [ChordType]
+        if let diff = difficulty {
+            eligibleChords = chordDatabase.chordTypes.filter { $0.difficulty == diff }
+        } else {
+            eligibleChords = chordDatabase.chordTypes
+        }
+        
+        for _ in 0..<count {
+            guard let chordType = eligibleChords.randomElement(),
+                  let rootString = rootNotes.randomElement(),
+                  let rootNote = Note.noteFromName(rootString) else { continue }
+            
+            // Create a Chord to get the correct notes
+            let chord = Chord(root: rootNote, chordType: chordType)
+            let symbol = rootString + chordType.symbol
+            
+            items.append(QuickPracticeItem(
+                id: UUID(),
+                type: .chordSpelling,
+                question: "Spell: \(symbol)",
+                displayName: symbol,
+                correctNotes: chord.chordTones,
+                difficulty: difficulty ?? .beginner,
+                category: "Chord"
+            ))
+        }
+        
+        return items
+    }
+    
+    private func generateScaleItems(count: Int) -> [QuickPracticeItem] {
+        var items: [QuickPracticeItem] = []
+        let rootNotes = ["C", "D", "E", "F", "G", "A", "B"]
+        let scaleTypes = ["Major", "Dorian", "Mixolydian"]
+        
+        for _ in 0..<count {
+            guard let root = rootNotes.randomElement(),
+                  let scaleType = scaleTypes.randomElement() else { continue }
+            
+            items.append(QuickPracticeItem(
+                id: UUID(),
+                type: .scaleSpelling,
+                question: "Spell: \(root) \(scaleType)",
+                displayName: "\(root) \(scaleType)",
+                correctNotes: [],  // Will be validated by ScaleGame
+                difficulty: .beginner,
+                category: "Scale"
+            ))
+        }
+        
+        return items
+    }
+    
+    private func generateIntervalItems(count: Int) -> [QuickPracticeItem] {
+        var items: [QuickPracticeItem] = []
+        let intervals = ["Minor 2nd", "Major 2nd", "Minor 3rd", "Major 3rd", "Perfect 4th", "Perfect 5th"]
+        let rootNotes = ["C", "D", "E", "F", "G", "A", "B"]
+        
+        for _ in 0..<count {
+            guard let interval = intervals.randomElement(),
+                  let root = rootNotes.randomElement() else { continue }
+            
+            items.append(QuickPracticeItem(
+                id: UUID(),
+                type: .intervalBuilding,
+                question: "\(interval) from \(root)",
+                displayName: "\(interval) from \(root)",
+                correctNotes: [],  // Will be validated by IntervalGame
+                difficulty: .beginner,
+                category: "Interval"
+            ))
+        }
+        
+        return items
+    }
+    
+    private func makeDefaultChordItem() -> QuickPracticeItem {
+        QuickPracticeItem(
             id: UUID(),
             type: .chordSpelling,
-            question: "Placeholder",
-            correctAnswer: []
+            question: "Spell: Cmaj7",
+            displayName: "Cmaj7",
+            correctNotes: [
+                Note(name: "C", midiNumber: 60, isSharp: false),
+                Note(name: "E", midiNumber: 64, isSharp: false),
+                Note(name: "G", midiNumber: 67, isSharp: false),
+                Note(name: "B", midiNumber: 71, isSharp: false)
+            ],
+            difficulty: .beginner,
+            category: "Chord"
         )
     }
 }
 
-// MARK: - Practice Item Model
+// MARK: - Quick Practice Item Model
 
 /// Represents a single practice question in Quick Practice session
-struct PracticeItem: Identifiable {
+struct QuickPracticeItem: Identifiable, Equatable {
     let id: UUID
-    let type: PracticeType
+    let type: QuickPracticeType
     let question: String
-    let correctAnswer: [Note]
+    let displayName: String
+    let correctNotes: [Note]
+    let difficulty: ChordType.ChordDifficulty
+    let category: String
     
-    // Optional metadata
-    var hint: String?
-    var difficulty: Difficulty?
-    
-    enum PracticeType {
+    enum QuickPracticeType: Equatable {
         case chordSpelling
         case cadenceProgression
         case scaleSpelling
         case intervalBuilding
     }
     
-    enum Difficulty {
-        case basic
-        case intermediate
-        case advanced
+    static func == (lhs: QuickPracticeItem, rhs: QuickPracticeItem) -> Bool {
+        lhs.id == rhs.id
     }
 }

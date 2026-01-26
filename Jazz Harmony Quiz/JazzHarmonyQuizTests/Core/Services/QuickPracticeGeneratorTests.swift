@@ -66,28 +66,30 @@ final class QuickPracticeGeneratorTests: XCTestCase {
         // Then
         for item in session {
             XCTAssertFalse(item.question.isEmpty, "Each item should have a question")
-            XCTAssertNotNil(item.type, "Each item should have a type")
         }
     }
     
-    // MARK: - Practice Item Tests
+    // MARK: - QuickPracticeItem Tests
     
-    func test_practiceItem_hasValidID() {
+    func test_quickPracticeItem_hasValidID() {
         // Given
-        let item = PracticeItem(
+        let item = QuickPracticeItem(
             id: UUID(),
             type: .chordSpelling,
             question: "Spell Cmaj7",
-            correctAnswer: []
+            displayName: "Cmaj7",
+            correctNotes: [],
+            difficulty: .beginner,
+            category: "Chord"
         )
         
         // Then
         XCTAssertNotNil(item.id, "Practice item should have a valid UUID")
     }
     
-    func test_practiceItem_hasType() {
+    func test_quickPracticeItem_hasType() {
         // Given
-        let types: [PracticeItem.PracticeType] = [
+        let types: [QuickPracticeItem.QuickPracticeType] = [
             .chordSpelling,
             .cadenceProgression,
             .scaleSpelling,
@@ -96,52 +98,57 @@ final class QuickPracticeGeneratorTests: XCTestCase {
         
         // Then
         for type in types {
-            let item = PracticeItem(
+            let item = QuickPracticeItem(
                 id: UUID(),
                 type: type,
                 question: "Test",
-                correctAnswer: []
+                displayName: "Test",
+                correctNotes: [],
+                difficulty: .beginner,
+                category: "Test"
             )
             XCTAssertEqual(item.type, type, "Item should retain its type")
         }
     }
     
-    func test_practiceItem_hasDifficulty() {
+    func test_quickPracticeItem_hasDifficulty() {
         // Given
-        let difficulties: [PracticeItem.Difficulty] = [
-            .basic,
+        let difficulties: [ChordType.ChordDifficulty] = [
+            .beginner,
             .intermediate,
             .advanced
         ]
         
         // Then
         for difficulty in difficulties {
-            var item = PracticeItem(
+            let item = QuickPracticeItem(
                 id: UUID(),
                 type: .chordSpelling,
                 question: "Test",
-                correctAnswer: []
+                displayName: "Test",
+                correctNotes: [],
+                difficulty: difficulty,
+                category: "Chord"
             )
-            item.difficulty = difficulty
             
             XCTAssertEqual(item.difficulty, difficulty, "Item should retain its difficulty")
         }
     }
     
-    func test_practiceItem_hasOptionalHint() {
+    func test_quickPracticeItem_hasCategory() {
         // Given
-        var item = PracticeItem(
+        let item = QuickPracticeItem(
             id: UUID(),
             type: .chordSpelling,
             question: "Test",
-            correctAnswer: []
+            displayName: "Test",
+            correctNotes: [],
+            difficulty: .beginner,
+            category: "Chord"
         )
         
-        // When
-        item.hint = "This is a major 7th chord"
-        
         // Then
-        XCTAssertEqual(item.hint, "This is a major 7th chord")
+        XCTAssertEqual(item.category, "Chord")
     }
     
     // MARK: - Algorithm Distribution Tests

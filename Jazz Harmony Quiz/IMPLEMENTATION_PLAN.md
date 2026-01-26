@@ -95,12 +95,12 @@ Before marking a phase complete and moving to the next:
 ## Current Status
 
 ```
-Last Updated: 2026-01-25
+Last Updated: 2026-01-26
 Current Phase: Phase 5 - Feature: Drill Modules
 Current Task: 5.4 - Interval Drill Refactor
 Overall Progress: Phases 0-4 COMPLETE, Phase 5.1 COMPLETE, Phase 5.2 COMPLETE, Phase 5.3 COMPLETE
 Test Coverage: 358 tests passing, all green
-Blockers/Notes: Phase 5.3 completed - Scale Drill refactored, 61 new tests added
+Blockers/Notes: Planning Phase 8 (Integration & Consistency Stabilization) added to address cross-feature gaps
 ```
 
 ### Quick Progress Overview
@@ -745,7 +745,59 @@ Required before proceeding to Phase 8:
 
 ---
 
-## Phase 8: Final Testing & Documentation
+## Phase 8: Integration & Consistency Stabilization (v2.1)
+
+**Goal:** Resolve cross-feature integration gaps and enforce the Design Contract (Appendix C).
+
+**Prerequisites:** Phase 7 complete
+
+### Tasks
+
+#### 8.1 Quick Practice Session (No Setup)
+- [ ] **8.1.1** Implement true Quick Practice session generation
+  - **Source:** DESIGN.md §6.2 algorithm
+  - **Behavior:** Mixed session, no setup screens
+- [ ] **8.1.2** Replace Quick Practice navigation hub with session start
+  - Home → Quick Practice starts session directly
+  - Remove redundant drill selection from quick practice flow
+
+#### 8.2 Curriculum Mode Integration
+- [ ] **8.2.1** Add explicit drill mode routing: Curriculum / Quick Practice / Free Practice
+- [ ] **8.2.2** Lock drill configuration when launched from curriculum
+  - **Source:** `CurriculumModule.recommendedConfig`
+  - **UI:** Show module title and locked settings summary
+- [ ] **8.2.3** Ensure module config prevents out-of-scope content
+  - Example: Major/Minor Triads module must not include 7th chords
+
+#### 8.3 Navigation & Presentation Consistency
+- [ ] **8.3.1** Fix Settings presentation so Done reliably dismisses
+  - Remove nested navigation wrappers where needed
+- [ ] **8.3.2** Audit all entry points
+  - Home Continue Learning → curriculum-locked drill
+  - Curriculum module Start → curriculum-locked drill
+  - Practice tab → free practice setup
+
+#### 8.4 Progress Integrity
+- [ ] **8.4.1** Record results against correct source
+  - Curriculum sessions update module progress
+  - Quick Practice updates SR/weak areas only
+- [ ] **8.4.2** Ensure question counts match config sources (no overrides)
+
+### Testing Checkpoint 8
+
+```
+Required before proceeding to Phase 9:
+- [ ] Quick Practice launches a mixed session (no setup)
+- [ ] Curriculum modules lock drill config
+- [ ] Practice tab still supports customization
+- [ ] Settings Done dismisses correctly
+- [ ] No redundant navigation paths
+- [ ] All tests pass
+```
+
+---
+
+## Phase 9: Final Testing & Documentation
 
 **Goal:** Achieve 90%+ test coverage, document completion.
 
@@ -753,43 +805,43 @@ Required before proceeding to Phase 8:
 
 ### Tasks
 
-#### 8.1 Coverage Gap Analysis
-- [ ] **8.1.1** Run full test suite with coverage report
+#### 9.1 Coverage Gap Analysis
+- [ ] **9.1.1** Run full test suite with coverage report
   - **Command:** Xcode → Product → Test with coverage enabled
   - **Record:** Overall percentage
 
-- [ ] **8.1.2** Identify files below 90% coverage
+- [ ] **9.1.2** Identify files below 90% coverage
   - **List:** Files and their current coverage
 
-- [ ] **8.1.3** Write additional tests for low-coverage files
+- [ ] **9.1.3** Write additional tests for low-coverage files
   - **Priority:** Critical paths first (answer validation, SR scheduling, statistics)
 
-#### 8.2 UI Testing
-- [ ] **8.2.1** Create UI test: Onboarding/First Launch
+#### 9.2 UI Testing
+- [ ] **9.2.1** Create UI test: Onboarding/First Launch
   - **File:** `Jazz Harmony QuizUITests/OnboardingUITests.swift`
 
-- [ ] **8.2.2** Create UI test: Complete Chord Drill flow
+- [ ] **9.2.2** Create UI test: Complete Chord Drill flow
   - **File:** `Jazz Harmony QuizUITests/ChordDrillUITests.swift`
 
-- [ ] **8.2.3** Create UI test: Quick Practice flow
+- [ ] **9.2.3** Create UI test: Quick Practice flow
   - **File:** `Jazz Harmony QuizUITests/QuickPracticeUITests.swift`
 
-- [ ] **8.2.4** Create UI test: Curriculum module completion
+- [ ] **9.2.4** Create UI test: Curriculum module completion
   - **File:** `Jazz Harmony QuizUITests/CurriculumUITests.swift`
 
-#### 8.3 Documentation
-- [ ] **8.3.1** Update ARCHITECTURE.md to reflect new structure
+#### 9.3 Documentation
+- [ ] **9.3.1** Update ARCHITECTURE.md to reflect new structure
   - **Document:** New file locations, patterns, state management
 
-- [ ] **8.3.2** Update .ai/PROJECT_CONTEXT.md for new architecture
+- [ ] **9.3.2** Update .ai/PROJECT_CONTEXT.md for new architecture
 
-- [ ] **8.3.3** Create/update README.md with developer setup instructions
+- [ ] **9.3.3** Create/update README.md with developer setup instructions
 
-#### 8.4 Final Verification
-- [ ] **8.4.1** Full regression test (all features manually)
-- [ ] **8.4.2** Verify test coverage is 90%+
-- [ ] **8.4.3** Build and run on physical device
-- [ ] **8.4.4** Update this document's Current Status to COMPLETE
+#### 9.4 Final Verification
+- [ ] **9.4.1** Full regression test (all features manually)
+- [ ] **9.4.2** Verify test coverage is 90%+
+- [ ] **9.4.3** Build and run on physical device
+- [ ] **9.4.4** Update this document's Current Status to COMPLETE
 
 ### Final Testing Checkpoint
 

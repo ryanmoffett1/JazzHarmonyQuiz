@@ -5,6 +5,10 @@ struct SettingsView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
     
+    /// When true, show Done button (for sheet presentation)
+    /// When false, hide Done button (for tab presentation)
+    var showDoneButton: Bool = false
+    
     @State private var showResetStatsAlert = false
     @State private var showResetAllAlert = false
     @State private var showExportSheet = false
@@ -23,9 +27,11 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+                if showDoneButton {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Done") {
+                            dismiss()
+                        }
                     }
                 }
             }
