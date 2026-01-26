@@ -1,15 +1,6 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Scale Drill View State
-
-/// Shared state enum for scale drill view navigation
-enum ScaleDrillViewState {
-    case setup
-    case active
-    case results
-}
-
 // MARK: - Scale Drill View
 
 /// Main container view for the Scale Drill feature
@@ -18,7 +9,7 @@ struct ScaleDrillView: View {
     @EnvironmentObject var scaleGame: ScaleGame
     @EnvironmentObject var settings: SettingsManager
     @State private var selectedNotes: Set<Note> = []
-    @State private var viewState: ScaleDrillViewState = .setup
+    @State private var viewState: DrillState = .setup
     @State private var numberOfQuestions: Int = 10
     @State private var selectedDifficulty: ScaleType.ScaleDifficulty = .beginner
     @State private var selectedQuestionTypes: Set<ScaleQuestionType> = [.allDegrees]

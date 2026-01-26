@@ -31,7 +31,7 @@ struct ChordDrillSessionView: View {
     @Binding var selectedNotes: Set<Note>
     @Binding var selectedChordType: ChordType?
     @Binding var showingFeedback: Bool
-    @Binding var viewState: ChordDrillViewState
+    @Binding var viewState: DrillState
     @State private var isCorrect = false
     @State private var currentQuestionForFeedback: QuizQuestion?
     @State private var correctAnswerForFeedback: [Note] = []

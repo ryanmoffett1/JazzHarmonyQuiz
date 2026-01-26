@@ -27,6 +27,8 @@
 		9463520D2F26727A00ABD609 /* Cards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352042F26727A00ABD609 /* Cards.swift */; };
 		9463520E2F26727A00ABD609 /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352082F26727A00ABD609 /* Progress.swift */; };
 		9463520F2F26727A00ABD609 /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352052F26727A00ABD609 /* Feedback.swift */; };
+		94DRILLR12F2D00000000001 /* DrillResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILLR22F2D00000000002 /* DrillResults.swift */; };
+		94DRILLS12F2D00000000003 /* DrillSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILLS22F2D00000000004 /* DrillSetup.swift */; };
 		946352132F26752C00ABD609 /* ShedProApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352112F26752C00ABD609 /* ShedProApp.swift */; };
 		946352142F26752C00ABD609 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352102F26752C00ABD609 /* ContentView.swift */; };
 		946352212F26786500ABD609 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352172F26786500ABD609 /* HomeView.swift */; };
@@ -128,6 +130,8 @@
 		946352062F26727A00ABD609 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		946352072F26727A00ABD609 /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
 		946352082F26727A00ABD609 /* Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progress.swift; sourceTree = "<group>"; };
+		94DRILLR22F2D00000000002 /* DrillResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillResults.swift; sourceTree = "<group>"; };
+		94DRILLS22F2D00000000004 /* DrillSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillSetup.swift; sourceTree = "<group>"; };
 		946352102F26752C00ABD609 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		946352112F26752C00ABD609 /* ShedProApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShedProApp.swift; sourceTree = "<group>"; };
 		946352152F26786500ABD609 /* ContinueLearningCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueLearningCard.swift; sourceTree = "<group>"; };
@@ -247,6 +251,8 @@
 			children = (
 				946352032F26727A00ABD609 /* Buttons.swift */,
 				946352042F26727A00ABD609 /* Cards.swift */,
+				94DRILLR22F2D00000000002 /* DrillResults.swift */,
+				94DRILLS22F2D00000000004 /* DrillSetup.swift */,
 				946352052F26727A00ABD609 /* Feedback.swift */,
 				946352062F26727A00ABD609 /* FlowLayout.swift */,
 				946352072F26727A00ABD609 /* PianoKeyboard.swift */,
@@ -678,6 +684,8 @@
 				9463520D2F26727A00ABD609 /* Cards.swift in Sources */,
 				9463520E2F26727A00ABD609 /* Progress.swift in Sources */,
 				9463520F2F26727A00ABD609 /* Feedback.swift in Sources */,
+				94DRILLR12F2D00000000001 /* DrillResults.swift in Sources */,
+				94DRILLS12F2D00000000003 /* DrillSetup.swift in Sources */,
 				9400DEB82F2516A900BDBF25 /* ProgressionProgression.swift in Sources */,
 				9400DEB92F2516A900BDBF25 /* ProgressionGame.swift in Sources */,
 				9434133D2F1EDD74009235D1 /* PlayerProfileView.swift in Sources */,

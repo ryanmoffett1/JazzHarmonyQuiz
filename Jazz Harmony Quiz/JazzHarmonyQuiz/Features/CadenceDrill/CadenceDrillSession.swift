@@ -8,7 +8,7 @@ struct CadenceDrillSession: View {
     @EnvironmentObject var cadenceGame: CadenceGame
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
-    @Binding var viewState: CadenceDrillViewState
+    @Binding var viewState: DrillState
     @Binding var userSelectedCadenceType: CadenceType?  // For ear training answers
     @State private var currentChordIndex = 0 // Which chord we're currently spelling
     @State private var chordSpellings: [[Note]] = [[], [], [], [], []] // Spellings for up to 5 chords (Bird Changes)

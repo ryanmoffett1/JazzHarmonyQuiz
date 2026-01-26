@@ -31,7 +31,7 @@ struct ScaleDrillSession: View {
     
     @Binding var selectedNotes: Set<Note>
     @Binding var showingFeedback: Bool
-    @Binding var viewState: ScaleDrillViewState
+    @Binding var viewState: DrillState
     
     @State private var feedbackMessage: String = ""
     @State private var isCorrect: Bool = false

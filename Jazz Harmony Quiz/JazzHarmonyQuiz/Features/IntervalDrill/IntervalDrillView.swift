@@ -1,19 +1,11 @@
 import SwiftUI
 
-// MARK: - Interval Drill View State
-
-enum IntervalDrillViewState {
-    case setup
-    case active
-    case results
-}
-
 // MARK: - Interval Drill View
 
 struct IntervalDrillView: View {
     @EnvironmentObject var intervalGame: IntervalGame
     @EnvironmentObject var settings: SettingsManager
-    @State private var viewState: IntervalDrillViewState = .setup
+    @State private var viewState: DrillState = .setup
     
     // Setup configuration
     @State private var numberOfQuestions: Int = 10

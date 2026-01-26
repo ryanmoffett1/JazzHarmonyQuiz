@@ -7,7 +7,7 @@ struct CadenceChordIdentificationSession: View {
     @EnvironmentObject var cadenceGame: CadenceGame
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
-    @Binding var viewState: CadenceDrillViewState
+    @Binding var viewState: DrillState
     
     @State private var currentChordIndex = 0
     @State private var chordSelections: [ChordSelection] = [ChordSelection(), ChordSelection(), ChordSelection(), ChordSelection(), ChordSelection()]

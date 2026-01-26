@@ -1,15 +1,6 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Chord Drill View State
-
-/// Shared state enum for chord drill view navigation
-enum ChordDrillViewState {
-    case setup
-    case active
-    case results
-}
-
 // MARK: - Chord Drill View
 
 /// Main container view for the Chord Drill feature
@@ -19,7 +10,7 @@ struct ChordDrillView: View {
     @EnvironmentObject var settings: SettingsManager
     @State private var selectedNotes: Set<Note> = []
     @State private var selectedChordType: ChordType? = nil
-    @State private var viewState: ChordDrillViewState = .setup
+    @State private var viewState: DrillState = .setup
     @State private var numberOfQuestions: Int
     @State private var selectedDifficulty: ChordType.ChordDifficulty
     @State private var selectedQuestionTypes: Set<QuestionType>

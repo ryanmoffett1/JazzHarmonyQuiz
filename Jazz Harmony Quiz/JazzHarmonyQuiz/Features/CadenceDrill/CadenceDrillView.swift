@@ -1,14 +1,5 @@
 import SwiftUI
 
-// MARK: - Cadence Drill View State
-
-/// Shared state enum for cadence drill view navigation
-enum CadenceDrillViewState {
-    case setup
-    case active
-    case results
-}
-
 // MARK: - Cadence Drill View
 
 /// Main container view for the Cadence Drill feature
@@ -16,7 +7,7 @@ enum CadenceDrillViewState {
 struct CadenceDrillView: View {
     @EnvironmentObject var cadenceGame: CadenceGame
     @EnvironmentObject var settings: SettingsManager
-    @State private var viewState: CadenceDrillViewState = .setup
+    @State private var viewState: DrillState = .setup
     @State private var numberOfQuestions: Int = 10
     @State private var selectedCadenceType: CadenceType = .major
     @State private var selectedDrillMode: CadenceDrillMode = .fullProgression
