@@ -97,10 +97,10 @@ Before marking a phase complete and moving to the next:
 ```
 Last Updated: 2026-01-25
 Current Phase: Phase 5 - Feature: Drill Modules
-Current Task: 5.3.2 - Scale Drill Game Tests
-Overall Progress: Phases 0-4 COMPLETE, Phase 5.1 COMPLETE, Phase 5.2 COMPLETE, Phase 5.3.1 COMPLETE
-Test Coverage: 297 tests passing, all green
-Blockers/Notes: Phase 5.3.1 completed - Split ScaleDrillView into Features/ScaleDrill/
+Current Task: 5.4 - Interval Drill Refactor
+Overall Progress: Phases 0-4 COMPLETE, Phase 5.1 COMPLETE, Phase 5.2 COMPLETE, Phase 5.3 COMPLETE
+Test Coverage: 358 tests passing, all green
+Blockers/Notes: Phase 5.3 completed - Scale Drill refactored, 61 new tests added
 ```
 
 ### Quick Progress Overview
@@ -112,7 +112,7 @@ Blockers/Notes: Phase 5.3.1 completed - Split ScaleDrillView into Features/Scale
 | 2 | Services Layer | COMPLETE | 10/10 | ✅ Yes |
 | 3 | UI Components Library | COMPLETE | 14/14 | ✅ Yes |
 | 4 | Feature: Home & Navigation | COMPLETE | 11/11 | ✅ Yes (175 tests) |
-| 5 | Feature: Drill Modules | IN_PROGRESS | 6/16 | ✅ Yes (297 tests) |
+| 5 | Feature: Drill Modules | IN_PROGRESS | 8/16 | ✅ Yes (358 tests) |
 | 6 | Feature: Curriculum & Progress | NOT_STARTED | 0/12 | - |
 | 7 | Polish & Final Testing | NOT_STARTED | 0/10 | - |
 
@@ -575,8 +575,10 @@ Required before proceeding to Phase 5:
   - `Features/ScaleDrill/ScaleDrillResults.swift`
   - **Note:** Old Views/ScaleDrillView.swift deleted, new files in Features/ScaleDrill/
 
-- [ ] **5.3.2** Create unit tests for ScaleDrillGame
+- [x] **5.3.2** Create unit tests for ScaleDrillGame
   - **Target:** 90%+ coverage
+  - **File:** `JazzHarmonyQuizTests/Features/ScaleDrill/ScaleGameTests.swift`
+  - **Tests Added:** 61 new tests covering quiz flow, answer validation, ear training, statistics, scoreboard
 
 #### 5.4 Interval Drill Refactor
 - [ ] **5.4.1** Split `IntervalDrillView.swift` into:
