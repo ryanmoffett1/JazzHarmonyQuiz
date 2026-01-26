@@ -257,4 +257,135 @@ final class SpacedRepetitionStoreTests: XCTestCase {
         XCTAssertEqual(newSchedule.intervalDays, 1.0, accuracy: 0.01)
         XCTAssertEqual(newSchedule.easeFactor, 2.5, accuracy: 0.01)
     }
+    
+    func testResetItem() {
+        // Progress the item
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        
+        XCTAssertEqual(store.schedule(for: testChordID).repetitions, 2)
+        
+        // Reset just this item
+        store.resetItem(testChordID)
+        
+        let schedule = store.schedule(for: testChordID)
+        XCTAssertEqual(schedule.repetitions, 0, "Item should be reset")
+        XCTAssertEqual(schedule.intervalDays, 1.0, accuracy: 0.01)
+        XCTAssertEqual(schedule.easeFactor, 2.5, accuracy: 0.01)
+    }
+    
+    func testRemoveItem() {
+        // Create item
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        XCTAssertTrue(store.hasSchedule(for: testChordID))
+        
+        // Remove item
+        store.removeItem(testChordID)
+        
+        XCTAssertFalse(store.hasSchedule(for: testChordID), "Item should be removed")
+    }
+    
+    func testHasSchedule() {
+        XCTAssertFalse(store.hasSchedule(for: testChordID), "New item should not have schedule")
+        
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        
+        XCTAssertTrue(store.hasSchedule(for: testChordID), "Item with progress should have schedule")
+    }
+    
+    // MARK: - Statistics Tests
+    
+    func testStatistics() {
+        // Create various items with different states
+        store.recordResult(itemID: testChordID, wasCorrect: true)
+        store.recordResult(itemID: testChordID, wasCorrect: true) // Learning state
+        
+        store.recordResult(itemID: testIntervalID, wasCorrect: false) // New state after failure
+        
+        let stats = store.statistics()
+        
+        XCTAssertGreaterThan(stats.totalItems, 0)
+        XCTAssertGreaterThanOrEqual(stats.averageAccuracy, 0.0)
+        XCTAssertLessThanOrEqual(stats.averageAccuracy, 1.0)
+    }
+    
+    func testStatisticsWithNoItems() {
+        let stats = store.statistics()
+        
+        XCTAssertEqual(stats.totalItems, 0)
+        XCTAssertEqual(stats.dueItems, 0)
+        XCTAssertEqual(stats.averageAccuracy, 0.0)
+    }
+    
+    func testTotalDueCount() {
+        // New items are due by default
+        _ = store.schedule(for: testChordID)
+        _ = store.schedule(for: testIntervalID)
+        
+        let totalDue = store.totalDueCount()
+        XCTAssertEqual(totalDue, 2, "New items should be due")
+    }
+    
+    // MARK: - SRItemID Tests
+    
+    func testSRItemIDDisplayName() {
+        let itemWithKey = SRItemID(mode: .chordDrill, topic: "maj7", key: "C")
+        XCTAssertEqual(itemWithKey.displayName, "C maj7")
+        
+        let itemWithVariant = SRItemID(mode: .cadenceDrill, topic: "ii-V-I", key: "F", variant: "major")
+        XCTAssertEqual(itemWithVariant.displayName, "F ii-V-I (major)")
+        
+        let itemNoKey = SRItemID(mode: .intervalDrill, topic: "P5")
+        XCTAssertEqual(itemNoKey.displayName, "P5")
+    }
+    
+    func testSRItemIDShortName() {
+        let itemWithKey = SRItemID(mode: .chordDrill, topic: "maj7", key: "C")
+        XCTAssertEqual(itemWithKey.shortName, "C maj7")
+        
+        let itemNoKey = SRItemID(mode: .intervalDrill, topic: "P5")
+        XCTAssertEqual(itemNoKey.shortName, "P5")
+    }
+    
+    // MARK: - SRSchedule Tests
+    
+    func testScheduleMaturityLevelNew() {
+        var schedule = SRSchedule(dueDate: Date())
+        schedule.intervalDays = 0.5
+        XCTAssertEqual(schedule.maturityLevel, .new)
+    }
+    
+    func testScheduleMaturityLevelLearning() {
+        var schedule = SRSchedule(dueDate: Date())
+        schedule.intervalDays = 3
+        XCTAssertEqual(schedule.maturityLevel, .learning)
+    }
+    
+    func testScheduleMaturityLevelYoung() {
+        var schedule = SRSchedule(dueDate: Date())
+        schedule.intervalDays = 14
+        XCTAssertEqual(schedule.maturityLevel, .young)
+    }
+    
+    func testScheduleMaturityLevelMature() {
+        var schedule = SRSchedule(dueDate: Date())
+        schedule.intervalDays = 30
+        XCTAssertEqual(schedule.maturityLevel, .mature)
+    }
+    
+    func testScheduleDaysUntilDue() {
+        var schedule = SRSchedule(dueDate: Date())
+        schedule.dueDate = Calendar.current.date(byAdding: .day, value: 5, to: Date()) ?? Date()
+        
+        let daysUntil = schedule.daysUntilDue()
+        XCTAssertEqual(daysUntil, 5, accuracy: 1)
+    }
+    
+    func testScheduleDaysUntilDueOverdue() {
+        var schedule = SRSchedule(dueDate: Date())
+        schedule.dueDate = Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date()
+        
+        let daysUntil = schedule.daysUntilDue()
+        XCTAssertEqual(daysUntil, -3, accuracy: 1)
+    }
 }

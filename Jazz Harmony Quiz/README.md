@@ -1,103 +1,129 @@
-# Jazz Harmony Quiz
+# Jazz Harmony Quiz (Shed Pro)
 
-A comprehensive iOS app for learning and practicing jazz chord theory through interactive quizzes and piano keyboard input.
+A comprehensive iOS app for learning and practicing jazz harmony through interactive drills, ear training, and a structured curriculum system.
 
 ## Features
 
-### 🎵 Chord Drill Mode
-- **Single Tone Questions**: Identify specific chord tones (e.g., "What is the b9 of D7b9?")
-- **All Tones Questions**: Play all chord tones for a given chord
-- **Chord Spelling**: Spell entire chords by selecting all chord tones
+### 🎵 Practice Modes
+
+| Mode | Description |
+|------|-------------|
+| **Chord Drill** | Identify chord tones, qualities, and voicings |
+| **Cadence Drill** | Master ii-V-I progressions and jazz cadences |
+| **Scale Drill** | Practice modes, jazz scales, and scale degrees |
+| **Interval Drill** | Ear training for interval identification |
+| **Quick Practice** | AI-generated sessions based on your weak areas |
+
+### 📚 Curriculum System
+
+Four structured learning pathways:
+- **Harmony Foundations** - Triads, 7th chords, extensions
+- **Functional Harmony** - Cadences, voice leading, progressions  
+- **Ear Training** - Aural recognition, interval hearing
+- **Advanced Topics** - Alterations, substitutions, modern jazz
+
+### 🧠 Spaced Repetition
+
+SM-2 algorithm for optimized learning:
+- Automatic scheduling based on performance
+- Due items highlighted for review
+- Progress tracking per concept
 
 ### 🎹 Interactive Piano Keyboard
-- Visual piano keyboard with white and black keys
-- Touch input for chord tone selection
+
 - Visual feedback for selected notes
-- Support for multiple note selection
+- MIDI synthesis for realistic sound
+- Multiple playback styles (block/arpeggio)
 
-### 📊 Comprehensive Chord Database
-- **Beginner**: Major/minor triads, dominant 7th, major 7th, minor 7th
-- **Intermediate**: Minor major 7th, half diminished, diminished 7th, augmented 7th, 9th chords
-- **Advanced**: Altered dominants (b9, #9, b5, #5, b9#9, etc.)
-- **Expert**: 11th and 13th chords, complex alterations
+### 📊 Progress Tracking
 
-### ⏱️ Timing and Scoring
-- Real-time timing for each question
-- Overall quiz timing
-- Accuracy scoring
-- Performance tracking
-
-### 🏆 Leaderboard System
-- Top 10 scores tracking
-- Multiple sorting options (best score, best time, most recent)
-- Persistent storage using UserDefaults
-- Visual ranking with trophies for top 3
-
-### 📈 Results and Review
-- Detailed results screen with performance breakdown
-- Review incorrect answers with explanations
-- Visual comparison of user answers vs. correct answers
-- Encouragement messages based on performance
+- XP-based leveling system
+- Accuracy statistics per topic
+- Achievement badges
+- Practice streaks
 
 ## Technical Architecture
 
-### Models
-- **ChordModel.swift**: Core data structures for notes, chord tones, and chords
-- **QuizGame.swift**: Game logic, timing, scoring, and leaderboard management
-- **JazzChordDatabase.swift**: Comprehensive database of jazz chord types
+### Project Structure
 
-### Views
-- **ContentView.swift**: Main navigation and app entry point
-- **ChordDrillView.swift**: Quiz setup and active quiz interface
-- **PianoKeyboard.swift**: Interactive piano keyboard component
-- **ResultsView.swift**: Results display and answer review
-- **LeaderboardView.swift**: Score tracking and statistics
+```
+JazzHarmonyQuiz/
+├── App/                    # Entry point
+├── Core/                   # Databases, Models, Services
+├── Features/               # Feature modules (Chord, Cadence, etc.)
+├── Components/             # Shared UI components
+├── Helpers/                # Utilities
+└── Models/                 # Game state classes
+```
 
-### Key Features
-- **SwiftUI**: Modern declarative UI framework
-- **ObservableObject**: Reactive state management
-- **UserDefaults**: Persistent leaderboard storage
-- **Codable**: Data serialization for saving/loading
-- **Timer**: Real-time quiz timing
-
-## Chord Types Included
-
-### Beginner (5 types)
-- Major Triad, Minor Triad, Dominant 7th, Major 7th, Minor 7th
-
-### Intermediate (7 types)
-- Minor Major 7th, Half Diminished 7th, Diminished 7th, Augmented 7th, Major 9th, Dominant 9th, Minor 9th
-
-### Advanced (8 types)
-- Dominant 7th b9, Dominant 7th #9, Dominant 7th b5, Dominant 7th #5, Dominant 7th b9#9, Dominant 7th b9b5, Dominant 7th #9#5
-
-### Expert (10 types)
-- Complex altered dominants, Major 11th, Dominant 11th, Minor 11th, Major 13th, Dominant 13th, Minor 13th, Dominant 7th b13, Dominant 7th #13
-
-## Usage
-
-1. **Setup Quiz**: Choose number of questions (5-30), difficulty level, and question types
-2. **Take Quiz**: Answer questions using the piano keyboard interface
-3. **Review Results**: See detailed performance breakdown and review incorrect answers
-4. **Track Progress**: View leaderboard and statistics to monitor improvement
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed documentation.
 
 ## Requirements
 
-- iOS 17.0+
-- Xcode 15.0+
+- iOS 16.0+
+- Xcode 16.0+
 - Swift 5.0+
 
-## Installation
+## Developer Setup
 
-1. Open `JazzHarmonyQuiz.xcodeproj` in Xcode
-2. Select your target device or simulator
-3. Build and run the project (⌘+R)
+### 1. Clone and Open
 
-## Future Enhancements
+```bash
+git clone https://github.com/ryanmoffett1/JazzHarmonyQuiz.git
+cd JazzHarmonyQuiz
+open JazzHarmonyQuiz.xcodeproj
+```
 
-- Audio playback for chord tones
-- More question types (chord progressions, voice leading)
-- Custom chord creation
+### 2. SoundFont Setup (Required for Audio)
+
+The app requires a `.sf2` SoundFont file for MIDI playback:
+
+1. Download a piano SoundFont (e.g., GeneralUser GS, Yamaha Grand)
+2. Rename to `GeneralUser GS.sf2`
+3. Add to the Resources folder in Xcode
+4. Ensure it's included in the target's "Copy Bundle Resources"
+
+See [SOUNDFONT_SETUP_INSTRUCTIONS.md](SOUNDFONT_SETUP_INSTRUCTIONS.md) for details.
+
+### 3. Build and Run
+
+1. Select your target device (iPhone 16 recommended)
+2. Press `⌘+R` to build and run
+
+### 4. Running Tests
+
+```bash
+# Run all tests
+xcodebuild test -scheme JazzHarmonyQuiz \
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6'
+
+# Run specific test suite
+xcodebuild test -scheme JazzHarmonyQuiz \
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6' \
+  -only-testing:JazzHarmonyQuizTests/ChordDrillGameTests
+```
+
+Or in Xcode: `⌘+U` to run all tests
+
+## Development Guidelines
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Code style conventions
+- Commit message format  
+- Testing requirements
+- Pull request process
+
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Technical architecture & file reference |
+| [DESIGN.md](DESIGN.md) | UI/UX design specifications |
+| [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) | Development roadmap |
+
+## License
+
+Private repository. All rights reserved.
 - Social features and sharing
 - Advanced statistics and analytics
 - Multiple instrument support (guitar, bass)

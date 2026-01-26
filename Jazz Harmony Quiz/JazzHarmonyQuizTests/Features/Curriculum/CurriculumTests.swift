@@ -245,4 +245,159 @@ final class CurriculumTests: XCTestCase {
         XCTAssertNil(curriculumManager.activeModuleID)
         XCTAssertNil(curriculumManager.activeModule)
     }
+    
+    // MARK: - Current Pathway Tests
+    
+    @MainActor
+    func testSetCurrentPathway() {
+        curriculumManager.currentPathway = .functionalHarmony
+        XCTAssertEqual(curriculumManager.currentPathway, .functionalHarmony)
+    }
+    
+    @MainActor
+    func testRecommendedNextModuleUsesCurrentPathway() {
+        curriculumManager.currentPathway = .earTraining
+        
+        let recommended = curriculumManager.recommendedNextModule
+        XCTAssertEqual(recommended?.pathway, .earTraining, "Should recommend from current pathway")
+    }
+    
+    // MARK: - Module Progress Edge Cases
+    
+    @MainActor
+    func testGetProgressForUnknownModule() {
+        let unknownID = UUID()
+        let progress = curriculumManager.getProgress(for: unknownID)
+        
+        XCTAssertEqual(progress.attempts, 0)
+        XCTAssertEqual(progress.correctAnswers, 0)
+    }
+    
+    @MainActor
+    func testAccuracyCalculation() {
+        let module = CurriculumDatabase.harmonyFoundations_1_1_majorMinorTriads
+        
+        curriculumManager.recordModuleAttempt(
+            moduleID: module.id,
+            questionsAnswered: 10,
+            correctAnswers: 8,
+            wasPerfectSession: false
+        )
+        
+        let progress = curriculumManager.getProgress(for: module.id)
+        XCTAssertEqual(progress.accuracy, 0.8, accuracy: 0.01)
+    }
+    
+    @MainActor
+    func testMultiplePerfectSessions() {
+        let module = CurriculumDatabase.harmonyFoundations_1_1_majorMinorTriads
+        
+        curriculumManager.recordModuleAttempt(
+            moduleID: module.id,
+            questionsAnswered: 10,
+            correctAnswers: 10,
+            wasPerfectSession: true
+        )
+        
+        curriculumManager.recordModuleAttempt(
+            moduleID: module.id,
+            questionsAnswered: 10,
+            correctAnswers: 10,
+            wasPerfectSession: true
+        )
+        
+        let progress = curriculumManager.getProgress(for: module.id)
+        XCTAssertEqual(progress.perfectSessions, 2)
+    }
+}
+
+// MARK: - ModuleProgress Tests
+
+final class ModuleProgressTests: XCTestCase {
+    
+    func testModuleProgressInit() {
+        let moduleID = UUID()
+        let progress = ModuleProgress(moduleID: moduleID)
+        
+        XCTAssertEqual(progress.moduleID, moduleID)
+        XCTAssertEqual(progress.attempts, 0)
+        XCTAssertEqual(progress.correctAnswers, 0)
+        XCTAssertFalse(progress.isCompleted)
+    }
+    
+    func testRecordAttemptCorrect() {
+        var progress = ModuleProgress(moduleID: UUID())
+        
+        progress.recordAttempt(wasCorrect: true, wasPerfectSession: false)
+        
+        XCTAssertEqual(progress.attempts, 1)
+        XCTAssertEqual(progress.correctAnswers, 1)
+    }
+    
+    func testRecordAttemptIncorrect() {
+        var progress = ModuleProgress(moduleID: UUID())
+        
+        progress.recordAttempt(wasCorrect: false, wasPerfectSession: false)
+        
+        XCTAssertEqual(progress.attempts, 1)
+        XCTAssertEqual(progress.correctAnswers, 0)
+    }
+    
+    func testAccuracyWithNoAttempts() {
+        let progress = ModuleProgress(moduleID: UUID())
+        XCTAssertEqual(progress.accuracy, 0.0)
+    }
+    
+    func testAccuracyCalculation() {
+        var progress = ModuleProgress(moduleID: UUID())
+        progress.recordAttempt(wasCorrect: true, wasPerfectSession: false)
+        progress.recordAttempt(wasCorrect: true, wasPerfectSession: false)
+        progress.recordAttempt(wasCorrect: false, wasPerfectSession: false)
+        progress.recordAttempt(wasCorrect: true, wasPerfectSession: false)
+        
+        XCTAssertEqual(progress.accuracy, 0.75, accuracy: 0.01)
+    }
+    
+    func testCheckAndMarkCompletion() {
+        var progress = ModuleProgress(moduleID: UUID())
+        
+        // Add enough attempts and accuracy to complete
+        for _ in 0..<30 {
+            progress.recordAttempt(wasCorrect: true, wasPerfectSession: false)
+        }
+        
+        let criteria = CompletionCriteria(minimumAttempts: 30, accuracyThreshold: 0.85)
+        let completed = progress.checkAndMarkCompletion(criteria: criteria)
+        
+        XCTAssertTrue(completed)
+        XCTAssertTrue(progress.isCompleted)
+    }
+    
+    func testCheckAndMarkCompletionNotEnoughAttempts() {
+        var progress = ModuleProgress(moduleID: UUID())
+        
+        for _ in 0..<10 {
+            progress.recordAttempt(wasCorrect: true, wasPerfectSession: false)
+        }
+        
+        let criteria = CompletionCriteria(minimumAttempts: 30, accuracyThreshold: 0.85)
+        let completed = progress.checkAndMarkCompletion(criteria: criteria)
+        
+        XCTAssertFalse(completed)
+        XCTAssertFalse(progress.isCompleted)
+    }
+    
+    func testCheckAndMarkCompletionLowAccuracy() {
+        var progress = ModuleProgress(moduleID: UUID())
+        
+        for _ in 0..<30 {
+            progress.recordAttempt(wasCorrect: false, wasPerfectSession: false) // Low accuracy
+        }
+        
+        let criteria = CompletionCriteria(minimumAttempts: 30, accuracyThreshold: 0.85)
+        let completed = progress.checkAndMarkCompletion(criteria: criteria)
+        
+        XCTAssertFalse(completed)
+        XCTAssertFalse(progress.isCompleted)
+    }
 }

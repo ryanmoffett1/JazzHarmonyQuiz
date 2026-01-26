@@ -1,7 +1,7 @@
 # Jazz Harmony Quiz - Architecture Documentation
 
 > **Last Updated:** January 2026
-> **Version:** 1.0
+> **Version:** 2.0
 > **Platform:** iOS (SwiftUI)
 
 ## Table of Contents
@@ -50,62 +50,129 @@ Jazz Harmony Quiz is a comprehensive music education app designed to teach jazz 
 
 ## Project Structure
 
+The project follows a Feature-based architecture for better modularity:
+
 ```
-Jazz Harmony Quiz/JazzHarmonyQuiz/
-├── JazzHarmonyQuizApp.swift          # App entry point
-├── ContentView.swift                 # Main navigation hub
+JazzHarmonyQuiz/
+├── App/
+│   ├── ShedProApp.swift              # App entry point
+│   └── ContentView.swift             # Main navigation hub
 │
-├── Models/                           # Data & Game Logic (20 files)
-│   ├── ChordModel.swift              # Core chord data structures
-│   ├── ScaleModel.swift              # Scale data structures
-│   ├── IntervalModel.swift           # Interval data structures
-│   ├── ProgressionProgression.swift  # Progression data
-│   ├── ConceptualExplanations.swift  # Theory reference content
+├── Core/
+│   ├── Databases/                    # Static data definitions
+│   │   ├── CadenceDatabase.swift     # Cadence types
+│   │   ├── ChordDatabase.swift       # 30+ chord types
+│   │   ├── CurriculumDatabase.swift  # Learning modules
+│   │   ├── IntervalDatabase.swift    # Interval definitions
+│   │   └── ScaleDatabase.swift       # Jazz scale definitions
 │   │
-│   ├── QuizGame.swift                # Chord drill game state
-│   ├── CadenceGame.swift             # Cadence drill game state
-│   ├── ScaleGame.swift               # Scale drill game state
-│   ├── IntervalGame.swift            # Interval drill game state
-│   ├── ProgressionGame.swift         # Progression drill game state
+│   ├── Models/                       # Core data types
+│   │   ├── Chord.swift               # Chord structure
+│   │   ├── ChordTone.swift           # Individual chord tones
+│   │   ├── ChordType.swift           # Chord type definitions
+│   │   ├── DrillState.swift          # Drill state machine
+│   │   ├── Interval.swift            # Interval structure
+│   │   ├── Note.swift                # Note representation
+│   │   ├── PlayerLevel.swift         # XP & leveling
+│   │   └── Scale.swift               # Scale structure
 │   │
-│   ├── JazzChordDatabase.swift       # 30+ chord types
-│   ├── JazzScaleDatabase.swift       # Jazz scale definitions
-│   ├── IntervalDatabase.swift        # Interval definitions
-│   ├── ProgressionDatabase.swift     # Jazz progression templates
-│   ├── CurriculumDatabase.swift      # Learning modules
-│   │
-│   ├── PlayerProfile.swift           # Player XP, achievements, stats
-│   ├── SettingsManager.swift         # App settings singleton
-│   ├── SpacedRepetition.swift        # SR algorithm (SM-2)
-│   ├── CurriculumManager.swift       # Module progression
-│   └── CurriculumModule.swift        # Module definitions
+│   └── Services/                     # Business logic
+│       ├── AudioManager.swift        # MIDI synthesis
+│       ├── CurriculumManager.swift   # Module progression
+│       ├── QuickPracticeGenerator.swift # Smart practice sessions
+│       ├── SettingsManager.swift     # App settings singleton
+│       └── SpacedRepetitionStore.swift # SM-2 algorithm
 │
-├── Views/                            # UI Components (14 files)
-│   ├── ChordDrillView.swift          # Chord practice UI
-│   ├── CadenceDrillView.swift        # Cadence practice UI
-│   ├── ScaleDrillView.swift          # Scale practice UI
-│   ├── IntervalDrillView.swift       # Interval practice UI
-│   ├── ProgressionDrillView.swift    # Progression practice UI
+├── Features/                         # Feature modules
+│   ├── CadenceDrill/                 # Cadence practice
+│   │   ├── CadenceDrillGame.swift
+│   │   ├── CadenceDrillResults.swift
+│   │   ├── CadenceDrillSession.swift
+│   │   └── CadenceDrillSetup.swift
 │   │
-│   ├── ChordSelectorView.swift       # Chord root/quality picker
-│   ├── PianoKeyboard.swift           # Interactive piano component
-│   ├── ResultsView.swift             # Quiz results display
+│   ├── ChordDrill/                   # Chord practice
+│   │   ├── ChordDrillGame.swift
+│   │   ├── ChordDrillResults.swift
+│   │   ├── ChordDrillSession.swift
+│   │   └── ChordDrillSetup.swift
 │   │
-│   ├── CurriculumView.swift          # Learning pathways UI
-│   ├── PlayerProfileView.swift       # Profile & stats
-│   ├── SettingsView.swift            # Settings configuration
-│   ├── ScoreboardView.swift          # High scores
-│   ├── CadenceScoreboardView.swift   # Cadence-specific scores
-│   └── PracticeDueCard.swift         # SR due items display
+│   ├── Curriculum/                   # Learning pathways
+│   │   ├── CurriculumView.swift
+│   │   ├── ModuleCard.swift
+│   │   └── ModuleDetailView.swift
+│   │
+│   ├── Home/                         # Main navigation
+│   │   └── HomeView.swift
+│   │
+│   ├── IntervalDrill/                # Interval practice
+│   │   ├── IntervalDrillSession.swift
+│   │   └── IntervalDrillSetup.swift
+│   │
+│   ├── Practice/                     # Quick practice
+│   │   ├── QuickPracticeSession.swift
+│   │   └── QuickPracticeView.swift
+│   │
+│   ├── Progress/                     # Player stats
+│   │   └── ProgressView.swift
+│   │
+│   ├── ScaleDrill/                   # Scale practice
+│   │   ├── ScaleDrillSession.swift
+│   │   └── ScaleDrillSetup.swift
+│   │
+│   └── Settings/                     # App settings
+│       └── SettingsView.swift
+│
+├── Components/                       # Shared UI components
+│   ├── Buttons.swift
+│   ├── Cards.swift
+│   ├── Feedback.swift
+│   ├── FlowLayout.swift
+│   ├── PianoKeyboard.swift
+│   └── Progress.swift
 │
 ├── Helpers/                          # Utilities
-│   ├── AudioManager.swift            # MIDI audio synthesis
-│   └── FlowLayout.swift              # Custom SwiftUI layout
+│   └── EncouragementEngine.swift
+│
+├── Models/                           # Game state (legacy)
+│   ├── CadenceGame.swift
+│   ├── IntervalGame.swift
+│   ├── QuizGame.swift
+│   └── ScaleGame.swift
 │
 ├── Fonts/                            # Custom fonts
-│   └── Caveat-*.ttf                  # Handwritten chord font
+│   └── Caveat-*.ttf
 │
 └── Assets.xcassets/                  # Images & colors
+```
+
+### Test Structure
+
+```
+JazzHarmonyQuizTests/
+├── Core/
+│   ├── Models/
+│   │   ├── ChordTests.swift
+│   │   ├── IntervalTests.swift
+│   │   ├── NoteTests.swift
+│   │   ├── PlayerLevelTests.swift
+│   │   └── ScaleTests.swift
+│   │
+│   └── Services/
+│       ├── QuickPracticeGeneratorTests.swift
+│       ├── SettingsManagerTests.swift
+│       └── SpacedRepetitionStoreTests.swift
+│
+└── Features/
+    ├── ChordDrill/
+    │   └── ChordDrillGameTests.swift
+    ├── CadenceDrill/
+    │   └── CadenceGameTests.swift
+    ├── Curriculum/
+    │   └── CurriculumTests.swift
+    ├── IntervalDrill/
+    │   └── IntervalGameTests.swift
+    └── ScaleDrill/
+        └── ScaleGameTests.swift
 ```
 
 ---
