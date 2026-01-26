@@ -1,4 +1,4 @@
-# Jazz Harmony Quiz (Shed Pro)
+# Shed Pro
 
 A comprehensive iOS app for learning and practicing jazz harmony through interactive drills, ear training, and a structured curriculum system.
 
