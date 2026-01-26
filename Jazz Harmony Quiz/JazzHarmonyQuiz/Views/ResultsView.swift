@@ -121,19 +121,6 @@ struct ResultsView: View {
                                 .background(settings.primaryAccent(for: colorScheme))
                                 .cornerRadius(12)
                             }
-
-                            NavigationLink(destination: ScoreboardView().environmentObject(quizGame).environmentObject(settings)) {
-                                HStack {
-                                    Image(systemName: "trophy")
-                                    Text("View Scoreboard")
-                                }
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12) // Reduced from default padding
-                                .background(settings.infoColor(for: colorScheme))
-                                .cornerRadius(12)
-                            }
                         }
                         
                         // Encouragement Message

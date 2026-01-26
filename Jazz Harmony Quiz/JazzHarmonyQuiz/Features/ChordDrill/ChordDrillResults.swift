@@ -177,19 +177,6 @@ struct ChordDrillResults: View {
                 .background(Color.blue)
                 .cornerRadius(12)
             }
-            
-            NavigationLink(destination: ScoreboardView()) {
-                HStack {
-                    Image(systemName: "trophy")
-                    Text("View Scoreboard")
-                }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.orange)
-                .cornerRadius(12)
-            }
         }
     }
     

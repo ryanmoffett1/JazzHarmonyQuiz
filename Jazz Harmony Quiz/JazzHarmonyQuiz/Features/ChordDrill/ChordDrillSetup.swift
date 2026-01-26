@@ -42,24 +42,6 @@ struct ChordDrillSetup: View {
                         .cornerRadius(12)
                 }
                 .disabled(selectedQuestionTypes.isEmpty)
-                
-                // Leaderboard Button
-                NavigationLink(destination: ScoreboardView().environmentObject(quizGame)) {
-                    HStack {
-                        Image(systemName: "trophy.fill")
-                        Text("View Scoreboard")
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.orange)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.orange, lineWidth: 1.5)
-                    )
-                }
 
                 // Settings Button
                 Button(action: {

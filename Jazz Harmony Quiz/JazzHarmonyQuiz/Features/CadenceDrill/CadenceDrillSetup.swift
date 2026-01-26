@@ -55,9 +55,6 @@ struct CadenceDrillSetup: View {
                 // Start Button
                 startButton
 
-                // Leaderboard Button
-                leaderboardButton
-
                 // Settings Button
                 settingsButton
 
@@ -434,26 +431,6 @@ struct CadenceDrillSetup: View {
                 .padding()
                 .background(Color.purple)
                 .cornerRadius(12)
-        }
-    }
-    
-    @ViewBuilder
-    private var leaderboardButton: some View {
-        NavigationLink(destination: CadenceScoreboardView()) {
-            HStack {
-                Image(systemName: "trophy.fill")
-                Text("View Cadence Leaderboard")
-            }
-            .font(.subheadline)
-            .foregroundColor(.orange)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.orange.opacity(0.1))
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.orange, lineWidth: 1.5)
-            )
         }
     }
     

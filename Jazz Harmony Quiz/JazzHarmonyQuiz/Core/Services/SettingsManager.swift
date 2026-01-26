@@ -93,6 +93,12 @@ class SettingsManager: ObservableObject {
         }
     }
     
+    @Published var hapticFeedback: Bool {
+        didSet {
+            UserDefaults.standard.set(hapticFeedback, forKey: "hapticFeedback")
+        }
+    }
+    
     // Interval Ear Training settings
     @Published var autoPlayIntervals: Bool {
         didSet {
@@ -205,6 +211,7 @@ class SettingsManager: ObservableObject {
         self.showNoteNames = UserDefaults.standard.object(forKey: "showNoteNames") as? Bool ?? true
         self.autoPlay = UserDefaults.standard.object(forKey: "autoPlay") as? Bool ?? true
         self.showTimer = UserDefaults.standard.object(forKey: "showTimer") as? Bool ?? false
+        self.hapticFeedback = UserDefaults.standard.object(forKey: "hapticFeedback") as? Bool ?? true
         
         // Interval ear training settings
         self.autoPlayIntervals = UserDefaults.standard.object(forKey: "autoPlayIntervals") as? Bool ?? true
@@ -319,6 +326,7 @@ class SettingsManager: ObservableObject {
         showNoteNames = true
         autoPlay = true
         showTimer = false
+        hapticFeedback = true
         autoPlayIntervals = true
         defaultIntervalStyle = .harmonic
         intervalTempo = 120
