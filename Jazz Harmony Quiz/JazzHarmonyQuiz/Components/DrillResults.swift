@@ -160,9 +160,56 @@ struct ResultsXPChange: View {
     }
 }
 
-// MARK: - Results Rank Up Celebration
+// MARK: - Results Level Up Celebration
 
-/// Celebratory display when player ranks up
+/// Celebratory display when player levels up (simplified per DESIGN.md Section 9.3.1)
+struct ResultsLevelUpCelebration: View {
+    let previousLevel: Int
+    let newLevel: Int
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("Level Up!")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            HStack(spacing: 20) {
+                VStack {
+                    Text("Lv.\(previousLevel)")
+                        .font(.system(size: 32))
+                        .fontWeight(.bold)
+                        .foregroundColor(.secondary)
+                }
+                
+                Image(systemName: "arrow.right")
+                    .font(.title3)
+                    .foregroundColor(.green)
+                
+                VStack {
+                    Text("Lv.\(newLevel)")
+                        .font(.system(size: 40))
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("BrassAccent"))
+                }
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(
+            LinearGradient(
+                colors: [Color("BrassAccent").opacity(0.3), .orange.opacity(0.3)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .cornerRadius(16)
+    }
+}
+
+// MARK: - Legacy Rank Up Celebration (kept for compatibility)
+
+/// Legacy celebratory display when player ranks up
+/// Deprecated: Use ResultsLevelUpCelebration instead
 struct ResultsRankUpCelebration: View {
     let previousRank: Rank?
     let newRank: Rank
@@ -383,7 +430,15 @@ struct ResultsTimeDisplay: View {
     .padding()
 }
 
-#Preview("Rank Up") {
+#Preview("Level Up") {
+    ResultsLevelUpCelebration(
+        previousLevel: 4,
+        newLevel: 5
+    )
+    .padding()
+}
+
+#Preview("Rank Up (Legacy)") {
     ResultsRankUpCelebration(
         previousRank: Rank.allRanks[2],
         newRank: Rank.allRanks[3]

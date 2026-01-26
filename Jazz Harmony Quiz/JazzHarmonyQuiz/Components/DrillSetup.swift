@@ -195,12 +195,17 @@ struct SetupDifficultyPicker<Difficulty: Hashable & CaseIterable & RawRepresenta
 // MARK: - Setup Header View
 
 /// Standard header for drill setup screens with stats
+/// Updated per DESIGN.md Section 9.3.1 to use simple level instead of ranks
 struct SetupHeaderView: View {
     let title: String
     let subtitle: String?
     let currentRating: Int
-    let currentRank: Rank
     let currentStreak: Int
+    
+    // Computed level from XP
+    private var level: PlayerLevel {
+        PlayerLevel(xp: currentRating)
+    }
     
     var body: some View {
         VStack(spacing: 12) {
@@ -217,11 +222,13 @@ struct SetupHeaderView: View {
             
             // Stats row
             HStack(spacing: 20) {
-                // Rank
+                // Level (simplified from rank)
                 VStack(spacing: 2) {
-                    Text(currentRank.emoji)
+                    Text("Lv.\(level.level)")
                         .font(.title2)
-                    Text(currentRank.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("BrassAccent"))
+                    Text("Level")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -385,7 +392,6 @@ struct QuestionTypeToggleButton: View {
         title: "Chord Drill",
         subtitle: "Spell chord tones from symbols",
         currentRating: 1250,
-        currentRank: Rank.allRanks[4],
         currentStreak: 5
     )
     .padding()
