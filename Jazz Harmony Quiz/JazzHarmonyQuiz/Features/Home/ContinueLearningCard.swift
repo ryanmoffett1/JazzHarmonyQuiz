@@ -3,6 +3,14 @@ import SwiftUI
 /// Continue Learning Card - shows active or recommended curriculum module
 /// Per DESIGN.md Section 5.3.2
 struct ContinueLearningCard: View {
+    @State private var selectedDrill: DrillDestination?
+    
+    enum DrillDestination: Identifiable {
+        case chord, cadence, scale, interval, progression
+        
+        var id: Self { self }
+    }
+    
     var body: some View {
         if shouldShowCard {
             StandardCard {
@@ -25,10 +33,52 @@ struct ContinueLearningCard: View {
                     SecondaryButton(
                         title: isStarting ? "Start" : "Continue",
                         action: {
-                            // TODO: Navigate to module drill
+                            startModulePractice()
                         }
                     )
                 }
+            }
+            .navigationDestination(item: $selectedDrill) { drill in
+                drillView(for: drill)
+            }
+        }
+    }
+    
+    // MARK: - Navigation
+    
+    @ViewBuilder
+    private func drillView(for drill: DrillDestination) -> some View {
+        switch drill {
+        case .chord:
+            ChordDrillView()
+        case .cadence:
+            CadenceDrillView()
+        case .scale:
+            ScaleDrillView()
+        case .interval:
+            IntervalDrillView()
+        case .progression:
+            ProgressionDrillView()
+        }
+    }
+    
+    private func startModulePractice() {
+        // Set the module as active
+        if let module = targetModule {
+            CurriculumManager.shared.setActiveModule(module.id)
+            
+            // Navigate to appropriate drill based on module mode
+            switch module.mode {
+            case .chords:
+                selectedDrill = .chord
+            case .cadences:
+                selectedDrill = .cadence
+            case .scales:
+                selectedDrill = .scale
+            case .intervals:
+                selectedDrill = .interval
+            case .progressions:
+                selectedDrill = .progression
             }
         }
     }
@@ -36,13 +86,15 @@ struct ContinueLearningCard: View {
     // MARK: - Logic
     
     private var activeModule: CurriculumModule? {
-        // TODO: Connect to actual CurriculumManager
         CurriculumManager.shared.activeModule
     }
     
     private var recommendedModule: CurriculumModule? {
-        // TODO: Connect to actual CurriculumManager
         CurriculumManager.shared.recommendedNextModule
+    }
+    
+    private var targetModule: CurriculumModule? {
+        activeModule ?? recommendedModule
     }
     
     private var shouldShowCard: Bool {
@@ -71,12 +123,16 @@ struct ContinueLearningCard: View {
 }
 
 #Preview("Active Module") {
-    ContinueLearningCard()
-        .padding()
+    NavigationStack {
+        ContinueLearningCard()
+            .padding()
+    }
 }
 
 #Preview("Dark Mode") {
-    ContinueLearningCard()
-        .padding()
-        .preferredColorScheme(.dark)
+    NavigationStack {
+        ContinueLearningCard()
+            .padding()
+            .preferredColorScheme(.dark)
+    }
 }

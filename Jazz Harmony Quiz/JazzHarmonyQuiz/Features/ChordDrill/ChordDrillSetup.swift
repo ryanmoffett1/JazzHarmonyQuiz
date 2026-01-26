@@ -149,7 +149,8 @@ struct ChordDrillSetup: View {
     
     private func applyPreset(_ preset: ChordDrillPreset) {
         let config = ChordDrillConfig.fromPreset(preset)
-        numberOfQuestions = config.questionCount
+        // Note: We intentionally do NOT override numberOfQuestions
+        // This allows users to customize the question count before using a preset
         selectedDifficulty = config.difficulty
         selectedQuestionTypes = config.questionTypes
         selectedKeyDifficulty = config.keyDifficulty

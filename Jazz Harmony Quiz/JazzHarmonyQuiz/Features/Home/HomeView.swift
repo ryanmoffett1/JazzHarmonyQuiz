@@ -4,6 +4,7 @@ import SwiftUI
 /// Per DESIGN.md Section 5
 struct HomeView: View {
     @EnvironmentObject var settings: SettingsManager
+    @EnvironmentObject var quizGame: QuizGame
     @State private var showQuickPractice = false
     
     var body: some View {
@@ -46,6 +47,11 @@ struct HomeView: View {
             }
             .navigationTitle("Shed Pro")
             .navigationBarTitleDisplayMode(.large)
+            .sheet(isPresented: $showQuickPractice) {
+                QuickPracticeView()
+                    .environmentObject(settings)
+                    .environmentObject(quizGame)
+            }
         }
     }
     

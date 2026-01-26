@@ -86,7 +86,7 @@ enum CurriculumPathway: String, CaseIterable, Codable, Equatable {
 // MARK: - Practice Mode
 
 /// Which drill mode this module uses
-enum CurriculumPracticeMode: String, Codable, Equatable {
+enum CurriculumPracticeMode: String, Codable, Equatable, Hashable {
     case chords = "Chords"
     case scales = "Scales"
     case cadences = "Cadences"

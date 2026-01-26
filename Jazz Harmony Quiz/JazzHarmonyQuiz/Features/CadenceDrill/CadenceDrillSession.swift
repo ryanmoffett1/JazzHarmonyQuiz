@@ -17,6 +17,7 @@ struct CadenceDrillSession: View {
     @State private var isCorrect = false
     @State private var correctAnswerForFeedback: [[Note]] = []
     @State private var currentHintText: String? = nil
+    @State private var pendingAnswerToSubmit: [[Note]] = []  // Store the validated answer to submit
     
     // Ear training feedback state - capture before question advances
     @State private var feedbackCorrectCadenceType: CadenceType? = nil
@@ -704,6 +705,10 @@ struct CadenceDrillSession: View {
             let numChords = chordsToSpellCount
             answerToSubmit = Array(chordSpellings.prefix(numChords))
         }
+        
+        // Store the answer to submit later (when user presses Continue)
+        // This ensures we submit exactly what we validated
+        pendingAnswerToSubmit = answerToSubmit
 
         // Store correct answer for feedback
         correctAnswerForFeedback = question.expectedAnswers
@@ -768,25 +773,18 @@ struct CadenceDrillSession: View {
             return
         }
         
-        guard let question = cadenceGame.currentQuestion else { return }
-
-        // Prepare the answer based on mode
-        let answerToSubmit: [[Note]]
-        if isCommonTonesMode {
-            answerToSubmit = [Array(selectedNotes)]
-        } else {
-            // Only submit the number of chords we actually need to spell
-            let numChords = chordsToSpellCount
-            answerToSubmit = Array(chordSpellings.prefix(numChords))
-        }
+        // For non-ear-training modes, use the pending answer that was validated in submitAnswer()
+        // This ensures consistency between what we showed as "Correct" and what we record
+        guard !pendingAnswerToSubmit.isEmpty else { return }
         
-        // Submit the answer
-        cadenceGame.submitAnswer(answerToSubmit)
+        // Submit the validated answer
+        cadenceGame.submitAnswer(pendingAnswerToSubmit)
 
         // Reset state for next question
         currentChordIndex = 0
         chordSpellings = [[], [], [], [], []]  // Reset for up to 5 chords
         selectedNotes.removeAll()
+        pendingAnswerToSubmit = []  // Clear the pending answer
         currentHintText = nil
         userSelectedCadenceType = nil  // Clear ear training selection
         feedbackCorrectCadenceType = nil  // Clear ear training feedback

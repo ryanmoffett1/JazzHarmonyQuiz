@@ -11,9 +11,10 @@ struct CurriculumView: View {
     @State private var selectedPathway: CurriculumPathway = .harmonyFoundations
     @State private var showingModuleDetail: CurriculumModule?
     @State private var moduleToStart: CurriculumModule?
+    @State private var navigateToDrill: CurriculumPracticeMode?
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // Pathway Selector
                 PathwaySelector(selectedPathway: $selectedPathway)
@@ -56,6 +57,25 @@ struct CurriculumView: View {
                     moduleToStart = nil
                 }
             }
+            .navigationDestination(item: $navigateToDrill) { mode in
+                drillView(for: mode)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func drillView(for mode: CurriculumPracticeMode) -> some View {
+        switch mode {
+        case .chords:
+            ChordDrillView()
+        case .cadences:
+            CadenceDrillView()
+        case .scales:
+            ScaleDrillView()
+        case .intervals:
+            IntervalDrillView()
+        case .progressions:
+            ProgressionDrillView()
         }
     }
     
@@ -63,8 +83,8 @@ struct CurriculumView: View {
         // Set active module - drill views will read configuration from this
         curriculumManager.setActiveModule(module.id)
         
-        // Dismiss curriculum view - parent ContentView will handle navigation
-        dismiss()
+        // Navigate to the appropriate drill view
+        navigateToDrill = module.mode
     }
 }
 

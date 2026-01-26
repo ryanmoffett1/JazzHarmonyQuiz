@@ -46,6 +46,7 @@
 		946352262F26786500ABD609 /* ContinueLearningCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352152F26786500ABD609 /* ContinueLearningCard.swift */; };
 		946352272F26786500ABD609 /* DailyFocusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352162F26786500ABD609 /* DailyFocusCard.swift */; };
 		946352282F26786500ABD609 /* QuickPracticeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352182F26786500ABD609 /* QuickPracticeCard.swift */; };
+		94QKPRV12F30000000000001 /* QuickPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94QKPRV22F30000000000002 /* QuickPracticeView.swift */; };
 		9463523D2F26789900ABD609 /* ChordType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352312F26789900ABD609 /* ChordType.swift */; };
 		9463523E2F26789900ABD609 /* SpacedRepetitionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463523B2F26789900ABD609 /* SpacedRepetitionStore.swift */; };
 		9463523F2F26789900ABD609 /* PlayerLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352342F26789900ABD609 /* PlayerLevel.swift */; };
@@ -152,6 +153,7 @@
 		946352162F26786500ABD609 /* DailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyFocusCard.swift; sourceTree = "<group>"; };
 		946352172F26786500ABD609 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		946352182F26786500ABD609 /* QuickPracticeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeCard.swift; sourceTree = "<group>"; };
+		94QKPRV22F30000000000002 /* QuickPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeView.swift; sourceTree = "<group>"; };
 		946352192F26786500ABD609 /* QuickStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickStatsView.swift; sourceTree = "<group>"; };
 		9463521A2F26786500ABD609 /* WeeklyStreakView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyStreakView.swift; sourceTree = "<group>"; };
 		9463521C2F26786500ABD609 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
@@ -292,6 +294,7 @@
 				946352162F26786500ABD609 /* DailyFocusCard.swift */,
 				946352172F26786500ABD609 /* HomeView.swift */,
 				946352182F26786500ABD609 /* QuickPracticeCard.swift */,
+				94QKPRV22F30000000000002 /* QuickPracticeView.swift */,
 				946352192F26786500ABD609 /* QuickStatsView.swift */,
 				9463521A2F26786500ABD609 /* WeeklyStreakView.swift */,
 			);
@@ -758,6 +761,7 @@
 				946352262F26786500ABD609 /* ContinueLearningCard.swift in Sources */,
 				946352272F26786500ABD609 /* DailyFocusCard.swift in Sources */,
 				946352282F26786500ABD609 /* QuickPracticeCard.swift in Sources */,
+				94QKPRV12F30000000000001 /* QuickPracticeView.swift in Sources */,
 				9400DEB42F2515E100BDBF25 /* ProgressionDrillView.swift in Sources */,
 				9463523D2F26789900ABD609 /* ChordType.swift in Sources */,
 				9463523E2F26789900ABD609 /* SpacedRepetitionStore.swift in Sources */,
