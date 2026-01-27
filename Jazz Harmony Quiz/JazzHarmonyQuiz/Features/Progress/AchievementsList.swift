@@ -188,19 +188,19 @@ struct AchievementRow: View {
     private var colorForAchievement: Color {
         switch achievement.type {
         case .firstQuiz, .hundredChords, .fiveHundredChords, .thousandChords:
-            return .blue
+            return ShedTheme.Colors.brass
         case .firstPerfect, .perfectStreak3, .perfectStreak5:
-            return .yellow
+            return ShedTheme.Colors.warning
         case .accuracy90:
-            return .green
+            return ShedTheme.Colors.success
         case .streak3, .streak7, .streak14, .streak30:
-            return .orange
+            return ShedTheme.Colors.warning
         case .rankGigging, .rankBebop, .rankWizard, .rankMaster:
-            return .purple
+            return ShedTheme.Colors.brass
         case .masterTriads, .masterSevenths:
-            return .teal
+            return ShedTheme.Colors.brass
         case .allKeysPlayed:
-            return .pink
+            return ShedTheme.Colors.brass
         }
     }
 }

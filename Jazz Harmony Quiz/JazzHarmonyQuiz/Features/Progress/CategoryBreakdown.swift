@@ -95,19 +95,13 @@ struct CategoryRow: View {
     }
     
     private var colorForMode: Color {
-        switch mode {
-        case .chordDrill: return .blue
-        case .scaleDrill: return .green
-        case .intervalDrill: return .purple
-        case .cadenceDrill: return .orange
-        case .progressionDrill: return .pink
-        }
+        return ShedTheme.Colors.brass
     }
     
     private var accuracyColor: Color {
-        if accuracy >= 0.9 { return .green }
-        if accuracy >= 0.7 { return .orange }
-        return .red
+        if accuracy >= 0.9 { return ShedTheme.Colors.success }
+        if accuracy >= 0.7 { return ShedTheme.Colors.warning }
+        return ShedTheme.Colors.danger
     }
 }
 

@@ -21,7 +21,7 @@ struct StatsOverview: View {
                     title: "Total Questions",
                     value: "\(playerProfile.totalQuestionsAnswered)",
                     icon: "questionmark.circle",
-                    color: .blue
+                    color: ShedTheme.Colors.brass
                 )
                 
                 ProgressStatCard(
@@ -35,28 +35,28 @@ struct StatsOverview: View {
                     title: "Practice Time",
                     value: formatTime(playerProfile.totalPracticeTime),
                     icon: "clock",
-                    color: .purple
+                    color: ShedTheme.Colors.brass
                 )
                 
                 ProgressStatCard(
                     title: "Sessions",
                     value: "\(totalSessions)",
                     icon: "music.note.list",
-                    color: .green
+                    color: ShedTheme.Colors.success
                 )
                 
                 ProgressStatCard(
                     title: "Peak XP",
                     value: "\(playerProfile.peakRating)",
                     icon: "star",
-                    color: .orange
+                    color: ShedTheme.Colors.warning
                 )
                 
                 ProgressStatCard(
                     title: "Achievements",
                     value: "\(playerProfile.unlockedAchievements.count)",
                     icon: "trophy",
-                    color: .yellow
+                    color: ShedTheme.Colors.brass
                 )
             }
         }
@@ -68,9 +68,9 @@ struct StatsOverview: View {
     }
     
     private var accuracyColor: Color {
-        if playerProfile.overallAccuracy >= 0.9 { return .green }
-        if playerProfile.overallAccuracy >= 0.7 { return .orange }
-        return .red
+        if playerProfile.overallAccuracy >= 0.9 { return ShedTheme.Colors.success }
+        if playerProfile.overallAccuracy >= 0.7 { return ShedTheme.Colors.warning }
+        return ShedTheme.Colors.danger
     }
     
     private var totalSessions: Int {
