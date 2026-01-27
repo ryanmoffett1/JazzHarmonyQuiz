@@ -12,8 +12,8 @@ final class ChordTests: XCTestCase {
     }
     
     func testAllTonesCount() {
-        // Root, 2nd, 3rd, 4th, 5th, 6th, 7th, 9th, 11th, 13th, b9, #9, b3, b5, #5, b13, #13, b7
-        XCTAssertEqual(ChordTone.allTones.count, 18)
+        // Root, 2nd, 3rd, 4th, 5th, 6th, 7th, 9th, 11th, 13th, b9, #9, b3, b5, #5, b13, #13, b7, #11
+        XCTAssertEqual(ChordTone.allTones.count, 19)
     }
     
     func testAllTonesContainsEssentialTones() {
