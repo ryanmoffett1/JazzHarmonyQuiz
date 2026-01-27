@@ -221,11 +221,11 @@ struct ChordDrillView: View {
         // Apply locked config from module
         numberOfQuestions = config.totalQuestions
         
-        // Map chord type strings to symbols
-        if let chordTypes = config.chordTypes {
-            selectedChordSymbols = Set(chordTypes)
+        // Map chord type strings to actual symbols using the resolver
+        if let resolvedSymbols = config.resolvedChordSymbols {
+            selectedChordSymbols = resolvedSymbols
             // Set difficulty based on chord types
-            if chordTypes.contains(where: { $0.contains("7") || $0.contains("9") }) {
+            if resolvedSymbols.contains(where: { $0.contains("7") || $0.contains("9") }) {
                 selectedDifficulty = .intermediate
             } else {
                 selectedDifficulty = .beginner

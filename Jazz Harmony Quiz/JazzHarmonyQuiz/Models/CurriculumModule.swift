@@ -156,6 +156,50 @@ struct ModuleConfig: Codable, Equatable {
         self.totalQuestions = totalQuestions
         self.useAudio = useAudio
     }
+    
+    // MARK: - Symbol Mapping
+    
+    /// Maps readable chord names to actual ChordType symbols
+    /// Handles both readable names ("major", "minor") and actual symbols ("", "m")
+    var resolvedChordSymbols: Set<String>? {
+        guard let types = chordTypes, !types.isEmpty else { return nil }
+        
+        let nameToSymbol: [String: String] = [
+            // Triads
+            "major": "",
+            "minor": "m",
+            "dim": "dim",
+            "diminished": "dim",
+            "aug": "aug",
+            "augmented": "aug",
+            // 7th chords
+            "maj7": "maj7",
+            "m7": "m7",
+            "min7": "m7",
+            "7": "7",
+            "dom7": "7",
+            "m7b5": "m7b5",
+            "half-dim": "m7b5",
+            "dim7": "dim7",
+            // Extensions
+            "maj9": "maj9",
+            "m9": "m9",
+            "9": "9",
+            "11": "11",
+            "13": "13",
+            "maj13": "maj13",
+            "m11": "m11",
+            // Altered
+            "7b9": "7b9",
+            "7#9": "7#9",
+            "7b5": "7b5",
+            "7#5": "7#5",
+            "7#11": "7#11",
+            "7alt": "7alt"
+        ]
+        
+        return Set(types.map { nameToSymbol[$0.lowercased()] ?? $0 })
+    }
 }
 
 // MARK: - Completion Criteria

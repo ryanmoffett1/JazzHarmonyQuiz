@@ -4,6 +4,7 @@ import SwiftUI
 struct PracticeView: View {
     @EnvironmentObject var quizGame: QuizGame
     @EnvironmentObject var settings: SettingsManager
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         NavigationStack {
@@ -19,46 +20,49 @@ struct PracticeView: View {
                             title: "Chord Spelling",
                             subtitle: "Spell chord tones on the keyboard",
                             icon: "music.note.list",
-                            color: .blue
+                            accentColor: Color("BrassAccent")
                         )
                     }
                     
                     // Cadence Drill
                     NavigationLink {
                         CadenceDrillView()
+                            .environmentObject(CadenceGame())
                             .environmentObject(settings)
                     } label: {
                         DrillSelectionCard(
                             title: "Cadence Training",
                             subtitle: "Identify chord progressions by ear",
                             icon: "arrow.triangle.2.circlepath",
-                            color: .green
+                            accentColor: Color("BrassAccent")
                         )
                     }
                     
                     // Scale Drill
                     NavigationLink {
                         ScaleDrillView()
+                            .environmentObject(ScaleGame())
                             .environmentObject(settings)
                     } label: {
                         DrillSelectionCard(
                             title: "Scale Spelling",
                             subtitle: "Build scales from any root",
                             icon: "waveform.path.ecg",
-                            color: .purple
+                            accentColor: Color("BrassAccent")
                         )
                     }
                     
                     // Interval Drill
                     NavigationLink {
                         IntervalDrillView()
+                            .environmentObject(IntervalGame())
                             .environmentObject(settings)
                     } label: {
                         DrillSelectionCard(
                             title: "Interval Training",
                             subtitle: "Recognize intervals by ear",
                             icon: "tuningfork",
-                            color: .orange
+                            accentColor: Color("BrassAccent")
                         )
                     }
                 }
@@ -75,16 +79,19 @@ struct DrillSelectionCard: View {
     let title: String
     let subtitle: String
     let icon: String
-    let color: Color
+    let accentColor: Color
+    
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         HStack(spacing: 16) {
+            // Icon with brass accent background
             Image(systemName: icon)
-                .font(.title)
-                .foregroundColor(.white)
-                .frame(width: 60, height: 60)
-                .background(color)
-                .cornerRadius(12)
+                .font(.title2)
+                .foregroundColor(accentColor)
+                .frame(width: 50, height: 50)
+                .background(accentColor.opacity(colorScheme == .dark ? 0.2 : 0.15))
+                .cornerRadius(10)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
@@ -100,10 +107,15 @@ struct DrillSelectionCard: View {
             
             Image(systemName: "chevron.right")
                 .foregroundColor(.secondary)
+                .font(.subheadline)
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(uiColor: colorScheme == .dark ? .secondarySystemBackground : .systemBackground))
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+        )
     }
 }
 

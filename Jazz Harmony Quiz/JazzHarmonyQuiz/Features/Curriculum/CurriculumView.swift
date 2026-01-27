@@ -74,11 +74,14 @@ struct CurriculumView: View {
             ChordDrillView(launchMode: launchMode)
                 .environmentObject(QuizGame())
         case .cadences:
-            CadenceDrillView()
+            CadenceDrillView(launchMode: launchMode)
+                .environmentObject(CadenceGame())
         case .scales:
-            ScaleDrillView()
+            ScaleDrillView(launchMode: launchMode)
+                .environmentObject(ScaleGame())
         case .intervals:
-            IntervalDrillView()
+            IntervalDrillView(launchMode: launchMode)
+                .environmentObject(IntervalGame())
         case .progressions:
             ProgressionDrillView()
         }
