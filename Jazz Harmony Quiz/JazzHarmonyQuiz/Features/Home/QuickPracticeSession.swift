@@ -193,7 +193,7 @@ struct QuickPracticeSession: View {
             .onChange(of: selectedNotes) { oldValue, newValue in
                 // Play audio when notes are selected
                 if let newNote = newValue.subtracting(oldValue).first {
-                    AudioManager.shared.playNote(newNote.midiNumber)
+                    AudioManager.shared.playNote(UInt8(newNote.midiNumber))
                 }
             }
         }
@@ -406,7 +406,6 @@ struct QuickPracticeSession: View {
             if !item.correctNotes.isEmpty {
                 playCorrectAnswer(item.correctNotes)
             }
-        }
         }
         
         showingFeedback = true

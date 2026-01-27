@@ -14,26 +14,26 @@ struct ContinueLearningCard: View {
                 VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                     // Title
                     Text("CONTINUE LEARNING")
-                        .font(ShedTheme.Type.caption)
+                        .font(ShedTheme.Typography.caption)
                         .foregroundColor(ShedTheme.Colors.textSecondary)
                     
                     // Module info
                     VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                         Text(moduleTitle)
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         // Progress bar
-                        ShedProgressBar(progress: moduleProgress, showPercentage: true)
+                        ShedProgressBar(progress: moduleProgress, showLabel: true)
                     }
                     
                     // Continue button
                     ShedButton(
                         title: isStarting ? "Start" : "Continue",
-                        style: .secondary,
                         action: {
                             startModulePractice()
-                        }
+                        },
+                        style: .secondary
                     )
                 }
             }

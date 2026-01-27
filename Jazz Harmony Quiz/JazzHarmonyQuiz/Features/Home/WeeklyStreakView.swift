@@ -72,7 +72,7 @@ private struct DayCheckmark: View {
     var body: some View {
         VStack(spacing: ShedTheme.Space.xxs) {
             Text(day)
-                .font(ShedTheme.Type.caption)
+                .font(ShedTheme.Typography.caption)
                 .foregroundColor(isCompleted ? ShedTheme.Colors.brass : ShedTheme.Colors.textTertiary)
             
             ZStack {

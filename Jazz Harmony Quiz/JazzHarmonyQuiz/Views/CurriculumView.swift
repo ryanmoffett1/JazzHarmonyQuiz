@@ -104,7 +104,7 @@ struct PathwayButton: View {
                     .font(.title2)
                 
                 Text(pathway.rawValue)
-                    .font(ShedTheme.Type.caption)
+                    .font(ShedTheme.Typography.caption)
             }
             .frame(width: 100, height: 80)
             .foregroundColor(isSelected ? ShedTheme.Colors.bg : ShedTheme.Colors.textPrimary)
@@ -154,7 +154,7 @@ struct ModuleCard: View {
             VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                 HStack {
                     Text(module.title)
-                        .font(ShedTheme.Type.bodyBold)
+                        .font(ShedTheme.Typography.bodyBold)
                         .foregroundColor(ShedTheme.Colors.textPrimary)
                     
                     Spacer()
@@ -164,7 +164,7 @@ struct ModuleCard: View {
                 }
                 
                 Text(module.description)
-                    .font(ShedTheme.Type.body)
+                    .font(ShedTheme.Typography.body)
                     .foregroundColor(ShedTheme.Colors.textSecondary)
                     .lineLimit(2)
                 
@@ -173,24 +173,24 @@ struct ModuleCard: View {
                     VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
                         HStack {
                             Text("Progress:")
-                                .font(ShedTheme.Type.caption)
+                                .font(ShedTheme.Typography.caption)
                                 .foregroundColor(ShedTheme.Colors.textTertiary)
                             
                             Spacer()
                             
                             Text("\(Int(progressPercentage))%")
-                                .font(ShedTheme.Type.caption)
+                                .font(ShedTheme.Typography.caption)
                                 .foregroundColor(statusColor)
                         }
                         
-                        ShedProgressBar(progress: progressPercentage / 100, showPercentage: false, fillColor: statusColor)
+                        ShedProgressBar(progress: progressPercentage / 100, showLabel: false)
                     }
                 } else if isCompleted {
                     HStack(spacing: ShedTheme.Space.xxs) {
                         Image(systemName: "star.fill")
                         Text("Completed")
                     }
-                    .font(ShedTheme.Type.caption)
+                    .font(ShedTheme.Typography.caption)
                     .foregroundColor(ShedTheme.Colors.success)
                 }
             }
@@ -235,12 +235,12 @@ struct ModuleDetailView: View {
                             .font(.system(size: 80))
                         
                         Text(module.title)
-                            .font(ShedTheme.Type.title)
+                            .font(ShedTheme.Typography.title)
                             .multilineTextAlignment(.center)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         Text(module.pathway.rawValue)
-                            .font(ShedTheme.Type.body)
+                            .font(ShedTheme.Typography.body)
                             .foregroundColor(ShedTheme.Colors.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
@@ -251,11 +251,11 @@ struct ModuleDetailView: View {
                     // Description
                     VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                         Label("About This Module", systemImage: "info.circle")
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         Text(module.description)
-                            .font(ShedTheme.Type.body)
+                            .font(ShedTheme.Typography.body)
                             .foregroundColor(ShedTheme.Colors.textSecondary)
                     }
                     .padding(.horizontal, ShedTheme.Space.m)
@@ -263,7 +263,7 @@ struct ModuleDetailView: View {
                     // Completion Criteria
                     VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                         Label("Completion Requirements", systemImage: "checkmark.circle")
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
@@ -338,13 +338,13 @@ struct CriteriaRow: View {
                 .frame(width: 24)
             
             Text(text)
-                .font(ShedTheme.Type.body)
+                .font(ShedTheme.Typography.body)
                 .foregroundColor(ShedTheme.Colors.textSecondary)
             
             Spacer()
             
             Text(current)
-                .font(ShedTheme.Type.bodyBold)
+                .font(ShedTheme.Typography.bodyBold)
                 .foregroundColor(isMet ? ShedTheme.Colors.success : ShedTheme.Colors.warning)
             
             if isMet {

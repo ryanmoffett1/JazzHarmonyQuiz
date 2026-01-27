@@ -10,7 +10,7 @@ struct QuickPracticeCard: View {
             VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                 // Title
                 Text("QUICK PRACTICE")
-                    .font(ShedTheme.Type.caption)
+                    .font(ShedTheme.Typography.caption)
                     .foregroundColor(ShedTheme.Colors.brass)
                 
                 ShedDivider()
@@ -18,16 +18,16 @@ struct QuickPracticeCard: View {
                 // Content based on what's available
                 VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                     Text(contentTitle)
-                        .font(ShedTheme.Type.bodyBold)
+                        .font(ShedTheme.Typography.bodyBold)
                         .foregroundColor(ShedTheme.Colors.textPrimary)
                     
                     Text(contentSubtitle)
-                        .font(ShedTheme.Type.body)
+                        .font(ShedTheme.Typography.body)
                         .foregroundColor(ShedTheme.Colors.textSecondary)
                     
                     if let estimate = estimatedTime {
                         Text("Estimated: \(estimate)")
-                            .font(ShedTheme.Type.caption)
+                            .font(ShedTheme.Typography.caption)
                             .foregroundColor(ShedTheme.Colors.textTertiary)
                     }
                 }
@@ -35,10 +35,10 @@ struct QuickPracticeCard: View {
                 // Start Button
                 ShedButton(
                     title: "Start Session",
-                    style: .primary,
                     action: {
                         showQuickPractice = true
-                    }
+                    },
+                    style: .primary
                 )
             }
         }

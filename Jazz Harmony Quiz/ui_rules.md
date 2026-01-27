@@ -19,7 +19,7 @@ Modern, fully flat, practice-first UI. No texture, no metallic effects, no skeuo
   - vertical rhythm: `Space.s`/`Space.m`
 
 ## Typography rules
-- Use `ShedTheme.Type.*` only.
+- Use `ShedTheme.Typography.*` only.
 - Headlines are minimal. Body copy is short and calm.
 
 ## Components

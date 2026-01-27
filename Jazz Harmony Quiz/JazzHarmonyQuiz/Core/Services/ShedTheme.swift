@@ -34,13 +34,14 @@ enum ShedTheme {
     }
 
     // MARK: Typography
-    enum Type {
+    enum Typography {
         // Use system fonts for maximum iOS-native polish and performance.
         // You can later swap in a custom font by changing only these definitions.
         static let title = Font.system(size: 28, weight: .semibold, design: .rounded)
         static let heading = Font.system(size: 20, weight: .semibold, design: .rounded)
         static let body = Font.system(size: 16, weight: .regular, design: .rounded)
         static let bodyEmphasis = Font.system(size: 16, weight: .semibold, design: .rounded)
+        static let bodyBold = Font.system(size: 16, weight: .semibold, design: .rounded) // alias for bodyEmphasis
         static let caption = Font.system(size: 13, weight: .regular, design: .rounded)
         static let mono = Font.system(size: 13, weight: .medium, design: .monospaced)
     }
@@ -66,6 +67,7 @@ enum ShedTheme {
     // MARK: Stroke widths
     enum Stroke {
         static let hairline: CGFloat = 1
+        static let thin: CGFloat = 1 // alias for hairline
         static let strong: CGFloat = 2
     }
 

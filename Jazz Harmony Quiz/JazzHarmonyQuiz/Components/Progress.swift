@@ -21,7 +21,7 @@ struct SessionProgress: View {
     var body: some View {
         HStack(spacing: ShedTheme.Space.xs) {
             Text("Question \(current) of \(total)")
-                .font(ShedTheme.Type.caption)
+                .font(ShedTheme.Typography.caption)
                 .foregroundColor(ShedTheme.Colors.textSecondary)
             
             ShedProgressBar(progress: Double(current) / Double(total), height: 4)

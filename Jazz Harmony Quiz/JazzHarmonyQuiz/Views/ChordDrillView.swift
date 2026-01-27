@@ -145,7 +145,7 @@ struct QuizSetupView: View {
                 // Header with rank and streak
                 VStack(spacing: ShedTheme.Space.xs) {
                     Text("Chord Drill Setup")
-                        .font(ShedTheme.Type.title)
+                        .font(ShedTheme.Typography.title)
                         .foregroundColor(ShedTheme.Colors.textPrimary)
                     
                     // Stats row
@@ -154,9 +154,9 @@ struct QuizSetupView: View {
                         HStack(spacing: ShedTheme.Space.xxs) {
                             Text(playerStats.currentRank.emoji)
                             Text("\(playerStats.currentRating)")
-                                .font(ShedTheme.Type.bodyBold)
+                                .font(ShedTheme.Typography.bodyBold)
                         }
-                        .font(ShedTheme.Type.body)
+                        .font(ShedTheme.Typography.body)
                         .foregroundColor(ShedTheme.Colors.brass)
                         
                         // Streak
@@ -164,9 +164,9 @@ struct QuizSetupView: View {
                             HStack(spacing: ShedTheme.Space.xxs) {
                                 Text("🔥")
                                 Text("\(playerStats.currentStreak)")
-                                    .font(ShedTheme.Type.bodyBold)
+                                    .font(ShedTheme.Typography.bodyBold)
                             }
-                            .font(ShedTheme.Type.body)
+                            .font(ShedTheme.Typography.body)
                             .foregroundColor(ShedTheme.Colors.warning)
                         }
                     }
@@ -176,7 +176,7 @@ struct QuizSetupView: View {
                     // Number of Questions
                     VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                         Text("Number of Questions")
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         Picker("Questions", selection: $numberOfQuestions) {
@@ -190,7 +190,7 @@ struct QuizSetupView: View {
                     // Difficulty Level
                     VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                         Text("Chord Difficulty")
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         Picker("Difficulty", selection: $selectedDifficulty) {
@@ -204,7 +204,7 @@ struct QuizSetupView: View {
                     // Key Difficulty
                     VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                         Text("Key Difficulty")
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         Picker("Keys", selection: $selectedKeyDifficulty) {
@@ -215,14 +215,14 @@ struct QuizSetupView: View {
                         .pickerStyle(SegmentedPickerStyle())
                         
                         Text(selectedKeyDifficulty.description)
-                            .font(ShedTheme.Type.caption)
+                            .font(ShedTheme.Typography.caption)
                             .foregroundColor(ShedTheme.Colors.textTertiary)
                     }
                     
                     // Question Types
                     VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                         Text("Question Types")
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         ForEach(QuestionType.allCases, id: \.self) { questionType in
@@ -244,10 +244,10 @@ struct QuizSetupView: View {
 
                                         VStack(alignment: .leading) {
                                             Text(questionType.rawValue)
-                                                .font(ShedTheme.Type.body)
+                                                .font(ShedTheme.Typography.body)
                                                 .foregroundColor(ShedTheme.Colors.textPrimary)
                                             Text(questionType.description)
-                                                .font(ShedTheme.Type.caption)
+                                                .font(ShedTheme.Typography.caption)
                                                 .foregroundColor(ShedTheme.Colors.textSecondary)
                                         }
 
@@ -263,11 +263,11 @@ struct QuizSetupView: View {
                     VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                         HStack {
                             Text("Chord Types")
-                                .font(ShedTheme.Type.bodyBold)
+                                .font(ShedTheme.Typography.bodyBold)
                                 .foregroundColor(ShedTheme.Colors.textPrimary)
                             Spacer()
                             Text(selectedChordSymbols.isEmpty ? "All" : "\(selectedChordSymbols.count) selected")
-                                .font(ShedTheme.Type.caption)
+                                .font(ShedTheme.Typography.caption)
                                 .foregroundColor(ShedTheme.Colors.textTertiary)
                         }
                         
@@ -279,7 +279,7 @@ struct QuizSetupView: View {
                                 Spacer()
                                 Image(systemName: showChordTypeFilter ? "chevron.up" : "chevron.down")
                             }
-                            .font(ShedTheme.Type.body)
+                            .font(ShedTheme.Typography.body)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                             .padding(ShedTheme.Space.m)
                             .background(ShedTheme.Colors.surface)
@@ -307,7 +307,7 @@ struct QuizSetupView: View {
                         Image(systemName: "trophy.fill")
                         Text("View Scoreboard")
                     }
-                    .font(ShedTheme.Type.body)
+                    .font(ShedTheme.Typography.body)
                     .foregroundColor(ShedTheme.Colors.brass)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, ShedTheme.Space.s)
@@ -327,7 +327,7 @@ struct QuizSetupView: View {
                         Image(systemName: "gear")
                         Text("Settings")
                     }
-                    .font(ShedTheme.Type.body)
+                    .font(ShedTheme.Typography.body)
                     .foregroundColor(ShedTheme.Colors.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, ShedTheme.Space.s)
@@ -373,7 +373,7 @@ struct ChordTypeFilterView: View {
                 Button("Select All") {
                     selectedSymbols = Set(database.getAllChordSymbols())
                 }
-                .font(ShedTheme.Type.caption)
+                .font(ShedTheme.Typography.caption)
                 .foregroundColor(ShedTheme.Colors.brass)
                 
                 Spacer()
@@ -381,7 +381,7 @@ struct ChordTypeFilterView: View {
                 Button("Clear All") {
                     selectedSymbols.removeAll()
                 }
-                .font(ShedTheme.Type.caption)
+                .font(ShedTheme.Typography.caption)
                 .foregroundColor(ShedTheme.Colors.danger)
             }
             
@@ -389,7 +389,7 @@ struct ChordTypeFilterView: View {
             ForEach(JazzChordDatabase.ChordCategory.allCases, id: \.self) { category in
                 VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                     Text(category.rawValue)
-                        .font(ShedTheme.Type.caption)
+                        .font(ShedTheme.Typography.caption)
                         .foregroundColor(ShedTheme.Colors.textSecondary)
                     
                     FlowLayout(spacing: ShedTheme.Space.xs) {
@@ -435,7 +435,7 @@ struct ChordTypeChip: View {
     var body: some View {
         Button(action: onTap) {
             Text(displayName)
-                .font(ShedTheme.Type.caption)
+                .font(ShedTheme.Typography.caption)
                 .padding(.horizontal, ShedTheme.Space.s)
                 .padding(.vertical, ShedTheme.Space.xs)
                 .background(isSelected ? ShedTheme.Colors.brass : ShedTheme.Colors.surface)
@@ -484,11 +484,11 @@ struct ActiveQuizView: View {
                             .foregroundColor(ShedTheme.Colors.brass)
 
                         Text("Listen to the chord")
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textSecondary)
 
                         Text("Identify the chord quality")
-                            .font(ShedTheme.Type.caption)
+                            .font(ShedTheme.Typography.caption)
                             .foregroundColor(ShedTheme.Colors.textTertiary)
                     }
                     .padding(ShedTheme.Space.m)
@@ -503,7 +503,7 @@ struct ActiveQuizView: View {
                             .foregroundColor(ShedTheme.Colors.brass)
 
                         Text("Listen and spell the chord")
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textSecondary)
                         
                         // Show the root note so user can identify quality and spell from there
@@ -516,7 +516,7 @@ struct ActiveQuizView: View {
                             .cornerRadius(ShedTheme.Radius.m)
 
                         Text("Identify the quality and select all chord tones")
-                            .font(ShedTheme.Type.caption)
+                            .font(ShedTheme.Typography.caption)
                             .foregroundColor(ShedTheme.Colors.textTertiary)
                     }
                     .padding(ShedTheme.Space.m)
@@ -534,14 +534,14 @@ struct ActiveQuizView: View {
                             .cornerRadius(ShedTheme.Radius.s)
 
                         Text(questionPrompt(for: question))
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textSecondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, ShedTheme.Space.m)
 
                         if let targetTone = question.targetTone {
                             Text("Find the: \(targetTone.name)")
-                                .font(ShedTheme.Type.body)
+                                .font(ShedTheme.Typography.body)
                                 .foregroundColor(ShedTheme.Colors.textTertiary)
                         }
                     }
@@ -569,7 +569,7 @@ struct ActiveQuizView: View {
                                 Image(systemName: "speaker.wave.2.fill")
                                 Text("Play Chord")
                             }
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.bg)
                             .padding(ShedTheme.Space.m)
                             .frame(maxWidth: .infinity)
@@ -580,11 +580,11 @@ struct ActiveQuizView: View {
                         
                         if question.questionType == .auralQuality {
                             Text("Select the chord quality")
-                                .font(ShedTheme.Type.caption)
+                                .font(ShedTheme.Typography.caption)
                                 .foregroundColor(ShedTheme.Colors.textTertiary)
                         } else {
                             Text("Select the notes you hear")
-                                .font(ShedTheme.Type.caption)
+                                .font(ShedTheme.Typography.caption)
                                 .foregroundColor(ShedTheme.Colors.textTertiary)
                         }
                     }

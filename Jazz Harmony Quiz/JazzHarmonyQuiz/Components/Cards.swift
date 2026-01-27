@@ -43,10 +43,10 @@ struct HighlightedCard<Content: View>: View {
     StandardCard {
         VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
             Text("Standard Card")
-                .font(ShedTheme.Type.heading)
+                .font(ShedTheme.Typography.heading)
                 .foregroundColor(ShedTheme.Colors.textPrimary)
             Text("This is a standard card with some content inside.")
-                .font(ShedTheme.Type.body)
+                .font(ShedTheme.Typography.body)
                 .foregroundColor(ShedTheme.Colors.textSecondary)
         }
     }
@@ -58,10 +58,10 @@ struct HighlightedCard<Content: View>: View {
     HighlightedCard {
         VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
             Text("Quick Practice")
-                .font(ShedTheme.Type.heading)
+                .font(ShedTheme.Typography.heading)
                 .foregroundColor(ShedTheme.Colors.textPrimary)
             Text("Start practicing right away with a smart mix of topics.")
-                .font(ShedTheme.Type.body)
+                .font(ShedTheme.Typography.body)
                 .foregroundColor(ShedTheme.Colors.textSecondary)
         }
     }
@@ -74,10 +74,10 @@ struct HighlightedCard<Content: View>: View {
         StandardCard {
             VStack(alignment: .leading) {
                 Text("Continue Learning")
-                    .font(ShedTheme.Type.heading)
+                    .font(ShedTheme.Typography.heading)
                     .foregroundColor(ShedTheme.Colors.textPrimary)
                 Text("Module 5: ii-V-I Progressions")
-                    .font(ShedTheme.Type.body)
+                    .font(ShedTheme.Typography.body)
                     .foregroundColor(ShedTheme.Colors.textSecondary)
             }
         }
@@ -85,10 +85,10 @@ struct HighlightedCard<Content: View>: View {
         HighlightedCard {
             VStack(alignment: .leading) {
                 Text("Quick Practice")
-                    .font(ShedTheme.Type.heading)
+                    .font(ShedTheme.Typography.heading)
                     .foregroundColor(ShedTheme.Colors.textPrimary)
                 Text("15 min • Mixed Topics")
-                    .font(ShedTheme.Type.body)
+                    .font(ShedTheme.Typography.body)
                     .foregroundColor(ShedTheme.Colors.textSecondary)
             }
         }

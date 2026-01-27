@@ -38,9 +38,9 @@ struct ShedButton: View {
         
         var font: Font {
             switch self {
-            case .small: return ShedTheme.Type.caption
-            case .medium: return ShedTheme.Type.bodyEmphasis
-            case .large: return ShedTheme.Type.heading
+            case .small: return ShedTheme.Typography.caption
+            case .medium: return ShedTheme.Typography.bodyEmphasis
+            case .large: return ShedTheme.Typography.heading
             }
         }
     }
@@ -151,12 +151,12 @@ struct ShedRow<Leading: View, Trailing: View>: View {
             
             VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
                 Text(title)
-                    .font(ShedTheme.Type.bodyEmphasis)
+                    .font(ShedTheme.Typography.bodyEmphasis)
                     .foregroundColor(ShedTheme.Colors.textPrimary)
                 
                 if let subtitle = subtitle {
                     Text(subtitle)
-                        .font(ShedTheme.Type.caption)
+                        .font(ShedTheme.Typography.caption)
                         .foregroundColor(ShedTheme.Colors.textSecondary)
                 }
             }
@@ -198,6 +198,17 @@ extension ShedRow where Leading == EmptyView {
     }
 }
 
+// Simple label/value convenience for stats
+extension ShedRow where Leading == EmptyView, Trailing == Text {
+    init(label: String, value: String) {
+        self.init(title: label, subtitle: nil, leading: { EmptyView() }, trailing: {
+            Text(value)
+                .font(ShedTheme.Typography.body)
+                .foregroundColor(ShedTheme.Colors.textSecondary)
+        }, action: nil)
+    }
+}
+
 // MARK: - ShedHeader
 
 /// Section header component
@@ -208,13 +219,13 @@ struct ShedHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
             Text(title.uppercased())
-                .font(ShedTheme.Type.caption)
+                .font(ShedTheme.Typography.caption)
                 .foregroundColor(ShedTheme.Colors.textTertiary)
                 .tracking(1.2)
             
             if let subtitle = subtitle {
                 Text(subtitle)
-                    .font(ShedTheme.Type.body)
+                    .font(ShedTheme.Typography.body)
                     .foregroundColor(ShedTheme.Colors.textSecondary)
             }
         }
@@ -259,7 +270,7 @@ struct ShedProgressBar: View {
             
             if showLabel {
                 Text("\(Int(progress * 100))%")
-                    .font(ShedTheme.Type.caption)
+                    .font(ShedTheme.Typography.caption)
                     .foregroundColor(ShedTheme.Colors.textTertiary)
             }
         }
@@ -322,12 +333,12 @@ struct ShedFeedback: View {
             
             VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
                 Text(message ?? (isCorrect ? "Correct" : "Incorrect"))
-                    .font(ShedTheme.Type.bodyEmphasis)
+                    .font(ShedTheme.Typography.bodyEmphasis)
                     .foregroundColor(isCorrect ? ShedTheme.Colors.success : ShedTheme.Colors.danger)
                 
                 if let detail = detail {
                     Text(detail)
-                        .font(ShedTheme.Type.caption)
+                        .font(ShedTheme.Typography.caption)
                         .foregroundColor(ShedTheme.Colors.textSecondary)
                 }
             }
@@ -358,7 +369,7 @@ struct ShedChip: View {
     
     var body: some View {
         Text(text)
-            .font(ShedTheme.Type.bodyEmphasis)
+            .font(ShedTheme.Typography.bodyEmphasis)
             .foregroundColor(foregroundColor)
             .padding(.horizontal, ShedTheme.Space.s)
             .padding(.vertical, ShedTheme.Space.xs)

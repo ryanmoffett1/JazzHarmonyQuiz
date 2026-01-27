@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		94SHEDTH22F31000000000002 /* ShedTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94SHEDTH12F31000000000001 /* ShedTheme.swift */; };
+		94SHEDCP22F31000000000002 /* ShedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94SHEDCP12F31000000000001 /* ShedComponents.swift */; };
 		5A634891227C479190B2BAC9 /* PracticeDueCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */; };
 		9400DEB42F2515E100BDBF25 /* ProgressionDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB32F2515E100BDBF25 /* ProgressionDrillView.swift */; };
 		9400DEB82F2516A900BDBF25 /* ProgressionProgression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB72F2516A900BDBF25 /* ProgressionProgression.swift */; };
@@ -117,6 +119,8 @@
 
 /* Begin PBXFileReference section */
 		0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeDueCard.swift; sourceTree = "<group>"; };
+		94SHEDTH12F31000000000001 /* ShedTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShedTheme.swift; sourceTree = "<group>"; };
+		94SHEDCP12F31000000000001 /* ShedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShedComponents.swift; sourceTree = "<group>"; };
 		9400DEB32F2515E100BDBF25 /* ProgressionDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionDrillView.swift; sourceTree = "<group>"; };
 		9400DEB62F2516A900BDBF25 /* ProgressionGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionGame.swift; sourceTree = "<group>"; };
 		9400DEB72F2516A900BDBF25 /* ProgressionProgression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionProgression.swift; sourceTree = "<group>"; };
@@ -272,6 +276,7 @@
 				946352062F26727A00ABD609 /* FlowLayout.swift */,
 				946352072F26727A00ABD609 /* PianoKeyboard.swift */,
 				946352082F26727A00ABD609 /* Progress.swift */,
+				94SHEDCP12F31000000000001 /* ShedComponents.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -369,6 +374,7 @@
 				946352382F26789900ABD609 /* CurriculumManager.swift */,
 				946352392F26789900ABD609 /* QuickPracticeGenerator.swift */,
 				9463523A2F26789900ABD609 /* SettingsManager.swift */,
+				94SHEDTH12F31000000000001 /* ShedTheme.swift */,
 				9463523B2F26789900ABD609 /* SpacedRepetitionStore.swift */,
 			);
 			path = Services;
@@ -726,6 +732,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94SHEDTH22F31000000000002 /* ShedTheme.swift in Sources */,
+				94SHEDCP22F31000000000002 /* ShedComponents.swift in Sources */,
 				9463520A2F26727A00ABD609 /* Buttons.swift in Sources */,
 				9463520B2F26727A00ABD609 /* FlowLayout.swift in Sources */,
 				9463520C2F26727A00ABD609 /* PianoKeyboard.swift in Sources */,

@@ -86,11 +86,11 @@ struct DrillSelectionCard: View {
             
             VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
                 Text(title)
-                    .font(ShedTheme.Type.bodyBold)
+                    .font(ShedTheme.Typography.bodyBold)
                     .foregroundColor(ShedTheme.Colors.textPrimary)
                 
                 Text(subtitle)
-                    .font(ShedTheme.Type.body)
+                    .font(ShedTheme.Typography.body)
                     .foregroundColor(ShedTheme.Colors.textSecondary)
             }
             

@@ -66,7 +66,7 @@ struct HomeView: View {
             HStack(spacing: ShedTheme.Space.xxs) {
                 Text("🔥")
                 Text("\(streakDays) days")
-                    .font(ShedTheme.Type.caption)
+                    .font(ShedTheme.Typography.caption)
             }
             .foregroundColor(streakDays >= 7 ? ShedTheme.Colors.brass : ShedTheme.Colors.textSecondary)
         }

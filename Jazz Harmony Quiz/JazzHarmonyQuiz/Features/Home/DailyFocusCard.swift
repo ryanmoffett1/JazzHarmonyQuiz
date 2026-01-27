@@ -9,27 +9,27 @@ struct DailyFocusCard: View {
                 VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                     // Title
                     Text("DAILY FOCUS")
-                        .font(ShedTheme.Type.caption)
+                        .font(ShedTheme.Typography.caption)
                         .foregroundColor(ShedTheme.Colors.textSecondary)
                     
                     // Weak area info
                     VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                         Text("Weak area: \(weakArea.name)")
-                            .font(ShedTheme.Type.bodyBold)
+                            .font(ShedTheme.Typography.bodyBold)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         Text("Last accuracy: \(Int(weakArea.accuracy * 100))%")
-                            .font(ShedTheme.Type.body)
+                            .font(ShedTheme.Typography.body)
                             .foregroundColor(ShedTheme.Colors.textSecondary)
                     }
                     
                     // Practice button
                     ShedButton(
                         title: "Practice \(weakArea.shortName)",
-                        style: .secondary,
                         action: {
                             // TODO: Navigate to focused drill for this weak area
-                        }
+                        },
+                        style: .secondary
                     )
                 }
             }

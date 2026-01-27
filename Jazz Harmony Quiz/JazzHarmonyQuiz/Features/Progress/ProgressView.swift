@@ -50,11 +50,11 @@ struct LevelOverview: View {
                 HStack {
                     VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
                         Text("Level \(level.level)")
-                            .font(ShedTheme.Type.title)
+                            .font(ShedTheme.Typography.title)
                             .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         Text("\(playerProfile.currentRating) XP")
-                            .font(ShedTheme.Type.body)
+                            .font(ShedTheme.Typography.body)
                             .foregroundColor(ShedTheme.Colors.textSecondary)
                     }
                     
@@ -66,14 +66,14 @@ struct LevelOverview: View {
                             Image(systemName: "flame.fill")
                                 .foregroundColor(ShedTheme.Colors.warning)
                             Text("\(playerProfile.currentStreak) day streak")
-                                .font(ShedTheme.Type.bodyBold)
+                                .font(ShedTheme.Typography.bodyBold)
                         }
-                        .font(ShedTheme.Type.body)
+                        .font(ShedTheme.Typography.body)
                         .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         if playerProfile.longestStreak > playerProfile.currentStreak {
                             Text("Best: \(playerProfile.longestStreak) days")
-                                .font(ShedTheme.Type.caption)
+                                .font(ShedTheme.Typography.caption)
                                 .foregroundColor(ShedTheme.Colors.textTertiary)
                         }
                     }
@@ -83,17 +83,17 @@ struct LevelOverview: View {
                 VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
                     HStack {
                         Text("Progress to Level \(level.level + 1)")
-                            .font(ShedTheme.Type.caption)
+                            .font(ShedTheme.Typography.caption)
                             .foregroundColor(ShedTheme.Colors.textSecondary)
                         
                         Spacer()
                         
                         Text("\(level.xpUntilNextLevel) XP needed")
-                            .font(ShedTheme.Type.caption)
+                            .font(ShedTheme.Typography.caption)
                             .foregroundColor(ShedTheme.Colors.textTertiary)
                     }
                     
-                    ShedProgressBar(progress: level.progressToNextLevel, showPercentage: false)
+                    ShedProgressBar(progress: level.progressToNextLevel, showLabel: false)
                 }
             }
         }

@@ -21,7 +21,7 @@ struct SettingsView: View {
                             .pickerStyle(.segmented)
                             
                             Text("Choose how the app appears. System will follow your device settings.")
-                                .font(ShedTheme.Type.caption)
+                                .font(ShedTheme.Typography.caption)
                                 .foregroundColor(ShedTheme.Colors.textTertiary)
                         }
                     }
@@ -51,11 +51,11 @@ struct SettingsView: View {
                                 VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                                     HStack {
                                         Text("Volume")
-                                            .font(ShedTheme.Type.body)
+                                            .font(ShedTheme.Typography.body)
                                             .foregroundColor(ShedTheme.Colors.textPrimary)
                                         Spacer()
                                         Text("\(Int(settings.audioVolume * 100))%")
-                                            .font(ShedTheme.Type.body)
+                                            .font(ShedTheme.Typography.body)
                                             .foregroundColor(ShedTheme.Colors.textSecondary)
                                     }
                                     Slider(value: $settings.audioVolume, in: 0...1, step: 0.1)
@@ -70,12 +70,12 @@ struct SettingsView: View {
                                         Note(name: "B", midiNumber: 71, isSharp: false)
                                     ], duration: 1.5)
                                 }
-                                .font(ShedTheme.Type.body)
+                                .font(ShedTheme.Typography.body)
                                 .foregroundColor(ShedTheme.Colors.brass)
                             }
                             
                             Text("Hear the chord played back when you answer correctly. Great for ear training!")
-                                .font(ShedTheme.Type.caption)
+                                .font(ShedTheme.Typography.caption)
                                 .foregroundColor(ShedTheme.Colors.textTertiary)
                         }
                     }
@@ -101,11 +101,11 @@ struct SettingsView: View {
                             VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                                 HStack {
                                     Text("Tempo")
-                                        .font(ShedTheme.Type.body)
+                                        .font(ShedTheme.Typography.body)
                                         .foregroundColor(ShedTheme.Colors.textPrimary)
                                     Spacer()
                                     Text("\(Int(settings.intervalTempo)) BPM")
-                                        .font(ShedTheme.Type.body)
+                                        .font(ShedTheme.Typography.body)
                                         .foregroundColor(ShedTheme.Colors.textSecondary)
                                 }
                                 Slider(value: $settings.intervalTempo, in: 60...180, step: 10)
@@ -123,11 +123,11 @@ struct SettingsView: View {
                                     tempo: settings.intervalTempo
                                 )
                             }
-                            .font(ShedTheme.Type.body)
+                            .font(ShedTheme.Typography.body)
                             .foregroundColor(ShedTheme.Colors.brass)
                             
                             Text("Configure how intervals are played during ear training exercises. Harmonic plays both notes together, melodic plays them in sequence.")
-                                .font(ShedTheme.Type.caption)
+                                .font(ShedTheme.Typography.caption)
                                 .foregroundColor(ShedTheme.Colors.textTertiary)
                         }
                     }
@@ -153,11 +153,11 @@ struct SettingsView: View {
                             VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                                 HStack {
                                     Text("Tempo")
-                                        .font(ShedTheme.Type.body)
+                                        .font(ShedTheme.Typography.body)
                                         .foregroundColor(ShedTheme.Colors.textPrimary)
                                     Spacer()
                                     Text("\(Int(settings.chordTempo)) BPM")
-                                        .font(ShedTheme.Type.body)
+                                        .font(ShedTheme.Typography.body)
                                         .foregroundColor(ShedTheme.Colors.textSecondary)
                                 }
                                 Slider(value: $settings.chordTempo, in: 60...180, step: 10)
@@ -178,11 +178,11 @@ struct SettingsView: View {
                                     tempo: settings.chordTempo
                                 )
                             }
-                            .font(ShedTheme.Type.body)
+                            .font(ShedTheme.Typography.body)
                             .foregroundColor(ShedTheme.Colors.brass)
                             
                             Text("Configure how chords are played during ear training exercises. Choose from block chords, arpeggios, or guide tones only.")
-                                .font(ShedTheme.Type.caption)
+                                .font(ShedTheme.Typography.caption)
                                 .foregroundColor(ShedTheme.Colors.textTertiary)
                         }
                     }
