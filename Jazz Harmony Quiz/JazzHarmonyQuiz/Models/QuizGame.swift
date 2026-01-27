@@ -647,9 +647,9 @@ class QuizGame: ObservableObject {
     
     private func finishQuiz() {
         isQuizActive = false
-        isQuizCompleted = true
         
-        // Calculate final results
+        // Calculate final results BEFORE setting isQuizCompleted
+        // This ensures currentResult is populated when the view transitions
         var correctAnswers = 0
         var questionResults: [UUID: Bool] = [:]
         
@@ -774,6 +774,9 @@ class QuizGame: ObservableObject {
         
         // Save mode-specific stats
         saveStatsToUserDefaults()
+        
+        // Set completion LAST to trigger view transition AFTER currentResult is ready
+        isQuizCompleted = true
     }
     
     /// Calculate rating change based on performance

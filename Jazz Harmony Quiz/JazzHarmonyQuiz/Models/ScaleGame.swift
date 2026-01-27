@@ -348,8 +348,10 @@ class ScaleGame: ObservableObject {
     
     private func finishQuiz() {
         isQuizActive = false
-        isQuizCompleted = true
         
+        // NOTE: isQuizCompleted is set at the END of this method
+        // to ensure currentResult is populated before the view transitions
+
         // Calculate final time if not already done
         if let startTime = questionStartTime {
             totalQuizTime += Date().timeIntervalSince(startTime)
@@ -446,6 +448,9 @@ class ScaleGame: ObservableObject {
         
         // Spaced Repetition: Record results for each question
         recordSpacedRepetitionResults()
+        
+        // Set completion LAST to trigger view transition AFTER currentResult is ready
+        isQuizCompleted = true
     }
     
     private func calculateCorrectAnswers() -> Int {

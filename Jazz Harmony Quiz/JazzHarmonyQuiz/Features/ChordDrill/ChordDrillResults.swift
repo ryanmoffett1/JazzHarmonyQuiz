@@ -182,7 +182,7 @@ struct ChordDrillResults: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue)
+                .background(Color("BrassAccent"))
                 .cornerRadius(12)
             }
         }

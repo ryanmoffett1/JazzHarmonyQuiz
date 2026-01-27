@@ -148,7 +148,7 @@ struct IntervalDrillSetup: View {
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .padding()
-            .background(selectedQuestionTypes.isEmpty ? Color.gray : Color.green)
+            .background(selectedQuestionTypes.isEmpty ? Color.gray : Color("BrassAccent"))
             .cornerRadius(12)
         }
         .disabled(selectedQuestionTypes.isEmpty)

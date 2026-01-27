@@ -267,7 +267,7 @@ struct CadenceDrillResults: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.purple)
+                    .background(Color("BrassAccent"))
                     .cornerRadius(12)
                 }
             }
@@ -296,7 +296,7 @@ struct CadenceDrillResults: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue)
+                .background(Color("BrassAccent"))
                 .cornerRadius(12)
             }
         }

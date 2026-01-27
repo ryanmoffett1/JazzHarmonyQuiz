@@ -191,9 +191,9 @@ class CadenceGame: ObservableObject {
 
     private func finishQuiz() {
         isQuizActive = false
-        isQuizCompleted = true
 
-        // Calculate final results
+        // Calculate final results BEFORE setting isQuizCompleted
+        // This ensures currentResult is populated when the view transitions
         var correctAnswers = 0
         var questionResults: [UUID: Bool] = [:]
 
@@ -270,6 +270,9 @@ class CadenceGame: ObservableObject {
         
         // Phase 4: Save settings for quick practice
         saveLastQuizSettings()
+        
+        // Set completion LAST to trigger view transition AFTER currentResult is ready
+        isQuizCompleted = true
     }
     
     /// Calculate rating change based on performance

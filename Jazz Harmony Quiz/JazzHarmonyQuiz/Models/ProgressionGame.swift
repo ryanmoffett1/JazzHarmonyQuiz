@@ -156,7 +156,9 @@ class ProgressionGame: ObservableObject {
 
     private func finishQuiz() {
         isQuizActive = false
-        isQuizCompleted = true
+
+        // NOTE: isQuizCompleted is set at the END of this method
+        // to ensure currentResult is populated before the view transitions
 
         // Calculate results
         var correctCount = 0
@@ -211,6 +213,9 @@ class ProgressionGame: ObservableObject {
                 CurriculumManager.shared.setActiveModule(nil)
             }
         }
+        
+        // Set completion LAST to trigger view transition AFTER currentResult is ready
+        isQuizCompleted = true
     }
 
     private func calculateRatingChange(correctAnswers: Int, totalQuestions: Int) -> Int {

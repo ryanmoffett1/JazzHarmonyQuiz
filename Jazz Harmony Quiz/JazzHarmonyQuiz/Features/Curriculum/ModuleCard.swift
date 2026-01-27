@@ -11,6 +11,20 @@ struct ModuleCard: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     
+    /// Get the current progress data for this module
+    private var progress: ModuleProgress {
+        CurriculumManager.shared.getProgress(for: module.id)
+    }
+    
+    /// Get a human-readable progress summary
+    private var progressSummary: String {
+        let criteria = module.completionCriteria
+        let attemptsFraction = "\(progress.attempts)/\(criteria.minimumAttempts) questions"
+        let accuracyPct = Int(progress.accuracy * 100)
+        let accuracyNeeded = Int(criteria.accuracyThreshold * 100)
+        return "\(attemptsFraction) • \(accuracyPct)% accuracy (need \(accuracyNeeded)%)"
+    }
+    
     var body: some View {
         HStack(spacing: 16) {
             // Emoji & Status Icon
@@ -100,6 +114,13 @@ struct ModuleCard: View {
                 ProgressView(value: progressPercentage, total: 100)
                     .tint(statusColor)
                     .frame(height: 6)
+                
+                // Show progress details
+                if progress.attempts > 0 {
+                    Text(progressSummary)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
             }
         } else if isCompleted {
             HStack(spacing: 4) {

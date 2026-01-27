@@ -111,7 +111,7 @@ struct IntervalDrillResults: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.green)
+                .background(Color("BrassAccent"))
                 .cornerRadius(12)
             }
             
@@ -121,7 +121,7 @@ struct IntervalDrillResults: View {
                     Text("Change Settings")
                 }
                 .font(.headline)
-                .foregroundColor(.green)
+                .foregroundColor(Color("BrassAccent"))
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(Color(.systemGray6))

@@ -174,7 +174,7 @@ struct ScaleDrillResults: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.teal)
+                .background(Color("BrassAccent"))
                 .cornerRadius(12)
             }
             

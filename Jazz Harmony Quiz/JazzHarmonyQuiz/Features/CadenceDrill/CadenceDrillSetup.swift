@@ -434,7 +434,7 @@ struct CadenceDrillSetup: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.purple)
+                .background(Color("BrassAccent"))
                 .cornerRadius(12)
         }
     }
@@ -449,14 +449,14 @@ struct CadenceDrillSetup: View {
                 Text("Settings")
             }
             .font(.subheadline)
-            .foregroundColor(.purple)
+            .foregroundColor(Color("BrassAccent"))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background(Color.purple.opacity(0.1))
+            .background(Color("BrassAccent").opacity(0.1))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.purple, lineWidth: 1.5)
+                    .stroke(Color("BrassAccent"), lineWidth: 1.5)
             )
         }
         .sheet(isPresented: $showingSettings) {

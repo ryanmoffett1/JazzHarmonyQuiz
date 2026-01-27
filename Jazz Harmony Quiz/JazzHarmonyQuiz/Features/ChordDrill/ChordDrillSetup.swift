@@ -38,7 +38,7 @@ struct ChordDrillSetup: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
+                        .background(Color("BrassAccent"))
                         .cornerRadius(12)
                 }
                 .disabled(selectedQuestionTypes.isEmpty)
@@ -52,7 +52,7 @@ struct ChordDrillSetup: View {
                         Text("Settings")
                     }
                     .font(.subheadline)
-                    .foregroundColor(.purple)
+                    .foregroundColor(Color("BrassAccent"))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(Color.purple.opacity(0.1))
