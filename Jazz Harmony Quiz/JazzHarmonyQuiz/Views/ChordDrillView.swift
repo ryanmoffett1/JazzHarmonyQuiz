@@ -614,14 +614,14 @@ struct ActiveQuizView: View {
                                         if showingFeedback {
                                             if isCorrect {
                                                 Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundColor(.green)
+                                                    .foregroundColor(ShedTheme.Colors.success)
                                             } else if isWrong {
                                                 Image(systemName: "xmark.circle.fill")
-                                                    .foregroundColor(.red)
+                                                    .foregroundColor(ShedTheme.Colors.danger)
                                             }
                                         } else if isSelected {
                                             Image(systemName: "checkmark.circle.fill")
-                                                .foregroundColor(.blue)
+                                                .foregroundColor(ShedTheme.Colors.brass)
                                         }
                                     }
                                     .padding()
@@ -776,12 +776,12 @@ struct ActiveQuizView: View {
                         // Correct answer
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 60))
-                            .foregroundColor(.green)
+                            .foregroundColor(ShedTheme.Colors.success)
                         
                         Text("Correct!")
                             .font(.title2)
                             .fontWeight(.bold)
-                            .foregroundColor(.green)
+                            .foregroundColor(ShedTheme.Colors.success)
                         
                         Text(question.chord.chordType.name)
                             .font(.title)
@@ -798,7 +798,7 @@ struct ActiveQuizView: View {
                         if feedbackPhase == .showingUserAnswer {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 50))
-                                .foregroundColor(.red)
+                                .foregroundColor(ShedTheme.Colors.danger)
                             
                             Text("Your answer:")
                                 .font(.headline)
@@ -828,7 +828,7 @@ struct ActiveQuizView: View {
                         } else {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 50))
-                                .foregroundColor(.green)
+                                .foregroundColor(ShedTheme.Colors.success)
                             
                             Text("Correct answer:")
                                 .font(.headline)
@@ -908,12 +908,12 @@ struct ActiveQuizView: View {
                         // Correct answer display
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 60))
-                            .foregroundColor(.green)
+                            .foregroundColor(ShedTheme.Colors.success)
                         
                         Text("Correct!")
                             .font(.title2)
                             .fontWeight(.bold)
-                            .foregroundColor(.green)
+                            .foregroundColor(ShedTheme.Colors.success)
                         
                         // Show correct notes (all green)
                         notesDisplay(notes: correctAnswerForFeedback, allCorrect: true)
@@ -926,7 +926,7 @@ struct ActiveQuizView: View {
                             // Phase 1: Show user's answer
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 50))
-                                .foregroundColor(.red)
+                                .foregroundColor(ShedTheme.Colors.danger)
                             
                             Text("Your answer:")
                                 .font(.headline)
@@ -950,7 +950,7 @@ struct ActiveQuizView: View {
                             // Phase 2: Show correct answer
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 50))
-                                .foregroundColor(.green)
+                                .foregroundColor(ShedTheme.Colors.success)
                             
                             Text("Correct answer:")
                                 .font(.headline)
@@ -1337,7 +1337,7 @@ struct ChordDrillResultsView: View {
                                 
                                 Image(systemName: "arrow.right")
                                     .font(.title2)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(ShedTheme.Colors.success)
                                 
                                 VStack {
                                     Text(playerStats.currentRank.emoji)
@@ -1401,7 +1401,7 @@ struct ChordDrillResultsView: View {
                                 Text("\(playerStats.currentRating)")
                                     .font(.title2)
                                     .fontWeight(.bold)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(ShedTheme.Colors.brass)
                                 
                                 Text("Total")
                                     .font(.caption)
@@ -1439,7 +1439,7 @@ struct ChordDrillResultsView: View {
                             Text("\(playerStats.currentStreak) day streak!")
                         }
                         .font(.headline)
-                        .foregroundColor(.orange)
+                        .foregroundColor(ShedTheme.Colors.warning)
                     }
                     
                     // Action Buttons

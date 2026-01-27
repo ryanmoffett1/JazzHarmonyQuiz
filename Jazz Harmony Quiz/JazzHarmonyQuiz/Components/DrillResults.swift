@@ -113,12 +113,12 @@ struct DrillResultsView<Content: View>: View {
                 
                 Image(systemName: "arrow.right")
                     .font(.title2)
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
                 
                 VStack {
                     Text("\(currentLevel.level)")
                         .font(.system(size: 50, weight: .bold))
-                        .foregroundColor(.blue)
+                        .foregroundColor(ShedTheme.Colors.brass)
                     Text("Level")
                         .font(.subheadline)
                         .fontWeight(.medium)
@@ -129,7 +129,7 @@ struct DrillResultsView<Content: View>: View {
         .frame(maxWidth: .infinity)
         .background(
             LinearGradient(
-                colors: [.blue.opacity(0.2), .purple.opacity(0.2)],
+                colors: [ShedTheme.Colors.brass.opacity(0.2), ShedTheme.Colors.brass.opacity(0.3)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -183,7 +183,7 @@ struct DrillResultsView<Content: View>: View {
                 }
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundColor(ratingChange >= 0 ? .green : .red)
+                .foregroundColor(ratingChange >= 0 ? ShedTheme.Colors.success : ShedTheme.Colors.danger)
                 
                 Text("XP")
                     .font(.caption)
@@ -198,7 +198,7 @@ struct DrillResultsView<Content: View>: View {
                 Text("\(currentRating)")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.blue)
+                    .foregroundColor(ShedTheme.Colors.brass)
                 
                 Text("Total XP")
                     .font(.caption)
@@ -231,7 +231,7 @@ struct DrillResultsView<Content: View>: View {
             Text("\(currentStreak) day streak!")
         }
         .font(.headline)
-        .foregroundColor(.orange)
+        .foregroundColor(ShedTheme.Colors.warning)
     }
     
     // MARK: - Time Section
@@ -277,7 +277,7 @@ struct DrillResultsView<Content: View>: View {
                     Text("Change Settings")
                 }
                 .font(.subheadline)
-                .foregroundColor(.blue)
+                .foregroundColor(ShedTheme.Colors.brass)
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(ShedTheme.Colors.brass.opacity(0.1))
@@ -308,9 +308,9 @@ struct DrillResultsView<Content: View>: View {
     
     private var accuracyColor: Color {
         let accuracy = result.accuracy
-        if accuracy >= 0.9 { return .green }
-        if accuracy >= 0.7 { return .orange }
-        return .red
+        if accuracy >= 0.9 { return ShedTheme.Colors.success }
+        if accuracy >= 0.7 { return ShedTheme.Colors.warning }
+        return ShedTheme.Colors.danger
     }
     
     // MARK: - Helper Functions

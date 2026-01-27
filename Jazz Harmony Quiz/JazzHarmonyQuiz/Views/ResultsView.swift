@@ -193,11 +193,11 @@ struct ResultsView: View {
     private func scoreColor(_ score: Int) -> Color {
         switch score {
         case 90...100:
-            return .green
+            return ShedTheme.Colors.success
         case 70..<90:
-            return .orange
+            return ShedTheme.Colors.warning
         default:
-            return .red
+            return ShedTheme.Colors.danger
         }
     }
     
@@ -285,7 +285,7 @@ struct ReviewView: View {
                         VStack(spacing: 20) {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 60))
-                                .foregroundColor(.green)
+                                .foregroundColor(ShedTheme.Colors.success)
                             
                             Text("Perfect Score!")
                                 .font(.title)
@@ -561,7 +561,7 @@ struct ConceptualExplanationView: View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
                 Image(systemName: "lightbulb.fill")
-                    .foregroundColor(.yellow)
+                    .foregroundColor(ShedTheme.Colors.warning)
                 Text("Understanding \(concept.name)")
                     .font(.headline)
                     .foregroundColor(settings.primaryText(for: colorScheme))
@@ -604,7 +604,7 @@ struct ExplanationSection: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.caption)
-                    .foregroundColor(.blue)
+                    .foregroundColor(ShedTheme.Colors.brass)
                 Text(title)
                     .font(.subheadline)
                     .fontWeight(.semibold)

@@ -82,7 +82,7 @@ struct DrillSetupContainer<CustomContent: View>: View {
                     Text("\(playerStats.currentRating) XP")
                 }
                 .font(.subheadline)
-                .foregroundColor(.blue)
+                .foregroundColor(ShedTheme.Colors.brass)
                 
                 // Streak
                 if playerStats.currentStreak > 0 {
@@ -92,7 +92,7 @@ struct DrillSetupContainer<CustomContent: View>: View {
                             .fontWeight(.semibold)
                     }
                     .font(.subheadline)
-                    .foregroundColor(.orange)
+                    .foregroundColor(ShedTheme.Colors.warning)
                 }
             }
         }
@@ -153,7 +153,7 @@ struct DrillSetupContainer<CustomContent: View>: View {
                 Text("Settings")
             }
             .font(.subheadline)
-            .foregroundColor(.purple)
+            .foregroundColor(ShedTheme.Colors.brass)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .background(ShedTheme.Colors.brass.opacity(0.1))

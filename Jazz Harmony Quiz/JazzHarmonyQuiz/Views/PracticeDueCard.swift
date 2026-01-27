@@ -23,7 +23,7 @@ struct PracticeDueCard: View {
             HStack {
                 Image(systemName: "calendar.badge.clock")
                     .font(.title2)
-                    .foregroundColor(.orange)
+                    .foregroundColor(ShedTheme.Colors.warning)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Practice Due")
@@ -36,7 +36,7 @@ struct PracticeDueCard: View {
                     } else {
                         Text("All caught up!")
                             .font(.caption)
-                            .foregroundColor(.green)
+                            .foregroundColor(ShedTheme.Colors.success)
                     }
                 }
                 

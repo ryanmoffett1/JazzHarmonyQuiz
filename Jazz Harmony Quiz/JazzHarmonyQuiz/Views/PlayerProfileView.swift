@@ -86,7 +86,7 @@ struct PlayerProfileView: View {
             // Level Badge (Updated per DESIGN.md Section 9.3.1 - no emoji)
             Text("Level \(playerLevel.level)")
                 .font(.headline)
-                .foregroundColor(.blue)
+                .foregroundColor(ShedTheme.Colors.brass)
         }
         .padding()
         .frame(maxWidth: .infinity)
@@ -154,7 +154,7 @@ struct PlayerProfileView: View {
                 Spacer()
                 Text("Power: \(profile.overallPower)")
                     .font(.subheadline)
-                    .foregroundColor(.purple)
+                    .foregroundColor(ShedTheme.Colors.brass)
                     .fontWeight(.semibold)
             }
             
@@ -320,7 +320,7 @@ struct ModeStatRow: View {
                     Text("\(stats.highScores.first?.score ?? 0)")
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(.blue)
+                        .foregroundColor(ShedTheme.Colors.brass)
                 }
             }
         }

@@ -452,10 +452,10 @@ struct ProgressionActiveView: View {
                         VStack(spacing: 8) {
                             HStack {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
+                                    .foregroundColor(ShedTheme.Colors.success)
                                 Text("Correct Answer")
                                     .font(.headline)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(ShedTheme.Colors.success)
                                 
                                 Spacer()
                                 
@@ -751,7 +751,7 @@ struct ProgressionChordSlotView: View {
             if !isCorrectAnswerRow, let hint = pedagogicalHint {
                 Text(hint)
                     .font(.caption2)
-                    .foregroundColor(.orange)
+                    .foregroundColor(ShedTheme.Colors.warning)
                     .multilineTextAlignment(.center)
                     .frame(width: 100)
                     .fixedSize(horizontal: false, vertical: true)
