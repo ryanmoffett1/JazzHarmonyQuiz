@@ -354,7 +354,7 @@ struct AvatarPickerView: View {
                                 ZStack {
                                     Circle()
                                         .fill(selectedAvatar == avatar ? 
-                                              Color.blue.opacity(0.2) : Color(.systemGray5))
+                                              ShedTheme.Colors.brass.opacity(0.2) : ShedTheme.Colors.surface)
                                         .frame(width: 80, height: 80)
                                     
                                     Text(avatar.rawValue)
@@ -362,7 +362,7 @@ struct AvatarPickerView: View {
                                 }
                                 .overlay(
                                     Circle()
-                                        .stroke(selectedAvatar == avatar ? Color.blue : Color.clear, lineWidth: 3)
+                                        .stroke(selectedAvatar == avatar ? ShedTheme.Colors.brass : Color.clear, lineWidth: 3)
                                 )
                                 
                                 Text(avatar.name)

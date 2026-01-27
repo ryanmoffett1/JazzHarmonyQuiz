@@ -59,12 +59,7 @@ struct PathwayButton: View {
     }
     
     private var pathwayColor: Color {
-        switch pathway {
-        case .harmonyFoundations: return .blue
-        case .functionalHarmony: return .green
-        case .earTraining: return .orange
-        case .advancedTopics: return .purple
-        }
+        return ShedTheme.Colors.brass
     }
 }
 

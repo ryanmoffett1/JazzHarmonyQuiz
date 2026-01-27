@@ -266,7 +266,7 @@ struct DrillResultsView<Content: View>: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue)
+                .background(ShedTheme.Colors.brass)
                 .cornerRadius(12)
             }
             
@@ -280,7 +280,7 @@ struct DrillResultsView<Content: View>: View {
                 .foregroundColor(.blue)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue.opacity(0.1))
+                .background(ShedTheme.Colors.brass.opacity(0.1))
                 .cornerRadius(12)
             }
         }

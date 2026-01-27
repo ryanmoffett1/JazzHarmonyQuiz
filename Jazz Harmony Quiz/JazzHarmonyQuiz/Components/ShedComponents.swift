@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - ShedButton
 
 /// Primary button style using ShedTheme tokens
+/// Distinctive brass-accented buttons with subtle depth
 struct ShedButton: View {
     let title: String
     let action: () -> Void
@@ -12,8 +13,8 @@ struct ShedButton: View {
     var size: ButtonSize = .medium
     
     enum ButtonVariant {
-        case primary    // Brass accent, filled
-        case secondary  // Outlined
+        case primary    // Brass accent, filled with glow
+        case secondary  // Outlined with brass
         case ghost      // Text only
     }
     
@@ -23,16 +24,16 @@ struct ShedButton: View {
         var verticalPadding: CGFloat {
             switch self {
             case .small: return ShedTheme.Space.xs
-            case .medium: return ShedTheme.Space.s
+            case .medium: return ShedTheme.Space.s + 2
             case .large: return ShedTheme.Space.m
             }
         }
         
         var horizontalPadding: CGFloat {
             switch self {
-            case .small: return ShedTheme.Space.s
-            case .medium: return ShedTheme.Space.m
-            case .large: return ShedTheme.Space.l
+            case .small: return ShedTheme.Space.m
+            case .medium: return ShedTheme.Space.l
+            case .large: return ShedTheme.Space.xl
             }
         }
         
@@ -47,18 +48,22 @@ struct ShedButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(size.font)
-                .foregroundColor(foregroundColor)
-                .frame(maxWidth: fullWidth ? .infinity : nil)
-                .padding(.horizontal, size.horizontalPadding)
-                .padding(.vertical, size.verticalPadding)
-                .background(background)
-                .overlay(overlay)
-                .cornerRadius(ShedTheme.Radius.s)
+            HStack(spacing: ShedTheme.Space.xs) {
+                Text(title)
+                    .font(size.font)
+                    .fontWeight(.semibold)
+            }
+            .foregroundColor(foregroundColor)
+            .frame(maxWidth: fullWidth ? .infinity : nil)
+            .padding(.horizontal, size.horizontalPadding)
+            .padding(.vertical, size.verticalPadding)
+            .background(background)
+            .clipShape(RoundedRectangle(cornerRadius: ShedTheme.Radius.s))
+            .overlay(overlay)
         }
+        .buttonStyle(ShedButtonPressStyle())
         .disabled(!isEnabled)
-        .opacity(isEnabled ? 1.0 : 0.5)
+        .opacity(isEnabled ? 1.0 : 0.4)
     }
     
     private var foregroundColor: Color {
@@ -74,9 +79,24 @@ struct ShedButton: View {
     private var background: some View {
         switch style {
         case .primary:
+            ZStack {
+                // Base brass fill
+                RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
+                    .fill(isEnabled ? ShedTheme.Colors.brass : ShedTheme.Colors.textTertiary)
+                // Subtle top highlight
+                RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.15), Color.clear],
+                            startPoint: .top,
+                            endPoint: .center
+                        )
+                    )
+            }
+        case .secondary:
             RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
-                .fill(isEnabled ? ShedTheme.Colors.brass : ShedTheme.Colors.textTertiary)
-        case .secondary, .ghost:
+                .fill(ShedTheme.Colors.brassGlow)
+        case .ghost:
             Color.clear
         }
     }
@@ -86,16 +106,26 @@ struct ShedButton: View {
         switch style {
         case .secondary:
             RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
-                .stroke(isEnabled ? ShedTheme.Colors.brass : ShedTheme.Colors.textTertiary, lineWidth: ShedTheme.Stroke.hairline)
+                .stroke(isEnabled ? ShedTheme.Colors.brass : ShedTheme.Colors.textTertiary, lineWidth: ShedTheme.Stroke.thin)
         case .primary, .ghost:
             EmptyView()
         }
     }
 }
 
+// Custom press style for tactile feedback
+struct ShedButtonPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(ShedTheme.Motion.fast, value: configuration.isPressed)
+    }
+}
+
 // MARK: - ShedCard
 
-/// Card/panel component using ShedTheme tokens
+/// Card component with distinctive styling
+/// Features subtle brass accent line on highlighted cards
 struct ShedCard<Content: View>: View {
     let content: Content
     var padding: CGFloat = ShedTheme.Space.m
@@ -110,14 +140,52 @@ struct ShedCard<Content: View>: View {
     var body: some View {
         content
             .padding(padding)
-            .background(
+            .background(cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: ShedTheme.Radius.m))
+            .overlay(cardOverlay)
+    }
+    
+    @ViewBuilder
+    private var cardBackground: some View {
+        ZStack {
+            // Base surface
+            RoundedRectangle(cornerRadius: ShedTheme.Radius.m)
+                .fill(ShedTheme.Colors.surface)
+            
+            // Subtle top gradient for depth
+            RoundedRectangle(cornerRadius: ShedTheme.Radius.m)
+                .fill(ShedTheme.Effects.subtleDepth)
+            
+            // Brass glow for highlighted cards
+            if highlighted {
                 RoundedRectangle(cornerRadius: ShedTheme.Radius.m)
-                    .fill(ShedTheme.Colors.surface)
-            )
-            .overlay(
+                    .fill(ShedTheme.Colors.brassGlow)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var cardOverlay: some View {
+        if highlighted {
+            // Highlighted: brass accent border with glow effect
+            ZStack {
                 RoundedRectangle(cornerRadius: ShedTheme.Radius.m)
-                    .stroke(highlighted ? ShedTheme.Colors.brass : ShedTheme.Colors.stroke, lineWidth: ShedTheme.Stroke.hairline)
-            )
+                    .stroke(ShedTheme.Colors.brass.opacity(0.5), lineWidth: ShedTheme.Stroke.thin)
+                
+                // Top accent line
+                VStack {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(ShedTheme.Colors.brass)
+                        .frame(width: 60, height: 3)
+                        .padding(.top, 0)
+                    Spacer()
+                }
+                .clipShape(RoundedRectangle(cornerRadius: ShedTheme.Radius.m))
+            }
+        } else {
+            RoundedRectangle(cornerRadius: ShedTheme.Radius.m)
+                .stroke(ShedTheme.Colors.stroke.opacity(0.5), lineWidth: ShedTheme.Stroke.hairline)
+        }
     }
 }
 
@@ -211,41 +279,56 @@ extension ShedRow where Leading == EmptyView, Trailing == Text {
 
 // MARK: - ShedHeader
 
-/// Section header component
+/// Section header with subtle brass accent
 struct ShedHeader: View {
     let title: String
     var subtitle: String? = nil
+    var showAccent: Bool = true
     
     var body: some View {
-        VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
-            Text(title.uppercased())
-                .font(ShedTheme.Typography.caption)
-                .foregroundColor(ShedTheme.Colors.textTertiary)
-                .tracking(1.2)
-            
-            if let subtitle = subtitle {
-                Text(subtitle)
-                    .font(ShedTheme.Typography.body)
-                    .foregroundColor(ShedTheme.Colors.textSecondary)
+        HStack(spacing: ShedTheme.Space.s) {
+            if showAccent {
+                // Brass accent bar
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(ShedTheme.Colors.brass)
+                    .frame(width: 3, height: 14)
             }
+            
+            VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
+                Text(title.uppercased())
+                    .font(ShedTheme.Typography.captionSmall)
+                    .fontWeight(.bold)
+                    .foregroundColor(ShedTheme.Colors.textTertiary)
+                    .tracking(1.5)
+                
+                if let subtitle = subtitle {
+                    Text(subtitle)
+                        .font(ShedTheme.Typography.body)
+                        .foregroundColor(ShedTheme.Colors.textSecondary)
+                }
+            }
+            
+            Spacer()
         }
     }
 }
 
 // MARK: - ShedDivider
 
-/// Divider using theme colors
+/// Divider with optional brass accent
 struct ShedDivider: View {
+    var accent: Bool = false
+    
     var body: some View {
         Rectangle()
-            .fill(ShedTheme.Colors.divider)
+            .fill(accent ? ShedTheme.Colors.brassMuted.opacity(0.3) : ShedTheme.Colors.divider)
             .frame(height: ShedTheme.Stroke.hairline)
     }
 }
 
 // MARK: - ShedProgressBar
 
-/// Progress bar using theme tokens
+/// Progress bar with polished brass fill
 struct ShedProgressBar: View {
     let progress: Double // 0.0 to 1.0
     var height: CGFloat = 6
@@ -257,21 +340,28 @@ struct ShedProgressBar: View {
                 ZStack(alignment: .leading) {
                     // Background track
                     RoundedRectangle(cornerRadius: height / 2)
-                        .fill(ShedTheme.Colors.stroke)
+                        .fill(ShedTheme.Colors.surfaceElevated)
                     
-                    // Progress fill
+                    // Progress fill with subtle gradient
                     RoundedRectangle(cornerRadius: height / 2)
-                        .fill(ShedTheme.Colors.brass)
+                        .fill(
+                            LinearGradient(
+                                colors: [ShedTheme.Colors.brass, ShedTheme.Colors.brassMuted],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                         .frame(width: geometry.size.width * max(0, min(1, progress)))
-                        .animation(ShedTheme.Motion.normal, value: progress)
+                        .animation(ShedTheme.Motion.standard, value: progress)
                 }
             }
             .frame(height: height)
             
             if showLabel {
                 Text("\(Int(progress * 100))%")
-                    .font(ShedTheme.Typography.caption)
-                    .foregroundColor(ShedTheme.Colors.textTertiary)
+                    .font(ShedTheme.Typography.captionSmall)
+                    .fontWeight(.medium)
+                    .foregroundColor(ShedTheme.Colors.brass)
             }
         }
     }
@@ -279,41 +369,143 @@ struct ShedProgressBar: View {
 
 // MARK: - ShedIcon
 
-/// Icon wrapper with consistent sizing and colors
+/// Icon wrapper with brass-tinted container
 struct ShedIcon: View {
     let systemName: String
     var size: IconSize = .medium
     var color: Color = ShedTheme.Colors.brass
+    var filled: Bool = false
     
     enum IconSize {
         case small, medium, large
         
         var fontSize: CGFloat {
             switch self {
-            case .small: return 16
-            case .medium: return 20
-            case .large: return 28
+            case .small: return 14
+            case .medium: return 18
+            case .large: return 24
             }
         }
         
         var containerSize: CGFloat {
             switch self {
-            case .small: return 32
-            case .medium: return 44
-            case .large: return 56
+            case .small: return 28
+            case .medium: return 40
+            case .large: return 52
             }
         }
     }
     
     var body: some View {
         Image(systemName: systemName)
-            .font(.system(size: size.fontSize, weight: .medium))
-            .foregroundColor(color)
+            .font(.system(size: size.fontSize, weight: .semibold))
+            .foregroundColor(filled ? ShedTheme.Colors.bg : color)
             .frame(width: size.containerSize, height: size.containerSize)
             .background(
-                RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
-                    .fill(color.opacity(0.15))
+                ZStack {
+                    RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
+                        .fill(filled ? color : color.opacity(0.12))
+                    if !filled {
+                        RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
+                            .stroke(color.opacity(0.2), lineWidth: ShedTheme.Stroke.hairline)
+                    }
+                }
             )
+    }
+}
+
+// MARK: - ShedStatDisplay
+
+/// Large stat display for key metrics (streak, XP, accuracy)
+struct ShedStatDisplay: View {
+    let value: String
+    let label: String
+    var icon: String? = nil
+    var highlighted: Bool = false
+    var accentColor: Color = ShedTheme.Colors.brass
+    
+    var body: some View {
+        VStack(spacing: ShedTheme.Space.xs) {
+            if let icon = icon {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(highlighted ? accentColor : ShedTheme.Colors.textTertiary)
+            }
+            
+            Text(value)
+                .font(ShedTheme.Typography.title)
+                .fontWeight(.bold)
+                .foregroundColor(highlighted ? accentColor : ShedTheme.Colors.textPrimary)
+            
+            Text(label.uppercased())
+                .font(ShedTheme.Typography.captionSmall)
+                .fontWeight(.medium)
+                .foregroundColor(ShedTheme.Colors.textTertiary)
+                .tracking(1)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+// MARK: - ShedBadge
+
+/// Small badge for streaks, ranks, achievements
+struct ShedBadge: View {
+    let text: String
+    var icon: String? = nil
+    var style: BadgeStyle = .default
+    
+    enum BadgeStyle {
+        case `default`
+        case brass
+        case success
+    }
+    
+    private var backgroundColor: Color {
+        switch style {
+        case .default: return ShedTheme.Colors.surface
+        case .brass: return ShedTheme.Colors.brassGlow
+        case .success: return ShedTheme.Colors.success.opacity(0.15)
+        }
+    }
+    
+    private var foregroundColor: Color {
+        switch style {
+        case .default: return ShedTheme.Colors.textSecondary
+        case .brass: return ShedTheme.Colors.brass
+        case .success: return ShedTheme.Colors.success
+        }
+    }
+    
+    private var borderColor: Color {
+        switch style {
+        case .default: return ShedTheme.Colors.stroke
+        case .brass: return ShedTheme.Colors.brass.opacity(0.3)
+        case .success: return ShedTheme.Colors.success.opacity(0.3)
+        }
+    }
+    
+    var body: some View {
+        HStack(spacing: ShedTheme.Space.xxs) {
+            if let icon = icon {
+                Text(icon)
+                    .font(.system(size: 12))
+            }
+            Text(text)
+                .font(ShedTheme.Typography.captionSmall)
+                .fontWeight(.semibold)
+        }
+        .foregroundColor(foregroundColor)
+        .padding(.horizontal, ShedTheme.Space.s)
+        .padding(.vertical, ShedTheme.Space.xxs + 2)
+        .background(
+            Capsule()
+                .fill(backgroundColor)
+                .overlay(
+                    Capsule()
+                        .stroke(borderColor, lineWidth: ShedTheme.Stroke.hairline)
+                )
+        )
     }
 }
 

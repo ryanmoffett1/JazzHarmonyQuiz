@@ -177,7 +177,7 @@ struct IntervalStatCard: View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundColor(.green)
+                .foregroundColor(ShedTheme.Colors.success)
             Text(value)
                 .font(.headline)
             Text(title)
@@ -209,12 +209,12 @@ struct IntervalLevelUpView: View {
                     .foregroundColor(.secondary)
                 
                 Image(systemName: "arrow.right")
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
                 
                 Text("Level \(newLevel)")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
             }
         }
         .padding()

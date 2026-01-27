@@ -110,7 +110,7 @@ struct ChordDrillSessionView: View {
             VStack(spacing: 16) {
                 Image(systemName: "ear.fill")
                     .font(.system(size: 50))
-                    .foregroundColor(.blue)
+                    .foregroundColor(ShedTheme.Colors.brass)
 
                 Text("Listen to the chord")
                     .font(.headline)
@@ -129,7 +129,7 @@ struct ChordDrillSessionView: View {
             VStack(spacing: 16) {
                 Image(systemName: "ear.fill")
                     .font(.system(size: 50))
-                    .foregroundColor(.purple)
+                    .foregroundColor(ShedTheme.Colors.brass)
 
                 Text("Listen and spell the chord")
                     .font(.headline)
@@ -141,7 +141,7 @@ struct ChordDrillSessionView: View {
                     .foregroundColor(.primary)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
-                    .background(Color.purple.opacity(0.2))
+                    .background(ShedTheme.Colors.brass.opacity(0.2))
                     .cornerRadius(12)
 
                 Text("Identify the quality and select all chord tones")
@@ -267,23 +267,23 @@ struct ChordDrillSessionView: View {
                         if showingFeedback {
                             if isCorrect {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
+                                    .foregroundColor(ShedTheme.Colors.success)
                             } else if isWrong {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.red)
+                                    .foregroundColor(ShedTheme.Colors.danger)
                             }
                         } else if isSelected {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.blue)
+                                .foregroundColor(ShedTheme.Colors.brass)
                         }
                     }
                     .padding()
                     .background(
                         showingFeedback ?
-                            (isCorrect ? Color.green.opacity(0.2) :
-                             isWrong ? Color.red.opacity(0.2) :
+                            (isCorrect ? ShedTheme.Colors.success.opacity(0.2) :
+                             isWrong ? ShedTheme.Colors.danger.opacity(0.2) :
                              Color(.systemGray6)) :
-                            (isSelected ? Color.blue.opacity(0.2) : Color(.systemGray6))
+                            (isSelected ? ShedTheme.Colors.brass.opacity(0.2) : Color(.systemGray6))
                     )
                     .cornerRadius(10)
                 }
@@ -362,19 +362,19 @@ struct ChordDrillSessionView: View {
             // Correct answer
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 60))
-                .foregroundColor(.green)
+                .foregroundColor(ShedTheme.Colors.success)
             
             Text("Correct!")
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.green)
+                .foregroundColor(ShedTheme.Colors.success)
             
             Text(question.chord.chordType.name)
                 .font(.title)
                 .fontWeight(.semibold)
                 .foregroundColor(.white)
                 .padding()
-                .background(Color.green)
+                .background(ShedTheme.Colors.success)
                 .cornerRadius(12)
             
             continueButton()
@@ -384,7 +384,7 @@ struct ChordDrillSessionView: View {
             if feedbackPhase == .showingUserAnswer {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 50))
-                    .foregroundColor(.red)
+                    .foregroundColor(ShedTheme.Colors.danger)
                 
                 Text("Your answer:")
                     .font(.headline)
@@ -396,7 +396,7 @@ struct ChordDrillSessionView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
                         .padding()
-                        .background(Color.red)
+                        .background(ShedTheme.Colors.danger)
                         .cornerRadius(12)
                 }
                 
@@ -406,7 +406,7 @@ struct ChordDrillSessionView: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
-                        .background(Color.blue)
+                        .background(ShedTheme.Colors.brass)
                         .cornerRadius(10)
                 }
                 .padding(.top, 8)
@@ -414,7 +414,7 @@ struct ChordDrillSessionView: View {
             } else {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 50))
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
                 
                 Text("Correct answer:")
                     .font(.headline)
@@ -425,7 +425,7 @@ struct ChordDrillSessionView: View {
                     .fontWeight(.semibold)
                     .foregroundColor(.white)
                     .padding()
-                    .background(Color.green)
+                    .background(ShedTheme.Colors.success)
                     .cornerRadius(12)
                 
                 // Comparison buttons to toggle between chords
@@ -460,7 +460,7 @@ struct ChordDrillSessionView: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .background(Color.red)
+                        .background(ShedTheme.Colors.danger)
                         .cornerRadius(8)
                     }
                     
@@ -483,7 +483,7 @@ struct ChordDrillSessionView: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .background(Color.green)
+                        .background(ShedTheme.Colors.success)
                         .cornerRadius(8)
                     }
                     
@@ -501,12 +501,12 @@ struct ChordDrillSessionView: View {
             // Correct answer display
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 60))
-                .foregroundColor(.green)
+                .foregroundColor(ShedTheme.Colors.success)
             
             Text("Correct!")
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.green)
+                .foregroundColor(ShedTheme.Colors.success)
             
             // Show correct notes (all green)
             notesDisplay(notes: correctAnswerForFeedback, allCorrect: true)
@@ -519,7 +519,7 @@ struct ChordDrillSessionView: View {
                 // Phase 1: Show user's answer
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 50))
-                    .foregroundColor(.red)
+                    .foregroundColor(ShedTheme.Colors.danger)
                 
                 Text("Your answer:")
                     .font(.headline)
@@ -534,7 +534,7 @@ struct ChordDrillSessionView: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
-                        .background(Color.blue)
+                        .background(ShedTheme.Colors.brass)
                         .cornerRadius(10)
                 }
                 .padding(.top, 8)
@@ -543,7 +543,7 @@ struct ChordDrillSessionView: View {
                 // Phase 2: Show correct answer
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 50))
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
                 
                 Text("Correct answer:")
                     .font(.headline)
@@ -580,7 +580,7 @@ struct ChordDrillSessionView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
-                    .background(isNoteCorrect ? Color.green : Color.red)
+                    .background(isNoteCorrect ? ShedTheme.Colors.success : ShedTheme.Colors.danger)
                     .cornerRadius(8)
                 }
             }
@@ -608,7 +608,7 @@ struct ChordDrillSessionView: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color.orange)
+                        .background(ShedTheme.Colors.warning)
                         .cornerRadius(8)
                     }
                 }
@@ -637,7 +637,7 @@ struct ChordDrillSessionView: View {
                 .foregroundColor(.white)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color.green)
+                .background(ShedTheme.Colors.success)
                 .cornerRadius(8)
             }
         }
@@ -654,7 +654,7 @@ struct ChordDrillSessionView: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue)
+                .background(ShedTheme.Colors.brass)
                 .cornerRadius(12)
         }
         .padding(.horizontal)

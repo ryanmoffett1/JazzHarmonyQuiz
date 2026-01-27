@@ -151,7 +151,7 @@ struct ResultsView: View {
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
                                     .padding()
-                                    .background(Color.blue)
+                                    .background(ShedTheme.Colors.brass)
                                     .cornerRadius(12)
                             }
                         }
@@ -578,8 +578,8 @@ struct ConceptualExplanationView: View {
         .background(
             LinearGradient(
                 colors: [
-                    Color.blue.opacity(colorScheme == .dark ? 0.2 : 0.1),
-                    Color.purple.opacity(colorScheme == .dark ? 0.2 : 0.1)
+                    ShedTheme.Colors.brass.opacity(colorScheme == .dark ? 0.2 : 0.1),
+                    ShedTheme.Colors.brass.opacity(colorScheme == .dark ? 0.2 : 0.1)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -588,7 +588,7 @@ struct ConceptualExplanationView: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                .stroke(ShedTheme.Colors.brass.opacity(0.3), lineWidth: 1)
         )
     }
 }

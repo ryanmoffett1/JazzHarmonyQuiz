@@ -7,18 +7,23 @@ struct QuickPracticeCard: View {
     
     var body: some View {
         ShedCard(highlighted: true) {
-            VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
-                // Title
-                Text("QUICK PRACTICE")
-                    .font(ShedTheme.Typography.caption)
-                    .foregroundColor(ShedTheme.Colors.brass)
-                
-                ShedDivider()
+            VStack(alignment: .leading, spacing: ShedTheme.Space.m) {
+                // Title row with icon
+                HStack(spacing: ShedTheme.Space.s) {
+                    Text("✦")
+                        .font(.system(size: 14))
+                        .foregroundColor(ShedTheme.Colors.brass)
+                    
+                    Text("QUICK PRACTICE")
+                        .font(ShedTheme.Typography.caption)
+                        .tracking(1.5)
+                        .foregroundColor(ShedTheme.Colors.brass)
+                }
                 
                 // Content based on what's available
                 VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                     Text(contentTitle)
-                        .font(ShedTheme.Typography.bodyBold)
+                        .font(ShedTheme.Typography.title)
                         .foregroundColor(ShedTheme.Colors.textPrimary)
                     
                     Text(contentSubtitle)
@@ -26,9 +31,14 @@ struct QuickPracticeCard: View {
                         .foregroundColor(ShedTheme.Colors.textSecondary)
                     
                     if let estimate = estimatedTime {
-                        Text("Estimated: \(estimate)")
-                            .font(ShedTheme.Typography.caption)
-                            .foregroundColor(ShedTheme.Colors.textTertiary)
+                        HStack(spacing: ShedTheme.Space.xxs) {
+                            Image(systemName: "clock")
+                                .font(.system(size: 11))
+                            Text(estimate)
+                        }
+                        .font(ShedTheme.Typography.captionSmall)
+                        .foregroundColor(ShedTheme.Colors.textTertiary)
+                        .padding(.top, ShedTheme.Space.xxs)
                     }
                 }
                 

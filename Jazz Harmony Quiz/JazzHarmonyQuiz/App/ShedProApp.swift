@@ -17,6 +17,7 @@ struct ShedProApp: App {
                 .environmentObject(intervalGame)
                 .environmentObject(settings)
                 .preferredColorScheme(settings.colorScheme)
+                .tint(ShedTheme.Colors.brass)
         }
     }
 }

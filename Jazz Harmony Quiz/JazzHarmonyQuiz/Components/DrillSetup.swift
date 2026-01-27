@@ -138,7 +138,7 @@ struct DrillSetupContainer<CustomContent: View>: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(isStartEnabled ? Color.blue : Color.gray)
+                .background(isStartEnabled ? ShedTheme.Colors.brass : Color.gray)
                 .cornerRadius(12)
         }
         .disabled(!isStartEnabled)
@@ -156,11 +156,11 @@ struct DrillSetupContainer<CustomContent: View>: View {
             .foregroundColor(.purple)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background(Color.purple.opacity(0.1))
+            .background(ShedTheme.Colors.brass.opacity(0.1))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.purple, lineWidth: 1.5)
+                    .stroke(ShedTheme.Colors.brass, lineWidth: 1.5)
             )
         }
         .sheet(isPresented: $showingSettings) {

@@ -43,7 +43,7 @@ struct ChordDrillResults: View {
                             Text("\(playerStats.currentStreak) day streak!")
                         }
                         .font(.headline)
-                        .foregroundColor(.orange)
+                        .foregroundColor(ShedTheme.Colors.warning)
                     }
                     
                     // Action Buttons
@@ -76,12 +76,12 @@ struct ChordDrillResults: View {
                 
                 Image(systemName: "arrow.right")
                     .font(.title2)
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
                 
                 VStack {
                     Text("\(playerLevel.level)")
                         .font(.system(size: 50, weight: .bold))
-                        .foregroundColor(.blue)
+                        .foregroundColor(ShedTheme.Colors.brass)
                     Text("Level")
                         .font(.subheadline)
                         .fontWeight(.medium)
@@ -136,7 +136,7 @@ struct ChordDrillResults: View {
                     Text("\(playerStats.currentRating)")
                         .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.blue)
+                        .foregroundColor(ShedTheme.Colors.brass)
                     
                     Text("Total")
                         .font(.caption)

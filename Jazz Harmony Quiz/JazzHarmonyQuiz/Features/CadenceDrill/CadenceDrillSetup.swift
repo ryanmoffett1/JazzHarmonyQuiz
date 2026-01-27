@@ -89,7 +89,7 @@ struct CadenceDrillSetup: View {
                     Text("\(cadenceGame.playerStats.currentRating) XP")
                 }
                 .font(.subheadline)
-                .foregroundColor(.blue)
+                .foregroundColor(ShedTheme.Colors.brass)
                 
                 // Streak
                 if cadenceGame.playerStats.currentStreak > 0 {
@@ -99,7 +99,7 @@ struct CadenceDrillSetup: View {
                             .fontWeight(.semibold)
                     }
                     .font(.subheadline)
-                    .foregroundColor(.orange)
+                    .foregroundColor(ShedTheme.Colors.brass)
                 }
                 
                 // Accuracy (mode-specific)
@@ -110,7 +110,7 @@ struct CadenceDrillSetup: View {
                             .fontWeight(.semibold)
                     }
                     .font(.subheadline)
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
                     
                     HStack(spacing: 4) {
                         Text("✅")
@@ -118,7 +118,7 @@ struct CadenceDrillSetup: View {
                             .fontWeight(.semibold)
                     }
                     .font(.subheadline)
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
                 }
             }
         }
@@ -147,7 +147,7 @@ struct CadenceDrillSetup: View {
                 .padding()
                 .background(
                     LinearGradient(
-                        colors: [.red, .pink],
+                        colors: [ShedTheme.Colors.danger, ShedTheme.Colors.warning],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -186,7 +186,7 @@ struct CadenceDrillSetup: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(selectedDrillMode == mode ? Color.blue : Color.gray.opacity(0.2))
+                        .background(selectedDrillMode == mode ? ShedTheme.Colors.brass : Color.gray.opacity(0.2))
                         .foregroundColor(selectedDrillMode == mode ? .white : .primary)
                         .cornerRadius(10)
                     }
@@ -213,7 +213,7 @@ struct CadenceDrillSetup: View {
                         Text(pair.rawValue).tag(pair)
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
+                .shedSegmentedPicker()
 
                 Text(selectedCommonTonePair.description)
                     .font(.caption)
@@ -236,7 +236,7 @@ struct CadenceDrillSetup: View {
                     Text(difficulty.rawValue).tag(difficulty)
                 }
             }
-            .pickerStyle(SegmentedPickerStyle())
+            .shedSegmentedPicker()
 
             Text(selectedKeyDifficulty.description)
                 .font(.caption)
@@ -257,7 +257,7 @@ struct CadenceDrillSetup: View {
                     Text("\(count)").tag(count)
                 }
             }
-            .pickerStyle(SegmentedPickerStyle())
+            .shedSegmentedPicker()
         }
     }
     
@@ -343,7 +343,7 @@ struct CadenceDrillSetup: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
-                            .background(selectedCadenceType == type ? Color.purple : Color.gray.opacity(0.2))
+                            .background(selectedCadenceType == type ? ShedTheme.Colors.brass : Color.gray.opacity(0.2))
                             .foregroundColor(selectedCadenceType == type ? .white : .primary)
                             .cornerRadius(10)
                         }
@@ -379,7 +379,7 @@ struct CadenceDrillSetup: View {
                         Text(option.rawValue).tag(option)
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
+                .shedSegmentedPicker()
                 
                 Text(selectedExtendedVChord.description)
                     .font(.caption)

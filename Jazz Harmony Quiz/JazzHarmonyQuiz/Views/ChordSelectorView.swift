@@ -173,7 +173,7 @@ struct ChordSelectorView: View {
             Text(note.name)
                 .font(.system(size: 14, weight: .semibold))
                 .frame(width: 44, height: 44)
-                .background(isSelected ? Color.blue : Color(.systemGray5))
+                .background(isSelected ? ShedTheme.Colors.brass : ShedTheme.Colors.surface)
                 .foregroundColor(isSelected ? .white : .primary)
                 .cornerRadius(8)
         }
@@ -196,7 +196,7 @@ struct ChordSelectorView: View {
                 .frame(minWidth: 44, idealWidth: 50)
                 .padding(.vertical, 10)
                 .padding(.horizontal, 8)
-                .background(isSelected ? Color.blue : Color(.systemGray5))
+                .background(isSelected ? ShedTheme.Colors.brass : ShedTheme.Colors.surface)
                 .foregroundColor(isSelected ? .white : .primary)
                 .cornerRadius(8)
         }

@@ -146,7 +146,7 @@ struct CadenceDrillSession: View {
         VStack(spacing: 16) {
             Image(systemName: "ear.fill")
                 .font(.system(size: 50))
-                .foregroundColor(.blue)
+                .foregroundColor(ShedTheme.Colors.brass)
             
             Text("Listen to the progression")
                 .font(.headline)
@@ -168,10 +168,10 @@ struct CadenceDrillSession: View {
                 Text("Replay Progression")
             }
             .font(.subheadline)
-            .foregroundColor(.blue)
+            .foregroundColor(ShedTheme.Colors.brass)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(Color.blue.opacity(0.1))
+            .background(ShedTheme.Colors.brass.opacity(0.1))
             .cornerRadius(8)
         }
         .padding(.horizontal)
@@ -223,9 +223,9 @@ struct CadenceDrillSession: View {
             if let hint = currentHintText {
                 Text(hint)
                     .font(.subheadline)
-                    .foregroundColor(.orange)
+                    .foregroundColor(ShedTheme.Colors.warning)
                     .padding(8)
-                    .background(Color.orange.opacity(0.1))
+                    .background(ShedTheme.Colors.warning.opacity(0.1))
                     .cornerRadius(8)
             }
             
@@ -237,10 +237,10 @@ struct CadenceDrillSession: View {
                         Text("Hint (\(3 - cadenceGame.currentHintLevel) left)")
                     }
                     .font(.caption)
-                    .foregroundColor(.orange)
+                    .foregroundColor(ShedTheme.Colors.warning)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.orange.opacity(0.1))
+                    .background(ShedTheme.Colors.warning.opacity(0.1))
                     .cornerRadius(8)
                 }
             }
@@ -312,7 +312,7 @@ struct CadenceDrillSession: View {
                             .foregroundColor(.secondary)
                     }
                     .padding()
-                    .background(Color.blue.opacity(0.1))
+                    .background(ShedTheme.Colors.brass.opacity(0.1))
                     .cornerRadius(12)
                 }
             }
@@ -328,9 +328,9 @@ struct CadenceDrillSession: View {
         VStack(spacing: 10) {
             Text("Play ONLY the guide tones (3rd and 7th)")
                 .font(.subheadline)
-                .foregroundColor(.orange)
+                .foregroundColor(ShedTheme.Colors.warning)
                 .padding(8)
-                .background(Color.orange.opacity(0.1))
+                .background(ShedTheme.Colors.warning.opacity(0.1))
                 .cornerRadius(8)
             
             HStack(spacing: 20) {
@@ -346,11 +346,11 @@ struct CadenceDrillSession: View {
                             .foregroundColor(.secondary)
                     }
                     .padding()
-                    .background(index == currentChordIndex ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
+                    .background(index == currentChordIndex ? ShedTheme.Colors.brass.opacity(0.1) : Color.gray.opacity(0.1))
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(index == currentChordIndex ? Color.blue : Color.clear, lineWidth: 2)
+                            .stroke(index == currentChordIndex ? ShedTheme.Colors.brass : Color.clear, lineWidth: 2)
                     )
                 }
             }
@@ -371,9 +371,9 @@ struct CadenceDrillSession: View {
                 VStack(spacing: 10) {
                     Text("The \(pair.sourceRole.rawValue) of \(sourceChord.displayName) is \(pair.sourceNote.name)")
                         .font(.headline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(ShedTheme.Colors.brass)
                         .padding(12)
-                        .background(Color.blue.opacity(0.1))
+                        .background(ShedTheme.Colors.brass.opacity(0.1))
                         .cornerRadius(8)
                     
                     HStack(spacing: 30) {
@@ -383,15 +383,15 @@ struct CadenceDrillSession: View {
                                 .fontWeight(.bold)
                             Text(pair.sourceNote.name)
                                 .font(.title)
-                                .foregroundColor(.blue)
+                                .foregroundColor(ShedTheme.Colors.brass)
                         }
                         .padding()
-                        .background(Color.blue.opacity(0.1))
+                        .background(ShedTheme.Colors.brass.opacity(0.1))
                         .cornerRadius(12)
                         
                         Image(systemName: "arrow.right")
                             .font(.title)
-                            .foregroundColor(.orange)
+                            .foregroundColor(ShedTheme.Colors.warning)
                         
                         VStack {
                             Text(targetChord.displayName)
@@ -399,17 +399,17 @@ struct CadenceDrillSession: View {
                                 .fontWeight(.bold)
                             Text("?")
                                 .font(.title)
-                                .foregroundColor(.orange)
+                                .foregroundColor(ShedTheme.Colors.warning)
                         }
                         .padding()
-                        .background(Color.orange.opacity(0.1))
+                        .background(ShedTheme.Colors.warning.opacity(0.1))
                         .cornerRadius(12)
                     }
                     
                     if showingFeedback, let targetNote = pair.targetNote {
                         Text("Answer: \(targetNote.name)")
                             .font(.headline)
-                            .foregroundColor(.green)
+                            .foregroundColor(ShedTheme.Colors.success)
                     }
                 }
             }
@@ -433,10 +433,10 @@ struct CadenceDrillSession: View {
 
             if isCompleted {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
             } else if isActive {
                 Image(systemName: "circle.fill")
-                    .foregroundColor(.blue)
+                    .foregroundColor(ShedTheme.Colors.brass)
                     .font(.caption)
             } else {
                 Image(systemName: "circle")
@@ -446,7 +446,7 @@ struct CadenceDrillSession: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(isActive ? Color.blue : Color(.systemGray6))
+        .background(isActive ? ShedTheme.Colors.brass : Color(.systemGray6))
         .cornerRadius(8)
     }
 
@@ -580,7 +580,7 @@ struct CadenceDrillSession: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(selectedNotes.isEmpty ? Color.gray : Color.blue)
+                            .background(selectedNotes.isEmpty ? Color.gray : ShedTheme.Colors.brass)
                             .cornerRadius(12)
                     }
                     .disabled(selectedNotes.isEmpty)
@@ -603,7 +603,7 @@ struct CadenceDrillSession: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(selectedNotes.isEmpty ? Color.gray : Color.blue)
+                        .background(selectedNotes.isEmpty ? Color.gray : ShedTheme.Colors.brass)
                         .cornerRadius(12)
                 }
                 .disabled(selectedNotes.isEmpty)

@@ -10,7 +10,7 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: ShedTheme.Space.l) {
-                    // Header with streak badge
+                    // Header with streak and XP
                     headerSection
                     
                     // Quick Practice Card (always first, always visible)
@@ -23,23 +23,24 @@ struct HomeView: View {
                     DailyFocusCard()
                     
                     // Weekly Streak
-                    VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
+                    VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                         ShedHeader(title: "This Week")
                         WeeklyStreakView()
                     }
                     
                     // Quick Stats
-                    VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
+                    VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                         ShedHeader(title: "Quick Stats")
                         QuickStatsView()
                     }
                     
-                    Spacer(minLength: ShedTheme.Space.l)
+                    Spacer(minLength: ShedTheme.Space.xxl)
                 }
                 .padding(.horizontal, ShedTheme.Space.m)
+                .padding(.top, ShedTheme.Space.s)
             }
-            .background(ShedTheme.Colors.bg)
-            .navigationTitle("Shed Pro")
+            .background(ShedTheme.Colors.bg.ignoresSafeArea())
+            .navigationTitle("Shed")
             .navigationBarTitleDisplayMode(.large)
             .toolbarBackground(ShedTheme.Colors.bg, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
@@ -51,8 +52,16 @@ struct HomeView: View {
     }
     
     private var headerSection: some View {
-        HStack {
+        HStack(spacing: ShedTheme.Space.s) {
             Spacer()
+            
+            // XP Badge
+            let xp = PlayerProfile.shared.totalXP
+            if xp > 0 {
+                ShedBadge(text: "\(xp) XP", icon: "✦", style: .default)
+            }
+            
+            // Streak Badge
             streakBadge
         }
         .padding(.top, ShedTheme.Space.xs)
@@ -63,12 +72,11 @@ struct HomeView: View {
         let streakDays = PlayerProfile.shared.currentStreak
         
         if streakDays > 0 {
-            HStack(spacing: ShedTheme.Space.xxs) {
-                Text("🔥")
-                Text("\(streakDays) days")
-                    .font(ShedTheme.Typography.caption)
-            }
-            .foregroundColor(streakDays >= 7 ? ShedTheme.Colors.brass : ShedTheme.Colors.textSecondary)
+            ShedBadge(
+                text: "\(streakDays) day\(streakDays == 1 ? "" : "s")",
+                icon: "🔥",
+                style: streakDays >= 7 ? .brass : .default
+            )
         }
     }
 }

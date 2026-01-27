@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 // MARK: - Curriculum Module
 
@@ -78,13 +79,9 @@ enum CurriculumPathway: String, CaseIterable, Codable, Equatable {
         }
     }
     
-    var color: String {
-        switch self {
-        case .harmonyFoundations: return "blue"
-        case .functionalHarmony: return "green"
-        case .earTraining: return "orange"
-        case .advancedTopics: return "purple"
-        }
+    // All pathways use the consistent brass theme color
+    var themeColor: Color {
+        return ShedTheme.Colors.brass
     }
 }
 

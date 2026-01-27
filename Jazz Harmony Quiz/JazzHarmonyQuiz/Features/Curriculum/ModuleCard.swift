@@ -59,7 +59,7 @@ struct ModuleCard: View {
             if isCompleted {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.title)
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
             } else if !isUnlocked {
                 Image(systemName: "lock.fill")
                     .font(.title2)
@@ -129,7 +129,7 @@ struct ModuleCard: View {
             }
             .font(.caption)
             .fontWeight(.semibold)
-            .foregroundColor(.green)
+            .foregroundColor(ShedTheme.Colors.success)
         }
     }
     
@@ -141,18 +141,13 @@ struct ModuleCard: View {
     private var cardBorder: some View {
         RoundedRectangle(cornerRadius: 16)
             .stroke(
-                isCompleted ? Color.green : (isUnlocked ? statusColor : Color.gray),
+                isCompleted ? ShedTheme.Colors.success : (isUnlocked ? statusColor : Color.gray),
                 lineWidth: isCompleted ? 2 : 1
             )
     }
     
     private var statusColor: Color {
-        switch module.pathway {
-        case .harmonyFoundations: return .blue
-        case .functionalHarmony: return .green
-        case .earTraining: return .orange
-        case .advancedTopics: return .purple
-        }
+        return ShedTheme.Colors.brass
     }
 }
 

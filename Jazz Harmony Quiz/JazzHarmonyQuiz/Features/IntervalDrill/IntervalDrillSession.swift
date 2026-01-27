@@ -56,10 +56,10 @@ struct IntervalDrillSession: View {
                             Text("Replay Interval")
                         }
                         .font(.subheadline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(ShedTheme.Colors.brass)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.1))
+                        .background(ShedTheme.Colors.brass.opacity(0.1))
                         .cornerRadius(8)
                     }
                     .padding(.horizontal)
@@ -130,14 +130,14 @@ struct IntervalDrillSession: View {
                 HStack {
                     if intervalGame.lastAnswerCorrect {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(ShedTheme.Colors.success)
                         Text("Correct! The note is \(question.correctNote.name)")
-                            .foregroundColor(.green)
+                            .foregroundColor(ShedTheme.Colors.success)
                     } else {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
+                            .foregroundColor(ShedTheme.Colors.danger)
                         Text("The correct note is \(question.correctNote.name)")
-                            .foregroundColor(.red)
+                            .foregroundColor(ShedTheme.Colors.danger)
                     }
                 }
                 .font(.subheadline)
@@ -175,12 +175,12 @@ struct IntervalDrillSession: View {
             if intervalGame.lastAnswerCorrect {
                 Text("Correct!")
                     .fontWeight(.semibold)
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
             } else {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Incorrect")
                         .fontWeight(.semibold)
-                        .foregroundColor(.red)
+                        .foregroundColor(ShedTheme.Colors.danger)
                     Text("The answer is \(question.interval.intervalType.name) (\(question.correctNote.name))")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -189,7 +189,7 @@ struct IntervalDrillSession: View {
                     let concept = ConceptualExplanations.shared.intervalExplanation(for: question.interval.intervalType)
                     Text(concept.sound)
                         .font(.caption)
-                        .foregroundColor(.blue)
+                        .foregroundColor(ShedTheme.Colors.brass)
                         .padding(.top, 2)
                 }
             }
@@ -199,7 +199,7 @@ struct IntervalDrillSession: View {
             // Play interval button
             Button(action: { playInterval(question.interval) }) {
                 Image(systemName: "speaker.wave.2.fill")
-                    .foregroundColor(.blue)
+                    .foregroundColor(ShedTheme.Colors.brass)
             }
         }
         .padding()
@@ -221,7 +221,7 @@ struct IntervalDrillSession: View {
                 }) {
                     Text("Clear")
                         .font(.headline)
-                        .foregroundColor(.red)
+                        .foregroundColor(ShedTheme.Colors.danger)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color(.systemGray6))
@@ -235,7 +235,7 @@ struct IntervalDrillSession: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(canSubmit(question) ? Color.green : Color.gray)
+                        .background(canSubmit(question) ? ShedTheme.Colors.success : Color.gray)
                         .cornerRadius(12)
                 }
                 .disabled(!canSubmit(question))
@@ -250,7 +250,7 @@ struct IntervalDrillSession: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.green)
+                    .background(ShedTheme.Colors.success)
                     .cornerRadius(12)
                 }
             }
@@ -313,7 +313,7 @@ struct IntervalDisplayView: View {
                 VStack(spacing: 16) {
                     Image(systemName: "ear.fill")
                         .font(.system(size: 50))
-                        .foregroundColor(.blue)
+                        .foregroundColor(ShedTheme.Colors.brass)
                     
                     Text("Listen to the interval")
                         .font(.headline)

@@ -88,7 +88,7 @@ struct IntervalDrillView: View {
                     Button("Quit") {
                         quitQuiz()
                     }
-                    .foregroundColor(.red)
+                    .foregroundColor(ShedTheme.Colors.danger)
                 }
             }
         }

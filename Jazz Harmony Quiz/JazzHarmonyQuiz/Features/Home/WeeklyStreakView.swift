@@ -22,7 +22,6 @@ struct WeeklyStreakView: View {
     
     private func isDayCompleted(_ day: String) -> Bool {
         let calendar = Calendar.current
-        let today = calendar.component(.weekday, from: Date())
         let dayIndex = weekDays.firstIndex(of: day) ?? 0
         let targetWeekday = dayIndex + 2 // Monday = 2, Tuesday = 3, etc.
         
@@ -70,23 +69,34 @@ private struct DayCheckmark: View {
     let isToday: Bool
     
     var body: some View {
-        VStack(spacing: ShedTheme.Space.xxs) {
+        VStack(spacing: ShedTheme.Space.xs) {
             Text(day)
-                .font(ShedTheme.Typography.caption)
-                .foregroundColor(isCompleted ? ShedTheme.Colors.brass : ShedTheme.Colors.textTertiary)
+                .font(ShedTheme.Typography.captionSmall)
+                .tracking(0.5)
+                .foregroundColor(isCompleted ? ShedTheme.Colors.brassLight : ShedTheme.Colors.textTertiary)
             
             ZStack {
+                // Background
                 RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
-                    .fill(isCompleted ? ShedTheme.Colors.brass.opacity(0.15) : Color.clear)
-                    .frame(width: 44, height: 44)
+                    .fill(isCompleted ? ShedTheme.Colors.brass.opacity(0.2) : ShedTheme.Colors.surface)
+                    .frame(width: 48, height: 48)
                 
+                // Border
                 RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
-                    .stroke(borderColor, lineWidth: ShedTheme.Stroke.thin)
-                    .frame(width: 44, height: 44)
+                    .stroke(borderColor, lineWidth: isCompleted ? ShedTheme.Stroke.medium : ShedTheme.Stroke.thin)
+                    .frame(width: 48, height: 48)
                 
+                // Today indicator (pulsing ring)
+                if isToday && !isCompleted {
+                    RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
+                        .stroke(ShedTheme.Colors.brassMuted, lineWidth: 1)
+                        .frame(width: 42, height: 42)
+                }
+                
+                // Checkmark
                 if isCompleted {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundColor(ShedTheme.Colors.brass)
                 }
             }
@@ -97,7 +107,7 @@ private struct DayCheckmark: View {
         if isCompleted {
             return ShedTheme.Colors.brass
         } else if isToday {
-            return ShedTheme.Colors.brass.opacity(0.5)
+            return ShedTheme.Colors.brassMuted
         } else {
             return ShedTheme.Colors.stroke
         }

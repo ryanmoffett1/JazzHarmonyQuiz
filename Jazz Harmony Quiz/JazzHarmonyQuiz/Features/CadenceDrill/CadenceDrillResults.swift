@@ -79,7 +79,7 @@ struct CadenceDrillResults: View {
             if let streakMessage = cadenceGame.getStreakEncouragement() {
                 Text(streakMessage)
                     .font(.subheadline)
-                    .foregroundColor(.orange)
+                    .foregroundColor(ShedTheme.Colors.warning)
                     .multilineTextAlignment(.center)
             } else if cadenceGame.currentStreak > 1 {
                 HStack {
@@ -87,7 +87,7 @@ struct CadenceDrillResults: View {
                     Text("\(cadenceGame.currentStreak) day streak!")
                 }
                 .font(.subheadline)
-                .foregroundColor(.orange)
+                .foregroundColor(ShedTheme.Colors.warning)
             }
         }
     }
@@ -203,7 +203,7 @@ struct CadenceDrillResults: View {
                 Text("\(cadenceGame.playerStats.currentRating)")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.blue)
+                    .foregroundColor(ShedTheme.Colors.brass)
                 
                 Text("Total")
                     .font(.caption)
@@ -235,16 +235,16 @@ struct CadenceDrillResults: View {
                         .fontWeight(.bold)
                 }
                 Image(systemName: "arrow.right")
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
                 Text("Level \(playerLevel.level)")
                     .fontWeight(.bold)
                 Text("Level Up!")
                     .fontWeight(.bold)
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
             }
             .font(.headline)
             .padding()
-            .background(Color.green.opacity(0.1))
+            .background(ShedTheme.Colors.success.opacity(0.1))
             .cornerRadius(8)
         }
     }
@@ -282,7 +282,7 @@ struct CadenceDrillResults: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.red)
+                    .background(ShedTheme.Colors.danger)
                     .cornerRadius(12)
                 }
             }
@@ -393,7 +393,7 @@ struct CadenceReviewView: View {
                             .font(.caption)
                         Text(userAnswer[i].map { $0.name }.joined(separator: ", "))
                             .font(.caption)
-                            .foregroundColor(.red)
+                            .foregroundColor(ShedTheme.Colors.danger)
                     }
 
                     HStack {
@@ -401,7 +401,7 @@ struct CadenceReviewView: View {
                             .font(.caption)
                         Text(question.correctAnswers[i].map { $0.name }.joined(separator: ", "))
                             .font(.caption)
-                            .foregroundColor(.green)
+                            .foregroundColor(ShedTheme.Colors.success)
                     }
                 }
                 .padding(.leading)

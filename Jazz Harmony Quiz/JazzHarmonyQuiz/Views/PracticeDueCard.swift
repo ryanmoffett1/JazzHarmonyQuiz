@@ -77,7 +77,7 @@ struct PracticeDueCard: View {
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(
-                    totalDue > 0 ? Color.orange.opacity(0.3) : Color.green.opacity(0.3),
+                    totalDue > 0 ? ShedTheme.Colors.warning.opacity(0.3) : ShedTheme.Colors.success.opacity(0.3),
                     lineWidth: 2
                 )
         )

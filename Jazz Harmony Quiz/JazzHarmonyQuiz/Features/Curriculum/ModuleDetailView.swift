@@ -123,12 +123,7 @@ struct ModuleDetailView: View {
     }
     
     private var pathwayColor: Color {
-        switch module.pathway {
-        case .harmonyFoundations: return .blue
-        case .functionalHarmony: return .green
-        case .earTraining: return .orange
-        case .advancedTopics: return .purple
-        }
+        return ShedTheme.Colors.brass
     }
 }
 
@@ -144,7 +139,7 @@ struct CriteriaRow: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(isMet ? .green : .orange)
+                .foregroundColor(isMet ? ShedTheme.Colors.success : ShedTheme.Colors.warning)
                 .frame(width: 24)
             
             Text(text)
@@ -158,7 +153,7 @@ struct CriteriaRow: View {
             
             if isMet {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
             }
         }
         .padding(12)

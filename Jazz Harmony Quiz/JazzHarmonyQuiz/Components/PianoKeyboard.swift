@@ -183,7 +183,7 @@ struct WhiteKeyView: View {
                     // Selection indicator at bottom
                     if isSelected {
                         Circle()
-                            .fill(Color.blue)
+                            .fill(ShedTheme.Colors.brass)
                             .frame(width: min(width * 0.6, 16), height: min(width * 0.6, 16))
                             .padding(.bottom, 8)
                     }
@@ -205,9 +205,9 @@ struct WhiteKeyView: View {
     
     private var keyColor: Color {
         if isSelected {
-            return .blue.opacity(0.2)
+            return ShedTheme.Colors.brass.opacity(0.2)
         } else if isPressed {
-            return .gray.opacity(0.3)
+            return Color.gray.opacity(0.3)
         } else {
             return .white
         }
@@ -242,7 +242,7 @@ struct BlackKeyView: View {
                     // Selection indicator at bottom
                     if isSelected {
                         Circle()
-                            .fill(Color.blue)
+                            .fill(ShedTheme.Colors.brass)
                             .frame(width: min(width * 0.6, 12), height: min(width * 0.6, 12))
                             .padding(.bottom, 6)
                     }
@@ -264,7 +264,7 @@ struct BlackKeyView: View {
     
     private var keyColor: Color {
         if isSelected {
-            return .blue.opacity(0.8)
+            return ShedTheme.Colors.brass.opacity(0.8)
         } else if isPressed {
             return .gray.opacity(0.7)
         } else {

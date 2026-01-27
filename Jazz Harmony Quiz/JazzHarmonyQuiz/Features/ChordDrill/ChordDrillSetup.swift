@@ -55,11 +55,11 @@ struct ChordDrillSetup: View {
                     .foregroundColor(Color("BrassAccent"))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.purple.opacity(0.1))
+                    .background(ShedTheme.Colors.brass.opacity(0.1))
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.purple, lineWidth: 1.5)
+                            .stroke(ShedTheme.Colors.brass, lineWidth: 1.5)
                     )
                 }
                 .sheet(isPresented: $showingSettings) {
@@ -95,7 +95,7 @@ struct ChordDrillSetup: View {
                     Text("\(playerStats.currentRating) XP")
                 }
                 .font(.subheadline)
-                .foregroundColor(.blue)
+                .foregroundColor(ShedTheme.Colors.brass)
                 
                 // Streak
                 if playerStats.currentStreak > 0 {
@@ -105,7 +105,7 @@ struct ChordDrillSetup: View {
                             .fontWeight(.semibold)
                     }
                     .font(.subheadline)
-                    .foregroundColor(.orange)
+                    .foregroundColor(ShedTheme.Colors.brass)
                 }
             }
         }
@@ -123,7 +123,7 @@ struct ChordDrillSetup: View {
                     title: "Basic Triads",
                     subtitle: "Major, minor, dim, aug",
                     icon: "music.note",
-                    color: .green
+                    color: ShedTheme.Colors.brass
                 ) {
                     applyPreset(.basicTriads)
                     onStartQuiz()
@@ -133,7 +133,7 @@ struct ChordDrillSetup: View {
                     title: "7th Chords",
                     subtitle: "Dom7, maj7, min7",
                     icon: "music.note.list",
-                    color: .blue
+                    color: ShedTheme.Colors.brass
                 ) {
                     applyPreset(.seventhChords)
                     onStartQuiz()
@@ -143,7 +143,7 @@ struct ChordDrillSetup: View {
                     title: "Full Workout",
                     subtitle: "All chord types",
                     icon: "flame.fill",
-                    color: .orange
+                    color: ShedTheme.Colors.brass
                 ) {
                     applyPreset(.fullWorkout)
                     onStartQuiz()
@@ -176,7 +176,7 @@ struct ChordDrillSetup: View {
                         Text("\(count)").tag(count)
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
+                .shedSegmentedPicker()
             }
             
             // Difficulty Level
@@ -189,7 +189,7 @@ struct ChordDrillSetup: View {
                         Text(difficulty.rawValue).tag(difficulty)
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
+                .shedSegmentedPicker()
             }
             
             // Key Difficulty
@@ -202,7 +202,7 @@ struct ChordDrillSetup: View {
                         Text(keyDiff.rawValue).tag(keyDiff)
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
+                .shedSegmentedPicker()
                 
                 Text(selectedKeyDifficulty.description)
                     .font(.caption)
@@ -228,7 +228,7 @@ struct ChordDrillSetup: View {
                                     .foregroundColor(selectedQuestionTypes.contains(questionType) ? .blue : .gray)
 
                                 Image(systemName: questionType.icon)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(ShedTheme.Colors.success)
                                     .frame(width: 24)
 
                                 VStack(alignment: .leading) {
@@ -270,7 +270,7 @@ struct ChordDrillSetup: View {
                     .font(.subheadline)
                     .foregroundColor(.primary)
                     .padding()
-                    .background(Color(.systemGray5))
+                    .background(ShedTheme.Colors.surface)
                     .cornerRadius(8)
                 }
                 
@@ -349,7 +349,7 @@ struct ChordTypeFilterView: View {
                     selectedSymbols = Set(database.getAllChordSymbols())
                 }
                 .font(.caption)
-                .foregroundColor(.blue)
+                .foregroundColor(ShedTheme.Colors.brass)
                 
                 Spacer()
                 
@@ -357,7 +357,7 @@ struct ChordTypeFilterView: View {
                     selectedSymbols.removeAll()
                 }
                 .font(.caption)
-                .foregroundColor(.red)
+                .foregroundColor(ShedTheme.Colors.danger)
             }
             
             // Categories
@@ -417,7 +417,7 @@ struct ChordTypeChip: View {
                 .fontWeight(.medium)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(isSelected ? Color.blue : Color(.systemGray5))
+                .background(isSelected ? ShedTheme.Colors.brass : ShedTheme.Colors.surface)
                 .foregroundColor(isSelected ? .white : .primary)
                 .cornerRadius(16)
         }

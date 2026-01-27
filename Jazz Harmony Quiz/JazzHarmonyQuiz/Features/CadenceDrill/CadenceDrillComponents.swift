@@ -71,7 +71,7 @@ struct CadenceChordIdentificationSession: View {
                         
                         Text(romanNumeral(for: currentChordIndex, cadenceType: question.cadence.cadenceType))
                             .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.blue)
+                            .foregroundColor(ShedTheme.Colors.brass)
                     }
                     .padding()
                 }
@@ -158,11 +158,11 @@ struct CadenceChordIdentificationSession: View {
     
     private func backgroundColor(isActive: Bool, isCompleted: Bool, index: Int) -> Color {
         if showingFeedback {
-            return feedbackResults[safe: index] == true ? Color.green.opacity(0.8) : Color.red.opacity(0.8)
+            return feedbackResults[safe: index] == true ? ShedTheme.Colors.success.opacity(0.8) : ShedTheme.Colors.danger.opacity(0.8)
         } else if isCompleted {
-            return Color.blue
+            return ShedTheme.Colors.brass
         } else if isActive {
-            return Color.blue.opacity(0.7)
+            return ShedTheme.Colors.brass.opacity(0.7)
         } else {
             return Color(.systemGray4)
         }
@@ -177,7 +177,7 @@ struct CadenceChordIdentificationSession: View {
                 // Correct answer - simple display
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 60))
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
                 
                 Text("Correct!")
                     .font(.title2)
@@ -192,7 +192,7 @@ struct CadenceChordIdentificationSession: View {
                     // Phase 1: Show user's answer
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 50))
-                        .foregroundColor(.red)
+                        .foregroundColor(ShedTheme.Colors.danger)
                     
                     Text("Your answer:")
                         .font(.headline)
@@ -207,7 +207,7 @@ struct CadenceChordIdentificationSession: View {
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 24)
                                 .padding(.vertical, 12)
-                                .background(Color.blue)
+                                .background(ShedTheme.Colors.brass)
                                 .cornerRadius(10)
                         }
                         .padding(.top, 8)
@@ -217,7 +217,7 @@ struct CadenceChordIdentificationSession: View {
                     // Phase 2: Show correct answer
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 50))
-                        .foregroundColor(.green)
+                        .foregroundColor(ShedTheme.Colors.success)
                     
                     Text("Correct answer:")
                         .font(.headline)
@@ -276,7 +276,7 @@ struct CadenceChordIdentificationSession: View {
                         .font(.system(size: 16, weight: .semibold))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(isHighlighted ? Color.green : Color.green.opacity(0.2))
+                        .background(isHighlighted ? ShedTheme.Colors.success : ShedTheme.Colors.success.opacity(0.2))
                         .foregroundColor(isHighlighted ? .white : .primary)
                         .cornerRadius(8)
                         .scaleEffect(isHighlighted ? 1.1 : 1.0)
@@ -288,12 +288,12 @@ struct CadenceChordIdentificationSession: View {
     
     private func chordBackgroundColor(isHighlighted: Bool, isCorrect: Bool, showResult: Bool) -> Color {
         if isHighlighted {
-            return isCorrect ? Color.green : Color.red
+            return isCorrect ? ShedTheme.Colors.success : ShedTheme.Colors.danger
         }
         if showResult {
-            return isCorrect ? Color.green.opacity(0.2) : Color.red.opacity(0.2)
+            return isCorrect ? ShedTheme.Colors.success.opacity(0.2) : ShedTheme.Colors.danger.opacity(0.2)
         }
-        return Color(.systemGray5)
+        return ShedTheme.Colors.surface
     }
     
     private func chordForegroundColor(isHighlighted: Bool, isCorrect: Bool, showResult: Bool) -> Color {
@@ -330,7 +330,7 @@ struct CadenceChordIdentificationSession: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(ShedTheme.Colors.brass)
                             .cornerRadius(12)
                     }
                 } else {
@@ -342,7 +342,7 @@ struct CadenceChordIdentificationSession: View {
                 Button(action: clearCurrentChord) {
                     Text("Clear")
                         .font(.headline)
-                        .foregroundColor(.red)
+                        .foregroundColor(ShedTheme.Colors.danger)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color(.systemGray6))
@@ -356,7 +356,7 @@ struct CadenceChordIdentificationSession: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(chordSelections[currentChordIndex].isComplete ? Color.blue : Color.gray)
+                        .background(chordSelections[currentChordIndex].isComplete ? ShedTheme.Colors.brass : Color.gray)
                         .cornerRadius(12)
                 }
                 .disabled(!chordSelections[currentChordIndex].isComplete)
@@ -561,14 +561,14 @@ struct CadenceTypePicker: View {
                         if let correct = correctCadenceType {
                             if cadenceType == correct {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
+                                    .foregroundColor(ShedTheme.Colors.success)
                             } else if cadenceType == selectedCadenceType {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.red)
+                                    .foregroundColor(ShedTheme.Colors.danger)
                             }
                         } else if cadenceType == selectedCadenceType {
                             Image(systemName: "checkmark.circle")
-                                .foregroundColor(.green)
+                                .foregroundColor(ShedTheme.Colors.success)
                         } else {
                             Image(systemName: "circle")
                                 .foregroundColor(.gray)
@@ -631,7 +631,7 @@ struct ChordVoicingView: View {
                             let isHighlighted = notes.contains { $0.name == noteName || $0.name == noteName }
                             
                             Rectangle()
-                                .fill(isHighlighted ? Color.blue : Color.white)
+                                .fill(isHighlighted ? ShedTheme.Colors.brass : Color.white)
                                 .frame(width: whiteKeyWidth - 1, height: whiteKeyHeight)
                                 .overlay(
                                     VStack {
@@ -657,7 +657,7 @@ struct ChordVoicingView: View {
                                 let isHighlighted = notes.contains { $0.name == noteName || $0.name == enharmonic(noteName) }
                                 
                                 Rectangle()
-                                    .fill(isHighlighted ? Color.blue : Color.black)
+                                    .fill(isHighlighted ? ShedTheme.Colors.brass : Color.black)
                                     .frame(width: blackKeyWidth, height: blackKeyHeight)
                                     .offset(x: whiteKeyWidth * CGFloat(index) + whiteKeyWidth - blackKeyWidth / 2)
                                     .overlay(

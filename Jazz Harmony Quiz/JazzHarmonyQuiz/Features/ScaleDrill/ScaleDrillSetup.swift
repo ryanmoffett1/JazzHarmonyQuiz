@@ -62,7 +62,7 @@ struct ScaleDrillSetup: View {
                     Text("\(playerStats.currentRating) XP")
                 }
                 .font(.subheadline)
-                .foregroundColor(.blue)
+                .foregroundColor(ShedTheme.Colors.brass)
                 
                 if playerStats.currentStreak > 0 {
                     HStack(spacing: 4) {
@@ -71,7 +71,7 @@ struct ScaleDrillSetup: View {
                             .fontWeight(.semibold)
                     }
                     .font(.subheadline)
-                    .foregroundColor(.orange)
+                    .foregroundColor(ShedTheme.Colors.brass)
                 }
             }
         }
@@ -115,7 +115,7 @@ struct ScaleDrillSetup: View {
                     Text("\(count)").tag(count)
                 }
             }
-            .pickerStyle(SegmentedPickerStyle())
+            .shedSegmentedPicker()
         }
     }
     
@@ -131,7 +131,7 @@ struct ScaleDrillSetup: View {
                     Text(difficulty.rawValue).tag(difficulty)
                 }
             }
-            .pickerStyle(SegmentedPickerStyle())
+            .shedSegmentedPicker()
             
             Text(selectedDifficulty.description)
                 .font(.caption)
@@ -157,7 +157,7 @@ struct ScaleDrillSetup: View {
                     Text(keyDiff.rawValue).tag(keyDiff)
                 }
             }
-            .pickerStyle(SegmentedPickerStyle())
+            .shedSegmentedPicker()
             
             Text(selectedKeyDifficulty.description)
                 .font(.caption)
@@ -183,7 +183,7 @@ struct ScaleDrillSetup: View {
                     }) {
                         HStack {
                             Image(systemName: selectedQuestionTypes.contains(questionType) ? "checkmark.square.fill" : "square")
-                                .foregroundColor(selectedQuestionTypes.contains(questionType) ? .teal : .gray)
+                                .foregroundColor(selectedQuestionTypes.contains(questionType) ? ShedTheme.Colors.brass : .gray)
                             
                             VStack(alignment: .leading) {
                                 Text(questionType.rawValue)
@@ -231,7 +231,7 @@ struct ScaleDrillSetup: View {
                 .font(.subheadline)
                 .foregroundColor(.primary)
                 .padding()
-                .background(Color(.systemGray5))
+                .background(ShedTheme.Colors.surface)
                 .cornerRadius(8)
             }
             
@@ -277,14 +277,14 @@ struct ScaleDrillSetup: View {
                 Text("View Scale Scoreboard")
             }
             .font(.subheadline)
-            .foregroundColor(.orange)
+            .foregroundColor(ShedTheme.Colors.warning)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background(Color.orange.opacity(0.1))
+            .background(ShedTheme.Colors.warning.opacity(0.1))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.orange, lineWidth: 1.5)
+                    .stroke(ShedTheme.Colors.warning, lineWidth: 1.5)
             )
         }
     }
@@ -303,7 +303,7 @@ struct ScaleTypeFilterView: View {
                     selectedSymbols = Set(database.getAllScaleSymbols())
                 }
                 .font(.caption)
-                .foregroundColor(.blue)
+                .foregroundColor(ShedTheme.Colors.brass)
                 
                 Spacer()
                 
@@ -311,7 +311,7 @@ struct ScaleTypeFilterView: View {
                     selectedSymbols.removeAll()
                 }
                 .font(.caption)
-                .foregroundColor(.red)
+                .foregroundColor(ShedTheme.Colors.danger)
             }
             
             ForEach(JazzScaleDatabase.ScaleCategory.allCases, id: \.self) { category in
@@ -340,7 +340,7 @@ struct ScaleTypeFilterView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray5))
+        .background(ShedTheme.Colors.surface)
         .cornerRadius(8)
     }
 }
@@ -358,7 +358,7 @@ struct ScaleTypeChip: View {
                 .font(.caption)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(isSelected ? Color.teal : Color(.systemGray4))
+                .background(isSelected ? ShedTheme.Colors.brass : Color(.systemGray4))
                 .foregroundColor(isSelected ? .white : .primary)
                 .cornerRadius(16)
         }

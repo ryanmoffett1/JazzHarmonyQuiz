@@ -85,7 +85,7 @@ struct SettingsView: View {
                         Note(name: "B", midiNumber: 71, isSharp: false)
                     ], duration: 1.5)
                 }
-                .foregroundColor(.blue)
+                .foregroundColor(ShedTheme.Colors.brass)
             }
         } header: {
             Text("Audio")
@@ -128,7 +128,7 @@ struct SettingsView: View {
                     tempo: settings.intervalTempo
                 )
             }
-            .foregroundColor(.blue)
+            .foregroundColor(ShedTheme.Colors.brass)
         } header: {
             Text("Interval Ear Training")
         } footer: {
@@ -173,7 +173,7 @@ struct SettingsView: View {
                     tempo: settings.chordTempo
                 )
             }
-            .foregroundColor(.blue)
+            .foregroundColor(ShedTheme.Colors.brass)
         } header: {
             Text("Chord Ear Training")
         } footer: {
@@ -339,7 +339,7 @@ struct ExportProgressView: View {
             VStack(spacing: 20) {
                 Image(systemName: "square.and.arrow.up.circle.fill")
                     .font(.system(size: 60))
-                    .foregroundColor(.blue)
+                    .foregroundColor(ShedTheme.Colors.brass)
                 
                 Text("Export Your Progress")
                     .font(.title2)
@@ -356,7 +356,7 @@ struct ExportProgressView: View {
                         Label("Share Progress Data", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(ShedTheme.Colors.brass)
                             .foregroundColor(.white)
                             .cornerRadius(12)
                     }

@@ -124,7 +124,7 @@ struct ScaleDrillSession: View {
             VStack(spacing: 12) {
                 Image(systemName: "ear.fill")
                     .font(.system(size: 50))
-                    .foregroundColor(.purple)
+                    .foregroundColor(ShedTheme.Colors.brass)
                 
                 Text("Listen to the scale")
                     .font(.headline)
@@ -204,23 +204,23 @@ struct ScaleDrillSession: View {
                 if showingFeedback {
                     if isCorrectChoice {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(ShedTheme.Colors.success)
                     } else if isWrongChoice {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
+                            .foregroundColor(ShedTheme.Colors.danger)
                     }
                 } else if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.purple)
+                        .foregroundColor(ShedTheme.Colors.brass)
                 }
             }
             .padding()
             .background(
                 showingFeedback ?
-                    (isCorrectChoice ? Color.green.opacity(0.2) :
-                     isWrongChoice ? Color.red.opacity(0.2) :
+                    (isCorrectChoice ? ShedTheme.Colors.success.opacity(0.2) :
+                     isWrongChoice ? ShedTheme.Colors.danger.opacity(0.2) :
                      Color(.systemGray6)) :
-                    (isSelected ? Color.purple.opacity(0.2) : Color(.systemGray6))
+                    (isSelected ? ShedTheme.Colors.brass.opacity(0.2) : Color(.systemGray6))
             )
             .cornerRadius(10)
         }
@@ -276,7 +276,7 @@ struct ScaleDrillSession: View {
                         .font(.headline)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(Color.teal)
+                        .background(ShedTheme.Colors.brass)
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
@@ -292,10 +292,10 @@ struct ScaleDrillSession: View {
     private func maxNotesWarningView(question: ScaleQuestion) -> some View {
         Text("Maximum \(question.correctNotes.count) notes allowed!")
             .font(.caption)
-            .foregroundColor(.orange)
+            .foregroundColor(ShedTheme.Colors.warning)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.orange.opacity(0.15))
+            .background(ShedTheme.Colors.warning.opacity(0.15))
             .cornerRadius(8)
             .transition(.scale.combined(with: .opacity))
     }
@@ -336,7 +336,7 @@ struct ScaleDrillSession: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
-                        .background(Color.blue)
+                        .background(ShedTheme.Colors.brass)
                         .cornerRadius(10)
                 }
             }
@@ -344,7 +344,7 @@ struct ScaleDrillSession: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(isCorrect ? Color.green.opacity(0.1) : (feedbackPhase == .showingCorrectAnswer ? Color.green.opacity(0.1) : Color.red.opacity(0.1)))
+                .fill(isCorrect ? ShedTheme.Colors.success.opacity(0.1) : (feedbackPhase == .showingCorrectAnswer ? ShedTheme.Colors.success.opacity(0.1) : ShedTheme.Colors.danger.opacity(0.1)))
         )
         .padding(.horizontal)
     }
@@ -398,7 +398,7 @@ struct ScaleDrillSession: View {
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(isOctaveHighlighted ? Color.blue : Color.gray.opacity(0.3))
+                .background(isOctaveHighlighted ? ShedTheme.Colors.brass : Color.gray.opacity(0.3))
                 .foregroundColor(isOctaveHighlighted ? .white : .white.opacity(0.5))
                 .cornerRadius(6)
                 .scaleEffect(isOctaveHighlighted ? 1.1 : 1.0)
@@ -425,7 +425,7 @@ struct ScaleDrillSession: View {
                                     .font(.subheadline)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 6)
-                                    .background(Color.orange)
+                                    .background(ShedTheme.Colors.warning)
                                     .foregroundColor(.white)
                                     .cornerRadius(6)
                             }
@@ -453,7 +453,7 @@ struct ScaleDrillSession: View {
                     .fontWeight(.semibold)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(isHighlighted ? Color.green : Color.green.opacity(0.7))
+                    .background(isHighlighted ? ShedTheme.Colors.success : ShedTheme.Colors.success.opacity(0.7))
                     .foregroundColor(.white)
                     .cornerRadius(6)
                     .scaleEffect(isHighlighted ? 1.1 : 1.0)
@@ -472,7 +472,7 @@ struct ScaleDrillSession: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
-            .background(isOctaveHighlighted ? Color.green : Color.gray.opacity(0.3))
+            .background(isOctaveHighlighted ? ShedTheme.Colors.success : Color.gray.opacity(0.3))
             .foregroundColor(isOctaveHighlighted ? .white : .white.opacity(0.5))
             .cornerRadius(6)
             .scaleEffect(isOctaveHighlighted ? 1.1 : 1.0)
@@ -493,7 +493,7 @@ struct ScaleDrillSession: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(selectedScaleType != nil ? Color.purple : Color.gray)
+                            .background(selectedScaleType != nil ? ShedTheme.Colors.brass : Color.gray)
                             .cornerRadius(12)
                     }
                     .disabled(selectedScaleType == nil)
@@ -505,10 +505,10 @@ struct ScaleDrillSession: View {
                     }) {
                         Text("Clear")
                             .font(.headline)
-                            .foregroundColor(.red)
+                            .foregroundColor(ShedTheme.Colors.danger)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.red.opacity(0.1))
+                            .background(ShedTheme.Colors.danger.opacity(0.1))
                             .cornerRadius(12)
                     }
                     
@@ -527,7 +527,7 @@ struct ScaleDrillSession: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(hasCorrectCount ? Color.teal : Color.gray)
+                        .background(hasCorrectCount ? ShedTheme.Colors.brass : Color.gray)
                         .cornerRadius(12)
                     }
                     .disabled(!hasCorrectCount)
@@ -546,7 +546,7 @@ struct ScaleDrillSession: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.purple)
+                    .background(ShedTheme.Colors.brass)
                     .cornerRadius(12)
                 }
                 
@@ -557,7 +557,7 @@ struct ScaleDrillSession: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.teal)
+                        .background(ShedTheme.Colors.brass)
                         .cornerRadius(12)
                 }
             }
@@ -598,12 +598,12 @@ struct ScaleDrillSession: View {
     
     private func noteBackgroundColor(isCorrect: Bool, isHighlighted: Bool, isAllCorrect: Bool) -> Color {
         if isAllCorrect {
-            return isHighlighted ? Color.green : Color.green.opacity(0.7)
+            return isHighlighted ? ShedTheme.Colors.success : ShedTheme.Colors.success.opacity(0.7)
         }
         if isHighlighted {
-            return isCorrect ? Color.green : Color.red
+            return isCorrect ? ShedTheme.Colors.success : ShedTheme.Colors.danger
         }
-        return isCorrect ? Color.green.opacity(0.7) : Color.red.opacity(0.7)
+        return isCorrect ? ShedTheme.Colors.success.opacity(0.7) : ShedTheme.Colors.danger.opacity(0.7)
     }
     
     private func displayNoteName(_ note: Note, for scale: Scale) -> String {

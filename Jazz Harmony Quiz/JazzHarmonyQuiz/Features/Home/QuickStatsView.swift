@@ -7,13 +7,34 @@ struct QuickStatsView: View {
     
     var body: some View {
         ShedCard {
-            VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
-                ShedRow(label: "Total Sessions", value: "\(totalSessions)")
-                ShedDivider()
-                ShedRow(label: "This Week", value: "\(sessionsThisWeek)")
-                ShedDivider()
-                ShedRow(label: "Avg Accuracy", value: "\(averageAccuracy)%")
+            HStack(spacing: ShedTheme.Space.m) {
+                // Total Sessions
+                ShedStatDisplay(
+                    value: "\(totalSessions)",
+                    label: "Sessions",
+                    icon: "music.note.list"
+                )
+                
+                Spacer()
+                
+                // This Week
+                ShedStatDisplay(
+                    value: "\(sessionsThisWeek)",
+                    label: "This Week",
+                    icon: "calendar"
+                )
+                
+                Spacer()
+                
+                // Accuracy
+                ShedStatDisplay(
+                    value: "\(averageAccuracy)%",
+                    label: "Accuracy",
+                    icon: "target",
+                    highlighted: averageAccuracy >= 80
+                )
             }
+            .padding(.vertical, ShedTheme.Space.xs)
         }
     }
     

@@ -275,33 +275,33 @@ class SettingsManager: ObservableObject {
     }
 
     func primaryAccent(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? Color.blue.opacity(0.8) : .blue
+        colorScheme == .dark ? ShedTheme.Colors.brass.opacity(0.8) : .blue
     }
 
     func successColor(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? Color.green.opacity(0.8) : .green
+        colorScheme == .dark ? ShedTheme.Colors.success.opacity(0.8) : .green
     }
 
     func errorColor(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? Color.red.opacity(0.8) : .red
+        colorScheme == .dark ? ShedTheme.Colors.danger.opacity(0.8) : .red
     }
 
     func warningColor(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? Color.orange.opacity(0.8) : .orange
+        colorScheme == .dark ? ShedTheme.Colors.warning.opacity(0.8) : .orange
     }
 
     func infoColor(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? Color.purple.opacity(0.8) : .purple
+        colorScheme == .dark ? ShedTheme.Colors.brass.opacity(0.8) : .purple
     }
 
     // Chord display background
     func chordDisplayBackground(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? Color.blue.opacity(0.2) : Color.blue.opacity(0.1)
+        colorScheme == .dark ? ShedTheme.Colors.brass.opacity(0.2) : ShedTheme.Colors.brass.opacity(0.1)
     }
 
     // Selected note background
     func selectedNoteBackground(for colorScheme: ColorScheme) -> Color {
-        colorScheme == .dark ? Color.blue.opacity(0.7) : .blue
+        colorScheme == .dark ? ShedTheme.Colors.brass.opacity(0.7) : .blue
     }
 
     // Text colors with proper contrast

@@ -48,7 +48,7 @@ struct IntervalDrillSetup: View {
         VStack(spacing: 8) {
             Image(systemName: "arrow.up.arrow.down")
                 .font(.system(size: 50))
-                .foregroundColor(.green)
+                .foregroundColor(ShedTheme.Colors.success)
             Text("Interval Drill")
                 .font(.title)
                 .fontWeight(.bold)
@@ -100,7 +100,7 @@ struct IntervalDrillSetup: View {
                             Spacer()
                             if selectedQuestionTypes.contains(type) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
+                                    .foregroundColor(ShedTheme.Colors.success)
                             } else {
                                 Image(systemName: "circle")
                                     .foregroundColor(.gray)
@@ -179,7 +179,7 @@ struct IntervalSettingsCard<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: icon)
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
                 Text(title)
                     .font(.headline)
             }
@@ -200,7 +200,7 @@ struct IntervalScoreboardPreview: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "trophy")
-                    .foregroundColor(.yellow)
+                    .foregroundColor(ShedTheme.Colors.warning)
                 Text("Recent Scores")
                     .font(.headline)
             }

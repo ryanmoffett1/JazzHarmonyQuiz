@@ -113,7 +113,7 @@ struct QuickPracticeSession: View {
                 Spacer()
                 Text("\(correctCount) correct")
                     .font(.caption)
-                    .foregroundColor(.green)
+                    .foregroundColor(ShedTheme.Colors.success)
             }
             .padding(.horizontal)
             
@@ -225,7 +225,7 @@ struct QuickPracticeSession: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill((isCorrect ? Color.green : Color.red).opacity(0.1))
+                .fill((isCorrect ? ShedTheme.Colors.success : ShedTheme.Colors.danger).opacity(0.1))
         )
     }
     
@@ -294,10 +294,10 @@ struct QuickPracticeSession: View {
                                         .fontWeight(.medium)
                                     Text("You said: \(item.userAnswer)")
                                         .font(.caption)
-                                        .foregroundColor(.red)
+                                        .foregroundColor(ShedTheme.Colors.danger)
                                     Text("Correct: \(item.correctAnswer)")
                                         .font(.caption)
-                                        .foregroundColor(.green)
+                                        .foregroundColor(ShedTheme.Colors.success)
                                 }
                                 Spacer()
                             }

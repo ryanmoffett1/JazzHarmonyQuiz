@@ -184,7 +184,7 @@ struct QuizSetupView: View {
                                 Text("\(count)").tag(count)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .shedSegmentedPicker()
                     }
                     
                     // Difficulty Level
@@ -198,7 +198,7 @@ struct QuizSetupView: View {
                                 Text(difficulty.rawValue).tag(difficulty)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .shedSegmentedPicker()
                     }
                     
                     // Key Difficulty
@@ -212,7 +212,7 @@ struct QuizSetupView: View {
                                 Text(keyDiff.rawValue).tag(keyDiff)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .shedSegmentedPicker()
                         
                         Text(selectedKeyDifficulty.description)
                             .font(ShedTheme.Typography.caption)
@@ -627,10 +627,10 @@ struct ActiveQuizView: View {
                                     .padding()
                                     .background(
                                         showingFeedback ?
-                                            (isCorrect ? Color.green.opacity(0.2) :
-                                             isWrong ? Color.red.opacity(0.2) :
+                                            (isCorrect ? ShedTheme.Colors.success.opacity(0.2) :
+                                             isWrong ? ShedTheme.Colors.danger.opacity(0.2) :
                                              Color(.systemGray6)) :
-                                            (isSelected ? Color.blue.opacity(0.2) : Color(.systemGray6))
+                                            (isSelected ? ShedTheme.Colors.brass.opacity(0.2) : Color(.systemGray6))
                                     )
                                     .cornerRadius(10)
                                 }
@@ -788,7 +788,7 @@ struct ActiveQuizView: View {
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
                             .padding()
-                            .background(Color.green)
+                            .background(ShedTheme.Colors.success)
                             .cornerRadius(12)
                         
                         continueButton()
@@ -810,7 +810,7 @@ struct ActiveQuizView: View {
                                     .fontWeight(.semibold)
                                     .foregroundColor(.white)
                                     .padding()
-                                    .background(Color.red)
+                                    .background(ShedTheme.Colors.danger)
                                     .cornerRadius(12)
                             }
                             
@@ -820,7 +820,7 @@ struct ActiveQuizView: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 24)
                                     .padding(.vertical, 12)
-                                    .background(Color.blue)
+                                    .background(ShedTheme.Colors.brass)
                                     .cornerRadius(10)
                             }
                             .padding(.top, 8)
@@ -839,7 +839,7 @@ struct ActiveQuizView: View {
                                 .fontWeight(.semibold)
                                 .foregroundColor(.white)
                                 .padding()
-                                .background(Color.green)
+                                .background(ShedTheme.Colors.success)
                                 .cornerRadius(12)
                             
                             // Comparison buttons to toggle between chords
@@ -865,7 +865,7 @@ struct ActiveQuizView: View {
                                             .foregroundColor(.white)
                                             .padding(.horizontal, 16)
                                             .padding(.vertical, 10)
-                                            .background(Color.red)
+                                            .background(ShedTheme.Colors.danger)
                                             .cornerRadius(8)
                                         }
                                         
@@ -888,7 +888,7 @@ struct ActiveQuizView: View {
                                             .foregroundColor(.white)
                                             .padding(.horizontal, 16)
                                             .padding(.vertical, 10)
-                                            .background(Color.green)
+                                            .background(ShedTheme.Colors.success)
                                             .cornerRadius(8)
                                         }
                                         
@@ -941,7 +941,7 @@ struct ActiveQuizView: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 24)
                                     .padding(.vertical, 12)
-                                    .background(Color.blue)
+                                    .background(ShedTheme.Colors.brass)
                                     .cornerRadius(10)
                             }
                             .padding(.top, 8)
@@ -989,7 +989,7 @@ struct ActiveQuizView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
-                    .background(isNoteCorrect ? Color.green : Color.red)
+                    .background(isNoteCorrect ? ShedTheme.Colors.success : ShedTheme.Colors.danger)
                     .cornerRadius(8)
                 }
             }
@@ -1017,7 +1017,7 @@ struct ActiveQuizView: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color.orange)
+                        .background(ShedTheme.Colors.warning)
                         .cornerRadius(8)
                     }
                 }
@@ -1046,7 +1046,7 @@ struct ActiveQuizView: View {
                 .foregroundColor(.white)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color.green)
+                .background(ShedTheme.Colors.success)
                 .cornerRadius(8)
             }
         }
@@ -1063,7 +1063,7 @@ struct ActiveQuizView: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue)
+                .background(ShedTheme.Colors.brass)
                 .cornerRadius(12)
         }
         .padding(.horizontal)
@@ -1453,7 +1453,7 @@ struct ChordDrillResultsView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(ShedTheme.Colors.brass)
                             .cornerRadius(12)
                         }
                         
@@ -1466,7 +1466,7 @@ struct ChordDrillResultsView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.orange)
+                            .background(ShedTheme.Colors.warning)
                             .cornerRadius(12)
                         }
                     }

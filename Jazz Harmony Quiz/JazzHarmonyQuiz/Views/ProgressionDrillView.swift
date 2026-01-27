@@ -152,7 +152,7 @@ struct ProgressionSetupView: View {
                                 Label(mode.rawValue, systemImage: mode.icon).tag(mode)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .shedSegmentedPicker()
                         
                         Text(practiceMode.description)
                             .font(.caption)
@@ -169,7 +169,7 @@ struct ProgressionSetupView: View {
                                 Text("\(count)").tag(count)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .shedSegmentedPicker()
                     }
                     
                     // Difficulty Level
@@ -182,7 +182,7 @@ struct ProgressionSetupView: View {
                                 Text(difficulty.rawValue).tag(difficulty)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .shedSegmentedPicker()
                     }
                     
                     // Category Selection
@@ -235,7 +235,7 @@ struct ProgressionSetupView: View {
                                 Text(keyDiff.rawValue).tag(keyDiff)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .shedSegmentedPicker()
                         
                         Text(selectedKeyDifficulty.description)
                             .font(.caption)
@@ -352,7 +352,7 @@ struct ProgressionActiveView: View {
                         .font(.headline)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.2))
+                        .background(ShedTheme.Colors.brass.opacity(0.2))
                         .cornerRadius(8)
                 }
                 .padding(.top)
@@ -773,21 +773,21 @@ struct ProgressionChordSlotView: View {
     private var backgroundColor: Color {
         // Highlight for playback takes precedence
         if isHighlightedForPlayback {
-            return Color.yellow.opacity(0.4)
+            return ShedTheme.Colors.warning.opacity(0.4)
         }
         
         if showingAnswer {
             if isCorrectAnswerRow {
                 // Always green in correct answer row
-                return Color.green.opacity(0.2)
+                return ShedTheme.Colors.success.opacity(0.2)
             } else {
                 // User answer row - green if correct, red if incorrect
                 if let isCorrect = isCorrect {
-                    return isCorrect ? Color.green.opacity(0.2) : Color.red.opacity(0.2)
+                    return isCorrect ? ShedTheme.Colors.success.opacity(0.2) : ShedTheme.Colors.danger.opacity(0.2)
                 }
             }
         }
-        return userChord != nil ? Color.blue.opacity(0.1) : Color.gray.opacity(0.05)
+        return userChord != nil ? ShedTheme.Colors.brass.opacity(0.1) : Color.gray.opacity(0.05)
     }
     
     private var borderColor: Color {
@@ -997,7 +997,7 @@ struct ProgressionResultsView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(ShedTheme.Colors.brass)
                             .cornerRadius(12)
                     }
                     .padding()

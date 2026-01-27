@@ -67,7 +67,7 @@ struct ScaleDrillResults: View {
                 VStack {
                     Text("\(result.correctAnswers)/\(result.totalQuestions)")
                         .font(.system(size: 48, weight: .bold))
-                        .foregroundColor(.teal)
+                        .foregroundColor(ShedTheme.Colors.brass)
                     Text("Score")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -123,7 +123,7 @@ struct ScaleDrillResults: View {
                     Spacer()
                     Text("\(playerStats.currentRating)")
                         .fontWeight(.bold)
-                        .foregroundColor(.blue)
+                        .foregroundColor(ShedTheme.Colors.brass)
                 }
                 .font(.subheadline)
             }
@@ -135,7 +135,7 @@ struct ScaleDrillResults: View {
                 VStack(spacing: 8) {
                     Text("Level Up!")
                         .font(.headline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(ShedTheme.Colors.brass)
                     
                     HStack {
                         if let previousLevel = scaleGame.previousLevel {
@@ -144,7 +144,7 @@ struct ScaleDrillResults: View {
                         }
                         
                         Image(systemName: "arrow.right")
-                            .foregroundColor(.blue)
+                            .foregroundColor(ShedTheme.Colors.brass)
                         
                         Text("Level \(playerLevel.level)")
                             .fontWeight(.bold)
@@ -152,7 +152,7 @@ struct ScaleDrillResults: View {
                     .font(.subheadline)
                 }
                 .padding()
-                .background(Color.blue.opacity(0.1))
+                .background(ShedTheme.Colors.brass.opacity(0.1))
                 .cornerRadius(12)
             }
         }
@@ -184,14 +184,14 @@ struct ScaleDrillResults: View {
                     Text("View Scoreboard")
                 }
                 .font(.headline)
-                .foregroundColor(.orange)
+                .foregroundColor(ShedTheme.Colors.warning)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.orange.opacity(0.1))
+                .background(ShedTheme.Colors.warning.opacity(0.1))
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.orange, lineWidth: 1.5)
+                        .stroke(ShedTheme.Colors.warning, lineWidth: 1.5)
                 )
             }
         }
@@ -274,7 +274,7 @@ struct ScaleScoreboardView: View {
                     Text(option.rawValue).tag(option)
                 }
             }
-            .pickerStyle(SegmentedPickerStyle())
+            .shedSegmentedPicker()
             .padding()
             
             if scaleGame.scoreboard.isEmpty {
