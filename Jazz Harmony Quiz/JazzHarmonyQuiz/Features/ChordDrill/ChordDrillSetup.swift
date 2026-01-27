@@ -73,6 +73,10 @@ struct ChordDrillSetup: View {
         }
     }
     
+    private var playerLevel: PlayerLevel {
+        PlayerLevel(xp: playerStats.currentRating)
+    }
+    
     // MARK: - Header View
     
     private var headerView: some View {
@@ -81,13 +85,14 @@ struct ChordDrillSetup: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
-            // Stats row
+            // Stats row (Updated per DESIGN.md Section 9.3.1)
             HStack(spacing: 20) {
-                // Rank
+                // Level & XP
                 HStack(spacing: 4) {
-                    Text(playerStats.currentRank.emoji)
-                    Text("\(playerStats.currentRating)")
+                    Text("Level \(playerLevel.level)")
                         .fontWeight(.semibold)
+                    Text("•")
+                    Text("\(playerStats.currentRating) XP")
                 }
                 .font(.subheadline)
                 .foregroundColor(.blue)
@@ -95,7 +100,7 @@ struct ChordDrillSetup: View {
                 // Streak
                 if playerStats.currentStreak > 0 {
                     HStack(spacing: 4) {
-                        Text("🔥")
+                        Image(systemName: "flame.fill")
                         Text("\(playerStats.currentStreak)")
                             .fontWeight(.semibold)
                     }

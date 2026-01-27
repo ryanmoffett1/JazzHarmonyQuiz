@@ -3,12 +3,17 @@ import SwiftUI
 // MARK: - Cadence Drill Results View
 
 /// Results screen shown after completing a cadence drill session
-/// Displays score, XP changes, rank, and action buttons
+/// Displays score, XP changes, level, and action buttons
+/// Updated per DESIGN.md Section 9.3.1 to use PlayerLevel instead of Rank
 struct CadenceDrillResults: View {
     @EnvironmentObject var cadenceGame: CadenceGame
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     let onNewQuiz: () -> Void
+    
+    private var playerLevel: PlayerLevel {
+        PlayerLevel(xp: cadenceGame.playerStats.currentRating)
+    }
     
     private var encouragement: EncouragementMessage? {
         cadenceGame.getEncouragementMessage()
@@ -159,15 +164,13 @@ struct CadenceDrillResults: View {
             // XP Change Display
             xpDisplaySection
             
-            // Rank Up Celebration
-            rankUpSection
+            // Level Up Celebration
+            levelUpSection
             
-            // Points to next rank
-            if let pointsNeeded = cadenceGame.playerStats.pointsToNextRank {
-                Text("\(pointsNeeded) points to next rank")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            // Points to next level
+            Text("\(playerLevel.xpUntilNextLevel) XP to Level \(playerLevel.level + 1)")
+                .font(.caption)
+                .foregroundColor(.secondary)
         }
         .padding()
         .background(Color(.systemGray6))
@@ -211,30 +214,31 @@ struct CadenceDrillResults: View {
                 .frame(height: 40)
             
             VStack {
-                Text(cadenceGame.playerStats.currentRank.emoji)
-                    .font(.title)
-                Text(cadenceGame.playerStats.currentRank.title)
+                Text("Level \(playerLevel.level)")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                Text("\(playerLevel.xpUntilNextLevel) to next")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
             }
         }
     }
     
-    // MARK: - Rank Up Section
+    // MARK: - Level Up Section
     
     @ViewBuilder
-    private var rankUpSection: some View {
+    private var levelUpSection: some View {
         if cadenceGame.didRankUp {
             HStack(spacing: 8) {
-                if let prev = cadenceGame.previousRank {
-                    Text(prev.emoji)
+                if let prevLevel = cadenceGame.previousLevel {
+                    Text("\(prevLevel)")
+                        .fontWeight(.bold)
                 }
                 Image(systemName: "arrow.right")
                     .foregroundColor(.green)
-                Text(cadenceGame.playerStats.currentRank.emoji)
-                Text("Rank Up!")
+                Text("Level \(playerLevel.level)")
+                    .fontWeight(.bold)
+                Text("Level Up!")
                     .fontWeight(.bold)
                     .foregroundColor(.green)
             }

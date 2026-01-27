@@ -68,6 +68,10 @@ struct CadenceDrillSetup: View {
     
     // MARK: - Header Section
     
+    private var playerLevel: PlayerLevel {
+        PlayerLevel(xp: cadenceGame.playerStats.currentRating)
+    }
+    
     @ViewBuilder
     private var headerSection: some View {
         VStack(spacing: 8) {
@@ -75,13 +79,14 @@ struct CadenceDrillSetup: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
-            // Stats row - Rank and Rating (from shared PlayerStats)
+            // Stats row - Level and XP (Updated per DESIGN.md Section 9.3.1)
             HStack(spacing: 20) {
-                // Rank
+                // Level & XP
                 HStack(spacing: 4) {
-                    Text(cadenceGame.playerStats.currentRank.emoji)
-                    Text("\(cadenceGame.playerStats.currentRating)")
+                    Text("Level \(playerLevel.level)")
                         .fontWeight(.semibold)
+                    Text("•")
+                    Text("\(cadenceGame.playerStats.currentRating) XP")
                 }
                 .font(.subheadline)
                 .foregroundColor(.blue)
@@ -89,7 +94,7 @@ struct CadenceDrillSetup: View {
                 // Streak
                 if cadenceGame.playerStats.currentStreak > 0 {
                     HStack(spacing: 4) {
-                        Text("🔥")
+                        Image(systemName: "flame.fill")
                         Text("\(cadenceGame.playerStats.currentStreak)")
                             .fontWeight(.semibold)
                     }
@@ -100,7 +105,7 @@ struct CadenceDrillSetup: View {
                 // Accuracy (mode-specific)
                 if cadenceGame.lifetimeStats.totalQuestionsAnswered > 0 {
                     HStack(spacing: 4) {
-                        Text("📊")
+                        Image(systemName: "chart.bar")
                         Text("\(Int(cadenceGame.lifetimeStats.overallAccuracy * 100))%")
                             .fontWeight(.semibold)
                     }

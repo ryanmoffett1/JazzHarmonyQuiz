@@ -106,7 +106,7 @@ class ScaleGame: ObservableObject {
     @Published var stats: ScaleDrillStats = ScaleDrillStats()
     @Published var lastRatingChange: Int = 0
     @Published var didRankUp: Bool = false
-    @Published var previousRank: Rank?
+    @Published var previousLevel: Int?
     
     // Shared player stats (rating, streaks, achievements)
     var playerStats: PlayerStats { PlayerStats.shared }
@@ -139,7 +139,7 @@ class ScaleGame: ObservableObject {
         // Reset rating tracking
         lastRatingChange = 0
         didRankUp = false
-        previousRank = playerStats.currentRank
+        previousLevel = PlayerLevel(xp: playerStats.currentRating).level
         
         generateQuestions()
         currentQuestionIndex = 0
@@ -367,7 +367,7 @@ class ScaleGame: ObservableObject {
         // Apply rating change via PlayerStats
         let result = playerStats.applyRatingChange(ratingChange)
         didRankUp = result.didRankUp
-        previousRank = result.previousRank
+        previousLevel = result.previousLevel
         
         // Record practice in PlayerStats
         playerStats.recordPractice(
@@ -531,7 +531,7 @@ class ScaleGame: ObservableObject {
         currentResult = nil
         lastRatingChange = 0
         didRankUp = false
-        previousRank = nil
+        previousLevel = nil
     }
     
     // MARK: - Computed Properties

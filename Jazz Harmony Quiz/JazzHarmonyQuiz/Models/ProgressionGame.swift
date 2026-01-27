@@ -25,7 +25,7 @@ class ProgressionGame: ObservableObject {
     // MARK: - Rating & Motivation
     @Published var lastRatingChange: Int = 0
     @Published var didRankUp: Bool = false
-    @Published var previousRank: Rank?
+    @Published var previousLevel: Int?
 
     // MARK: - Statistics
     @Published var lifetimeStats: ProgressionLifetimeStats = ProgressionLifetimeStats()
@@ -353,7 +353,7 @@ class ProgressionGame: ObservableObject {
         totalQuizTime = 0
         lastRatingChange = 0
         didRankUp = false
-        previousRank = nil
+        previousLevel = nil
     }
 }
 

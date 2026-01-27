@@ -15,12 +15,13 @@ protocol DrillResultData {
 
 /// Shared results view component for all drill types
 /// Per DESIGN.md Section 6.3 (SESSION COMPLETE layout)
+/// Updated per DESIGN.md Section 9.3.1 to use PlayerLevel instead of Rank
 struct DrillResultsView<Content: View>: View {
     let result: DrillResultData
     let ratingChange: Int
-    let didRankUp: Bool
-    let previousRank: Rank?
-    let currentRank: Rank
+    let didLevelUp: Bool
+    let previousLevel: Int?
+    let currentLevel: PlayerLevel
     let currentRating: Int
     let currentStreak: Int
     let onNewQuiz: () -> Void
@@ -30,9 +31,9 @@ struct DrillResultsView<Content: View>: View {
     init(
         result: DrillResultData,
         ratingChange: Int,
-        didRankUp: Bool,
-        previousRank: Rank?,
-        currentRank: Rank,
+        didLevelUp: Bool,
+        previousLevel: Int?,
+        currentLevel: PlayerLevel,
         currentRating: Int,
         currentStreak: Int = 0,
         onNewQuiz: @escaping () -> Void,
@@ -41,9 +42,9 @@ struct DrillResultsView<Content: View>: View {
     ) {
         self.result = result
         self.ratingChange = ratingChange
-        self.didRankUp = didRankUp
-        self.previousRank = previousRank
-        self.currentRank = currentRank
+        self.didLevelUp = didLevelUp
+        self.previousLevel = previousLevel
+        self.currentLevel = currentLevel
         self.currentRating = currentRating
         self.currentStreak = currentStreak
         self.onNewQuiz = onNewQuiz
@@ -54,9 +55,9 @@ struct DrillResultsView<Content: View>: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // Rank Up Celebration (if applicable)
-                if didRankUp {
-                    rankUpCelebration
+                // Level Up Celebration (if applicable)
+                if didLevelUp {
+                    levelUpCelebration
                 }
                 
                 // Header
@@ -90,20 +91,21 @@ struct DrillResultsView<Content: View>: View {
         }
     }
     
-    // MARK: - Rank Up Celebration
+    // MARK: - Level Up Celebration
     
-    private var rankUpCelebration: some View {
+    private var levelUpCelebration: some View {
         VStack(spacing: 12) {
-            Text("🎉 Rank Up! 🎉")
+            Text("Level Up!")
                 .font(.title)
                 .fontWeight(.bold)
             
             HStack(spacing: 20) {
-                if let prev = previousRank {
+                if let prev = previousLevel {
                     VStack {
-                        Text(prev.emoji)
-                            .font(.system(size: 40))
-                        Text(prev.title)
+                        Text("\(prev)")
+                            .font(.system(size: 40, weight: .bold))
+                            .foregroundColor(.secondary)
+                        Text("Previous")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -114,11 +116,12 @@ struct DrillResultsView<Content: View>: View {
                     .foregroundColor(.green)
                 
                 VStack {
-                    Text(currentRank.emoji)
-                        .font(.system(size: 50))
-                    Text(currentRank.title)
+                    Text("\(currentLevel.level)")
+                        .font(.system(size: 50, weight: .bold))
+                        .foregroundColor(.blue)
+                    Text("Level")
                         .font(.subheadline)
-                        .fontWeight(.bold)
+                        .fontWeight(.medium)
                 }
             }
         }
@@ -126,7 +129,7 @@ struct DrillResultsView<Content: View>: View {
         .frame(maxWidth: .infinity)
         .background(
             LinearGradient(
-                colors: [.yellow.opacity(0.3), .orange.opacity(0.3)],
+                colors: [.blue.opacity(0.2), .purple.opacity(0.2)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -197,7 +200,7 @@ struct DrillResultsView<Content: View>: View {
                     .fontWeight(.bold)
                     .foregroundColor(.blue)
                 
-                Text("Total")
+                Text("Total XP")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -205,11 +208,12 @@ struct DrillResultsView<Content: View>: View {
             Divider()
                 .frame(height: 40)
             
-            // Current Rank
+            // Current Level
             VStack {
-                Text(currentRank.emoji)
-                    .font(.title)
-                Text(currentRank.title)
+                Text("Level \(currentLevel.level)")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                Text("\(currentLevel.xpUntilNextLevel) to next")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -324,9 +328,9 @@ extension DrillResultsView where Content == EmptyView {
     init(
         result: DrillResultData,
         ratingChange: Int,
-        didRankUp: Bool,
-        previousRank: Rank?,
-        currentRank: Rank,
+        didLevelUp: Bool,
+        previousLevel: Int?,
+        currentLevel: PlayerLevel,
         currentRating: Int,
         currentStreak: Int = 0,
         onNewQuiz: @escaping () -> Void,
@@ -334,9 +338,9 @@ extension DrillResultsView where Content == EmptyView {
     ) {
         self.result = result
         self.ratingChange = ratingChange
-        self.didRankUp = didRankUp
-        self.previousRank = previousRank
-        self.currentRank = currentRank
+        self.didLevelUp = didLevelUp
+        self.previousLevel = previousLevel
+        self.currentLevel = currentLevel
         self.currentRating = currentRating
         self.currentStreak = currentStreak
         self.onNewQuiz = onNewQuiz
@@ -371,9 +375,9 @@ struct SimpleDrillResult: DrillResultData {
         DrillResultsView(
             result: SimpleDrillResult(correctAnswers: 8, totalQuestions: 10, totalTime: 120),
             ratingChange: 25,
-            didRankUp: false,
-            previousRank: nil,
-            currentRank: Rank.forRating(1250),
+            didLevelUp: true,
+            previousLevel: 4,
+            currentLevel: PlayerLevel(xp: 1250),
             currentRating: 1250,
             currentStreak: 3,
             onNewQuiz: {},

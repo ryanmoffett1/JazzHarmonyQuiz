@@ -17,8 +17,7 @@ class IntervalGame: ObservableObject {
     @Published var showingResults: Bool = false
     @Published var scoreboard: [IntervalQuizResult] = []
     @Published var lastRatingChange: Int = 0
-    @Published var previousRank: Rank?
-    @Published var newRank: Rank?
+    @Published var previousLevel: Int?
     @Published var didRankUp: Bool = false
     
     // MARK: - Quiz Configuration
@@ -62,9 +61,8 @@ class IntervalGame: ObservableObject {
         self.selectedDirection = direction
         self.selectedKeyDifficulty = keyDifficulty
         
-        // Store previous rank for comparison
-        previousRank = PlayerStats.shared.currentRank
-        newRank = nil
+        // Store previous level for comparison
+        previousLevel = PlayerLevel(xp: PlayerStats.shared.currentRating).level
         
         // Generate questions
         questions = generateQuestions(count: numberOfQuestions)
@@ -241,12 +239,7 @@ class IntervalGame: ObservableObject {
         
         lastRatingChange = ratingChange
         didRankUp = ratingResult.didRankUp
-        previousRank = ratingResult.previousRank
-        
-        // Check for rank change
-        if didRankUp {
-            newRank = PlayerStats.shared.currentRank
-        }
+        previousLevel = ratingResult.previousLevel
         
         // Save result
         let result = IntervalQuizResult(
@@ -388,8 +381,7 @@ class IntervalGame: ObservableObject {
         showingResults = false
         questions = []
         answeredQuestions = []
-        previousRank = nil
-        newRank = nil
+        previousLevel = nil
     }
     
     // MARK: - Review Access

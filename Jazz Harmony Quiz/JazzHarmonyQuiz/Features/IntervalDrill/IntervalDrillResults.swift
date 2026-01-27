@@ -9,6 +9,10 @@ struct IntervalDrillResults: View {
     let onPlayAgain: () -> Void
     let onBackToSetup: () -> Void
     
+    private var playerLevel: PlayerLevel {
+        PlayerLevel(xp: PlayerStats.shared.currentRating)
+    }
+    
     private var accuracy: Double {
         guard intervalGame.totalQuestions > 0 else { return 0 }
         return Double(intervalGame.correctAnswers) / Double(intervalGame.totalQuestions) * 100
@@ -17,9 +21,9 @@ struct IntervalDrillResults: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // Rank Up Celebration
-                if let newRank = intervalGame.newRank {
-                    IntervalRankUpView(newRank: newRank)
+                // Level Up Celebration
+                if intervalGame.didRankUp, let prevLevel = intervalGame.previousLevel {
+                    IntervalLevelUpView(previousLevel: prevLevel, newLevel: playerLevel.level)
                 }
                 
                 // Score Circle
@@ -187,23 +191,31 @@ struct IntervalStatCard: View {
     }
 }
 
-// MARK: - Rank Up View
+// MARK: - Level Up View
 
-struct IntervalRankUpView: View {
-    let newRank: Rank
+struct IntervalLevelUpView: View {
+    let previousLevel: Int
+    let newLevel: Int
     
     var body: some View {
         VStack(spacing: 12) {
-            Text("🎊 Rank Up! 🎊")
+            Text("🎊 Level Up! 🎊")
                 .font(.title2)
                 .fontWeight(.bold)
             
-            Text(newRank.emoji)
-                .font(.system(size: 60))
-            
-            Text(newRank.title)
-                .font(.title3)
-                .fontWeight(.semibold)
+            HStack(spacing: 16) {
+                Text("Level \(previousLevel)")
+                    .font(.title3)
+                    .foregroundColor(.secondary)
+                
+                Image(systemName: "arrow.right")
+                    .foregroundColor(.green)
+                
+                Text("Level \(newLevel)")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.green)
+            }
         }
         .padding()
         .frame(maxWidth: .infinity)

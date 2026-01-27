@@ -32,10 +32,10 @@ class CadenceGame: ObservableObject {
     @Published var lifetimeStats: CadenceLifetimeStats = CadenceLifetimeStats()
     @Published var lastQuizSettings: LastQuizSettings?
     
-    // MARK: - Rating & Ranking System
+    // MARK: - Rating & Level System
     @Published var lastRatingChange: Int = 0
     @Published var didRankUp: Bool = false
-    @Published var previousRank: Rank?
+    @Published var previousLevel: Int?
     
     // Shared player stats (rating, streaks, achievements)
     var playerStats: PlayerStats { PlayerStats.shared }
@@ -263,7 +263,7 @@ class CadenceGame: ObservableObject {
         // Store for UI
         lastRatingChange = ratingChange
         didRankUp = ratingResult.didRankUp
-        previousRank = ratingResult.previousRank
+        previousLevel = ratingResult.previousLevel
         
         // Update mode-specific lifetime statistics
         updateLifetimeStats(ratingChange: ratingChange)

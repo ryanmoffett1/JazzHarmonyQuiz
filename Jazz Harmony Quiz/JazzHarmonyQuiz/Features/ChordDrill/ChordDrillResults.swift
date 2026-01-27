@@ -4,6 +4,7 @@ import SwiftUI
 
 /// Results screen displayed after completing a chord drill session
 /// Shows score, XP gained, accuracy breakdown, and navigation options
+/// Updated per DESIGN.md Section 9.3.1 to use PlayerLevel instead of Rank
 struct ChordDrillResults: View {
     @EnvironmentObject var quizGame: QuizGame
     @EnvironmentObject var settings: SettingsManager
@@ -12,13 +13,17 @@ struct ChordDrillResults: View {
     
     private var playerStats: PlayerStats { PlayerStats.shared }
     
+    private var playerLevel: PlayerLevel {
+        PlayerLevel(xp: playerStats.currentRating)
+    }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 if let result = quizGame.currentResult {
-                    // Rank Up Celebration (if applicable)
+                    // Level Up Celebration (if applicable)
                     if quizGame.didRankUp {
-                        rankUpCelebration
+                        levelUpCelebration
                     }
                     
                     // Header
@@ -34,7 +39,7 @@ struct ChordDrillResults: View {
                     // Streak info
                     if playerStats.currentStreak > 1 {
                         HStack {
-                            Text("🔥")
+                            Image(systemName: "flame.fill")
                             Text("\(playerStats.currentStreak) day streak!")
                         }
                         .font(.headline)
@@ -49,20 +54,21 @@ struct ChordDrillResults: View {
         }
     }
     
-    // MARK: - Rank Up Celebration
+    // MARK: - Level Up Celebration
     
-    private var rankUpCelebration: some View {
+    private var levelUpCelebration: some View {
         VStack(spacing: 12) {
-            Text("🎉 Rank Up! 🎉")
+            Text("Level Up!")
                 .font(.title)
                 .fontWeight(.bold)
             
             HStack(spacing: 20) {
-                if let prev = quizGame.previousRank {
+                if let prevLevel = quizGame.previousLevel {
                     VStack {
-                        Text(prev.emoji)
-                            .font(.system(size: 40))
-                        Text(prev.title)
+                        Text("\(prevLevel)")
+                            .font(.system(size: 40, weight: .bold))
+                            .foregroundColor(.secondary)
+                        Text("Previous")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -73,11 +79,12 @@ struct ChordDrillResults: View {
                     .foregroundColor(.green)
                 
                 VStack {
-                    Text(playerStats.currentRank.emoji)
-                        .font(.system(size: 50))
-                    Text(playerStats.currentRank.title)
+                    Text("\(playerLevel.level)")
+                        .font(.system(size: 50, weight: .bold))
+                        .foregroundColor(.blue)
+                    Text("Level")
                         .font(.subheadline)
-                        .fontWeight(.bold)
+                        .fontWeight(.medium)
                 }
             }
         }
@@ -85,7 +92,7 @@ struct ChordDrillResults: View {
         .frame(maxWidth: .infinity)
         .background(
             LinearGradient(
-                colors: [.yellow.opacity(0.3), .orange.opacity(0.3)],
+                colors: [.blue.opacity(0.2), .purple.opacity(0.2)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -140,9 +147,10 @@ struct ChordDrillResults: View {
                     .frame(height: 40)
                 
                 VStack {
-                    Text(playerStats.currentRank.emoji)
-                        .font(.title)
-                    Text(playerStats.currentRank.title)
+                    Text("Level \(playerLevel.level)")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                    Text("\(playerLevel.xpUntilNextLevel) to next")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

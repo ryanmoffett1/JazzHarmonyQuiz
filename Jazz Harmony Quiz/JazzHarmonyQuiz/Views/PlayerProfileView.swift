@@ -83,19 +83,19 @@ struct PlayerProfileView: View {
             }
             .foregroundColor(.primary)
             
-            // Rank Badge
-            HStack(spacing: 8) {
-                Text(profile.currentLevel.emoji)
-                    .font(.title3)
-                Text(profile.currentLevel.title)
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-            }
+            // Level Badge (Updated per DESIGN.md Section 9.3.1 - no emoji)
+            Text("Level \(playerLevel.level)")
+                .font(.headline)
+                .foregroundColor(.blue)
         }
         .padding()
         .frame(maxWidth: .infinity)
         .background(Color(.systemGray6))
         .cornerRadius(16)
+    }
+    
+    private var playerLevel: PlayerLevel {
+        PlayerLevel(xp: profile.currentRating)
     }
     
     // MARK: - Level Progress
@@ -112,42 +112,31 @@ struct PlayerProfileView: View {
             }
             
             // Progress bar to next level
-            if let xpNeeded = profile.xpToNextLevel {
-                let currentLevelMin = profile.currentLevel.minRating
-                let progress = Double(profile.totalXP - currentLevelMin) / Double(xpNeeded)
-                
-                VStack(spacing: 4) {
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(.systemGray4))
-                            
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(LinearGradient(
-                                    colors: [.blue, .purple],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                ))
-                                .frame(width: geometry.size.width * min(1, max(0, progress)))
-                        }
+            VStack(spacing: 4) {
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color(.systemGray4))
+                        
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ))
+                            .frame(width: geometry.size.width * min(1, max(0, playerLevel.progressToNextLevel)))
                     }
-                    .frame(height: 12)
-                    
-                    HStack {
-                        Text(profile.currentLevel.title)
-                            .font(.caption)
-                        Spacer()
-                        if let next = Rank.nextRank(after: profile.currentLevel) {
-                            Text(next.title)
-                                .font(.caption)
-                        }
-                    }
-                    .foregroundColor(.secondary)
                 }
-            } else {
-                Text("🌟 Maximum Level Achieved!")
-                    .font(.subheadline)
-                    .foregroundColor(.yellow)
+                .frame(height: 12)
+                
+                HStack {
+                    Text("Level \(playerLevel.level)")
+                        .font(.caption)
+                    Spacer()
+                    Text("\(playerLevel.xpUntilNextLevel) XP to Level \(playerLevel.level + 1)")
+                        .font(.caption)
+                }
+                .foregroundColor(.secondary)
             }
         }
         .padding()

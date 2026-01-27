@@ -42,6 +42,10 @@ struct ScaleDrillSetup: View {
         }
     }
     
+    private var playerLevel: PlayerLevel {
+        PlayerLevel(xp: playerStats.currentRating)
+    }
+    
     // MARK: - Header View
     
     private var headerView: some View {
@@ -52,16 +56,17 @@ struct ScaleDrillSetup: View {
             
             HStack(spacing: 20) {
                 HStack(spacing: 4) {
-                    Text(playerStats.currentRank.emoji)
-                    Text("\(playerStats.currentRating)")
+                    Text("Level \(playerLevel.level)")
                         .fontWeight(.semibold)
+                    Text("•")
+                    Text("\(playerStats.currentRating) XP")
                 }
                 .font(.subheadline)
                 .foregroundColor(.blue)
                 
                 if playerStats.currentStreak > 0 {
                     HStack(spacing: 4) {
-                        Text("🔥")
+                        Image(systemName: "flame.fill")
                         Text("\(playerStats.currentStreak)")
                             .fontWeight(.semibold)
                     }

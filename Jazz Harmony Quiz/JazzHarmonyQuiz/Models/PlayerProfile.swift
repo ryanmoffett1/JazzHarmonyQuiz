@@ -238,15 +238,16 @@ class PlayerProfile: ObservableObject {
     // MARK: - Rating/XP Management
     
     @discardableResult
-    func applyRatingChange(_ change: Int) -> (newRating: Int, didRankUp: Bool, previousRank: Rank) {
-        let previousRank = currentRank
+    func applyRatingChange(_ change: Int) -> (newRating: Int, didRankUp: Bool, previousLevel: Int) {
+        let previousLevel = PlayerLevel(xp: currentRating).level
         currentRating = max(0, currentRating + change)
         peakRating = max(peakRating, currentRating)
         
-        let didRankUp = currentRank.title != previousRank.title && change > 0
+        let newLevel = PlayerLevel(xp: currentRating).level
+        let didRankUp = newLevel > previousLevel && change > 0
         
         saveToUserDefaults()
-        return (currentRating, didRankUp, previousRank)
+        return (currentRating, didRankUp, previousLevel)
     }
     
     func addXP(_ amount: Int, from mode: PracticeMode) {

@@ -4,12 +4,17 @@ import SwiftUI
 
 /// Results view shown after completing a scale drill session
 /// Displays score, accuracy, time, XP changes, and scoreboard access
+/// Updated per DESIGN.md Section 9.3.1 to use PlayerLevel instead of Rank
 struct ScaleDrillResults: View {
     @EnvironmentObject var scaleGame: ScaleGame
     @Environment(\.colorScheme) var colorScheme
     let onNewQuiz: () -> Void
     
     private var playerStats: PlayerStats { PlayerStats.shared }
+    
+    private var playerLevel: PlayerLevel {
+        PlayerLevel(xp: playerStats.currentRating)
+    }
     
     var body: some View {
         ScrollView {
@@ -128,27 +133,26 @@ struct ScaleDrillResults: View {
                 Divider()
                 
                 VStack(spacing: 8) {
-                    Text("🎉 Rank Up! 🎉")
+                    Text("Level Up!")
                         .font(.headline)
-                        .foregroundColor(.yellow)
+                        .foregroundColor(.blue)
                     
                     HStack {
-                        if let previous = scaleGame.previousRank {
-                            Text(previous.emoji)
-                            Text(previous.title)
+                        if let previousLevel = scaleGame.previousLevel {
+                            Text("\(previousLevel)")
+                                .fontWeight(.bold)
                         }
                         
                         Image(systemName: "arrow.right")
-                            .foregroundColor(.yellow)
+                            .foregroundColor(.blue)
                         
-                        Text(playerStats.currentRank.emoji)
-                        Text(playerStats.currentRank.title)
+                        Text("Level \(playerLevel.level)")
                             .fontWeight(.bold)
                     }
                     .font(.subheadline)
                 }
                 .padding()
-                .background(Color.yellow.opacity(0.1))
+                .background(Color.blue.opacity(0.1))
                 .cornerRadius(12)
             }
         }

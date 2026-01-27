@@ -423,7 +423,7 @@ class QuizGame: ObservableObject {
     @Published var stats: ChordDrillStats = ChordDrillStats()  // Mode-specific stats
     @Published var lastRatingChange: Int = 0
     @Published var didRankUp: Bool = false
-    @Published var previousRank: Rank?
+    @Published var previousLevel: Int?
     
     // Shared player stats (rating, streaks, achievements)
     var playerStats: PlayerStats { PlayerStats.shared }
@@ -453,7 +453,7 @@ class QuizGame: ObservableObject {
         // Reset rating tracking
         lastRatingChange = 0
         didRankUp = false
-        previousRank = stats.currentRank
+        previousLevel = PlayerLevel(xp: playerStats.currentRating).level
         
         generateQuestions()
         currentQuestionIndex = 0
@@ -695,7 +695,7 @@ class QuizGame: ObservableObject {
         // Calculate and apply rating change
         let ratingChange = calculateRatingChange(correctAnswers: correctAnswers, totalQuestions: totalQuestions)
         let ratingBefore = stats.currentRating
-        let previousRankTitle = stats.currentRank.title
+        let previousLevelValue = PlayerLevel(xp: playerStats.currentRating).level
         
         // Create practice session
         let chordTypesUsed = Array(Set(questions.map { $0.chord.chordType.symbol }))
@@ -768,9 +768,9 @@ class QuizGame: ObservableObject {
         // Track rating change for UI
         lastRatingChange = ratingChange
         
-        // Check for rank up (using shared stats)
+        // Check for level up (using shared stats)
         didRankUp = ratingResult.didRankUp
-        previousRank = ratingResult.previousRank
+        previousLevel = ratingResult.previousLevel
         
         // Save mode-specific stats
         saveStatsToUserDefaults()
