@@ -568,8 +568,11 @@ struct ChordDrillSessionView: View {
                     let isNoteCorrect = correctPitchClasses.contains(pitchClass(note.midiNumber))
                     let label = getChordToneLabelForFeedback(for: note)
                     
+                    // Use correct enharmonic spelling for the chord context
+                    let displayNote = currentQuestionForFeedback?.chord.correctEnharmonic(for: note) ?? note
+                    
                     VStack(spacing: 2) {
-                        Text(note.name)
+                        Text(displayNote.name)
                             .font(settings.chordDisplayFont(size: 20, weight: .semibold))
                         Text(label)
                             .font(.caption)

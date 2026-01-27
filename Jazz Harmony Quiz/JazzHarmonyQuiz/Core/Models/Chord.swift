@@ -135,6 +135,26 @@ struct Chord: Identifiable, Hashable, Codable {
         
         return nil
     }
+    
+    /// Convert a note to the correct enharmonic spelling for this chord's context
+    /// e.g., in Eb major, G# should display as Ab
+    func correctEnharmonic(for note: Note) -> Note {
+        // Use the chord's tonality preference
+        let preferSharps = root.isSharp || ["B", "E", "A", "D", "G"].contains(root.name)
+        
+        // If the note matches a chord tone exactly, return the chord tone's spelling
+        if let matchingChordTone = chordTones.first(where: { $0.pitchClass == note.pitchClass }) {
+            // Return with same MIDI number but chord-appropriate spelling
+            return Note(name: matchingChordTone.name, midiNumber: note.midiNumber, isSharp: matchingChordTone.isSharp)
+        }
+        
+        // For notes not in the chord, use the chord's tonality preference
+        if let corrected = Note.noteFromMidi(note.midiNumber, preferSharps: preferSharps) {
+            return Note(name: corrected.name, midiNumber: note.midiNumber, isSharp: corrected.isSharp)
+        }
+        
+        return note
+    }
 }
 
 /// Role of a note within a chord

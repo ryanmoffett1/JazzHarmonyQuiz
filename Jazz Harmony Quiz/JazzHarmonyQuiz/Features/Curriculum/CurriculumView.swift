@@ -13,6 +13,13 @@ struct CurriculumView: View {
     @State private var moduleToStart: CurriculumModule?
     @State private var navigateToModule: CurriculumModule?
     
+    // Stable game instances that persist during navigation
+    // These are recreated only when a new module is started
+    @StateObject private var quizGame = QuizGame()
+    @StateObject private var cadenceGame = CadenceGame()
+    @StateObject private var scaleGame = ScaleGame()
+    @StateObject private var intervalGame = IntervalGame()
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -65,6 +72,7 @@ struct CurriculumView: View {
     
     /// Creates the appropriate drill view with curriculum mode locked config
     /// Per DESIGN.md Appendix C.2: Curriculum mode locks drill configuration
+    /// Uses stable @StateObject game instances to preserve state during navigation
     @ViewBuilder
     private func drillView(for module: CurriculumModule) -> some View {
         let launchMode = DrillLaunchMode.curriculum(moduleId: module.id)
@@ -72,16 +80,16 @@ struct CurriculumView: View {
         switch module.mode {
         case .chords:
             ChordDrillView(launchMode: launchMode)
-                .environmentObject(QuizGame())
+                .environmentObject(quizGame)
         case .cadences:
             CadenceDrillView(launchMode: launchMode)
-                .environmentObject(CadenceGame())
+                .environmentObject(cadenceGame)
         case .scales:
             ScaleDrillView(launchMode: launchMode)
-                .environmentObject(ScaleGame())
+                .environmentObject(scaleGame)
         case .intervals:
             IntervalDrillView(launchMode: launchMode)
-                .environmentObject(IntervalGame())
+                .environmentObject(intervalGame)
         case .progressions:
             ProgressionDrillView()
         }
@@ -90,6 +98,21 @@ struct CurriculumView: View {
     private func startModule(_ module: CurriculumModule) {
         // Set active module - drill views will read configuration from this
         curriculumManager.setActiveModule(module.id)
+        
+        // Reset the appropriate game state before starting
+        // This ensures clean state for each module without recreating the object
+        switch module.mode {
+        case .chords:
+            quizGame.resetQuizState()
+        case .cadences:
+            cadenceGame.resetQuizState()
+        case .scales:
+            scaleGame.resetQuizState()
+        case .intervals:
+            intervalGame.resetQuiz()
+        case .progressions:
+            break
+        }
         
         // Navigate to the appropriate drill view with curriculum mode
         navigateToModule = module

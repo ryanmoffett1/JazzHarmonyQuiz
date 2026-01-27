@@ -323,7 +323,36 @@ class JazzChordDatabase {
                     ChordTone.allTones[4], // 5th
                     ChordTone.allTones[6], // 7th
                     ChordTone.allTones[7], // 9th
-                    ChordTone.allTones[8]  // 11th
+                    ChordTone.allTones[8]  // 11th (natural - theoretical)
+                ],
+                difficulty: .expert
+            ),
+            
+            // Lydian chord - very common in jazz
+            // Uses #11 instead of natural 11 to avoid minor 9th clash with 3rd
+            ChordType(
+                name: "Major 7 #11 (Lydian)",
+                symbol: "maj7#11",
+                chordTones: [
+                    ChordTone.allTones[0],  // Root
+                    ChordTone.allTones[2],  // 3rd
+                    ChordTone.allTones[4],  // 5th
+                    ChordTone.allTones[6],  // 7th
+                    ChordTone.allTones[18]  // #11 (Lydian)
+                ],
+                difficulty: .expert
+            ),
+            
+            // Dominant 7#11 - Lydian dominant sound
+            ChordType(
+                name: "Dominant 7 #11",
+                symbol: "7#11",
+                chordTones: [
+                    ChordTone.allTones[0],  // Root
+                    ChordTone.allTones[2],  // 3rd
+                    ChordTone.allTones[4],  // 5th
+                    ChordTone(degree: 7, name: "b7", semitonesFromRoot: 10, isAltered: true), // b7
+                    ChordTone.allTones[18]  // #11
                 ],
                 difficulty: .expert
             ),

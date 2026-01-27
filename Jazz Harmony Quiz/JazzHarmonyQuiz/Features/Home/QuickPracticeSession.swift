@@ -156,27 +156,46 @@ struct QuickPracticeSession: View {
     
     private var pianoSection: some View {
         VStack(spacing: 16) {
-            // Selected notes display
+            // Selected notes display using styled chips (like ChordDrillSession)
             if !selectedNotes.isEmpty {
-                HStack {
-                    Text("Selected:")
+                VStack(spacing: 8) {
+                    Text("Selected Notes:")
+                        .font(.headline)
                         .foregroundColor(.secondary)
-                    Text(selectedNotes.map { $0.name }.joined(separator: ", "))
-                        .fontWeight(.medium)
+                    
+                    FlowLayout(spacing: 8) {
+                        ForEach(Array(selectedNotes.sorted(by: { $0.midiNumber < $1.midiNumber })), id: \.midiNumber) { note in
+                            Text(note.name)
+                                .font(.system(size: selectedNotes.count > 5 ? 18 : 22, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, selectedNotes.count > 5 ? 12 : 16)
+                                .padding(.vertical, selectedNotes.count > 5 ? 8 : 10)
+                                .background(Color("BrassAccent"))
+                                .cornerRadius(8)
+                        }
+                    }
                 }
-                .font(.subheadline)
+                .padding()
+                .background(Color(uiColor: .secondarySystemGroupedBackground))
+                .cornerRadius(12)
             }
             
-            // Piano keyboard
+            // Piano keyboard - consistent with other drills (no note names by default)
             PianoKeyboard(
                 selectedNotes: $selectedNotes,
                 octaveRange: 4...4,
-                showNoteNames: true,
+                showNoteNames: false,
                 allowMultipleSelection: true
             )
             .frame(height: 180)
             .padding(.horizontal)
             .disabled(showingFeedback)
+            .onChange(of: selectedNotes) { oldValue, newValue in
+                // Play audio when notes are selected
+                if let newNote = newValue.subtracting(oldValue).first {
+                    AudioManager.shared.playNote(newNote.midiNumber)
+                }
+            }
         }
     }
     
@@ -367,6 +386,10 @@ struct QuickPracticeSession: View {
                 let generator = UINotificationFeedbackGenerator()
                 generator.notificationOccurred(.success)
             }
+            // Play correct chord/interval as audio feedback
+            if !item.correctNotes.isEmpty {
+                playCorrectAnswer(item.correctNotes)
+            }
         } else {
             // Record missed item
             missedItems.append(MissedItem(
@@ -379,6 +402,11 @@ struct QuickPracticeSession: View {
                 let generator = UINotificationFeedbackGenerator()
                 generator.notificationOccurred(.error)
             }
+            // Play correct answer so user can hear it
+            if !item.correctNotes.isEmpty {
+                playCorrectAnswer(item.correctNotes)
+            }
+        }
         }
         
         showingFeedback = true
@@ -435,6 +463,12 @@ struct QuickPracticeSession: View {
         let minutes = Int(duration) / 60
         let seconds = Int(duration) % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    /// Plays the correct answer notes as audio feedback
+    private func playCorrectAnswer(_ notes: [Note]) {
+        // Play notes as a chord (simultaneously)
+        AudioManager.shared.playChord(notes)
     }
 }
 
