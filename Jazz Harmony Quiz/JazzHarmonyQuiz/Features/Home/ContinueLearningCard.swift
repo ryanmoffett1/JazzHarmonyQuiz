@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Continue Learning Card - shows active or recommended curriculum module
 /// Per DESIGN.md Section 5.3.2 and Appendix C.3
+/// Using ShedTheme for flat modern UI
 /// 
 /// DESIGN CONTRACT: This card launches drills in CURRICULUM mode with locked config.
 struct ContinueLearningCard: View {
@@ -9,25 +10,27 @@ struct ContinueLearningCard: View {
     
     var body: some View {
         if shouldShowCard {
-            StandardCard {
-                VStack(alignment: .leading, spacing: 12) {
+            ShedCard {
+                VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                     // Title
                     Text("CONTINUE LEARNING")
-                        .font(.system(.caption, design: .rounded, weight: .semibold))
-                        .foregroundColor(.secondary)
+                        .font(ShedTheme.Type.caption)
+                        .foregroundColor(ShedTheme.Colors.textSecondary)
                     
                     // Module info
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                         Text(moduleTitle)
-                            .font(.system(.headline, design: .rounded, weight: .semibold))
+                            .font(ShedTheme.Type.bodyBold)
+                            .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         // Progress bar
-                        ProgressBar(progress: moduleProgress, showPercentage: true)
+                        ShedProgressBar(progress: moduleProgress, showPercentage: true)
                     }
                     
                     // Continue button
-                    SecondaryButton(
+                    ShedButton(
                         title: isStarting ? "Start" : "Continue",
+                        style: .secondary,
                         action: {
                             startModulePractice()
                         }
@@ -112,17 +115,11 @@ struct ContinueLearningCard: View {
     }
 }
 
-#Preview("Active Module") {
+#Preview {
     NavigationStack {
         ContinueLearningCard()
             .padding()
-    }
-}
-
-#Preview("Dark Mode") {
-    NavigationStack {
-        ContinueLearningCard()
-            .padding()
+            .background(ShedTheme.Colors.bg)
             .preferredColorScheme(.dark)
     }
 }

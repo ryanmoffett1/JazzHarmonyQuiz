@@ -1,56 +1,39 @@
 import SwiftUI
 
+// MARK: - Legacy Card Wrappers (Using ShedTheme)
+// These maintain API compatibility while using the new flat theme
+
 /// Standard card component for general content
 struct StandardCard<Content: View>: View {
     let content: Content
-    var padding: CGFloat = 16
+    var padding: CGFloat = ShedTheme.Space.m
     
-    init(padding: CGFloat = 16, @ViewBuilder content: () -> Content) {
+    init(padding: CGFloat = ShedTheme.Space.m, @ViewBuilder content: () -> Content) {
         self.padding = padding
         self.content = content()
     }
     
     var body: some View {
-        content
-            .padding(padding)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(uiColor: .systemBackground))
-                    .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
-            )
+        ShedCard(padding: padding, highlighted: false) {
+            content
+        }
     }
 }
 
 /// Highlighted card for Quick Practice and important actions (brass accent)
 struct HighlightedCard<Content: View>: View {
     let content: Content
-    var padding: CGFloat = 16
+    var padding: CGFloat = ShedTheme.Space.m
     
-    init(padding: CGFloat = 16, @ViewBuilder content: () -> Content) {
+    init(padding: CGFloat = ShedTheme.Space.m, @ViewBuilder content: () -> Content) {
         self.padding = padding
         self.content = content()
     }
     
     var body: some View {
-        content
-            .padding(padding)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color("BrassAccent").opacity(0.15),
-                                Color("BrassAccent").opacity(0.05)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .strokeBorder(Color("BrassAccent"), lineWidth: 1.5)
-                    )
-            )
+        ShedCard(padding: padding, highlighted: true) {
+            content
+        }
     }
 }
 
@@ -58,67 +41,58 @@ struct HighlightedCard<Content: View>: View {
 
 #Preview("Standard Card") {
     StandardCard {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
             Text("Standard Card")
-                .font(.headline)
+                .font(ShedTheme.Type.heading)
+                .foregroundColor(ShedTheme.Colors.textPrimary)
             Text("This is a standard card with some content inside.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(ShedTheme.Type.body)
+                .foregroundColor(ShedTheme.Colors.textSecondary)
         }
     }
-    .padding()
+    .padding(ShedTheme.Space.l)
+    .background(ShedTheme.Colors.bg)
 }
 
 #Preview("Highlighted Card") {
     HighlightedCard {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
             Text("Quick Practice")
-                .font(.headline)
+                .font(ShedTheme.Type.heading)
+                .foregroundColor(ShedTheme.Colors.textPrimary)
             Text("Start practicing right away with a smart mix of topics.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(ShedTheme.Type.body)
+                .foregroundColor(ShedTheme.Colors.textSecondary)
         }
     }
-    .padding()
+    .padding(ShedTheme.Space.l)
+    .background(ShedTheme.Colors.bg)
 }
 
 #Preview("Card Comparison") {
-    VStack(spacing: 16) {
+    VStack(spacing: ShedTheme.Space.m) {
         StandardCard {
             VStack(alignment: .leading) {
                 Text("Continue Learning")
-                    .font(.headline)
+                    .font(ShedTheme.Type.heading)
+                    .foregroundColor(ShedTheme.Colors.textPrimary)
                 Text("Module 5: ii-V-I Progressions")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(ShedTheme.Type.body)
+                    .foregroundColor(ShedTheme.Colors.textSecondary)
             }
         }
         
         HighlightedCard {
             VStack(alignment: .leading) {
                 Text("Quick Practice")
-                    .font(.headline)
+                    .font(ShedTheme.Type.heading)
+                    .foregroundColor(ShedTheme.Colors.textPrimary)
                 Text("15 min • Mixed Topics")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(ShedTheme.Type.body)
+                    .foregroundColor(ShedTheme.Colors.textSecondary)
             }
         }
     }
-    .padding()
-}
-
-#Preview("Dark Mode") {
-    VStack(spacing: 16) {
-        StandardCard {
-            Text("Standard Card in Dark Mode")
-                .font(.headline)
-        }
-        
-        HighlightedCard {
-            Text("Highlighted Card in Dark Mode")
-                .font(.headline)
-        }
-    }
-    .padding()
-    .preferredColorScheme(.dark)
+    .padding(ShedTheme.Space.l)
+    .background(ShedTheme.Colors.bg)
 }

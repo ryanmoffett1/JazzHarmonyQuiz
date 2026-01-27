@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Home screen - daily dashboard with Quick Practice and progress overview
-/// Per DESIGN.md Section 5
+/// Per DESIGN.md Section 5, using ShedTheme for flat modern UI
 struct HomeView: View {
     @EnvironmentObject var settings: SettingsManager
     @State private var showQuickPractice = false
@@ -9,7 +9,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: ShedTheme.Space.l) {
                     // Header with streak badge
                     headerSection
                     
@@ -23,29 +23,26 @@ struct HomeView: View {
                     DailyFocusCard()
                     
                     // Weekly Streak
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("THIS WEEK")
-                            .font(.system(.caption, design: .rounded, weight: .semibold))
-                            .foregroundColor(.secondary)
-                        
+                    VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
+                        ShedHeader(title: "This Week")
                         WeeklyStreakView()
                     }
                     
                     // Quick Stats
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("QUICK STATS")
-                            .font(.system(.caption, design: .rounded, weight: .semibold))
-                            .foregroundColor(.secondary)
-                        
+                    VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
+                        ShedHeader(title: "Quick Stats")
                         QuickStatsView()
                     }
                     
-                    Spacer(minLength: 20)
+                    Spacer(minLength: ShedTheme.Space.l)
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, ShedTheme.Space.m)
             }
+            .background(ShedTheme.Colors.bg)
             .navigationTitle("Shed Pro")
             .navigationBarTitleDisplayMode(.large)
+            .toolbarBackground(ShedTheme.Colors.bg, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .sheet(isPresented: $showQuickPractice) {
                 QuickPracticeView()
                     .environmentObject(settings)
@@ -58,32 +55,25 @@ struct HomeView: View {
             Spacer()
             streakBadge
         }
-        .padding(.top, 8)
+        .padding(.top, ShedTheme.Space.xs)
     }
     
     @ViewBuilder
     private var streakBadge: some View {
-        // TODO: Implement actual streak logic from PlayerProfile
-        // For now, showing a placeholder
-        let streakDays = 0 // Replace with actual streak
+        let streakDays = PlayerProfile.shared.currentStreak
         
         if streakDays > 0 {
-            HStack(spacing: 4) {
+            HStack(spacing: ShedTheme.Space.xxs) {
                 Text("🔥")
                 Text("\(streakDays) days")
-                    .font(.system(.caption, design: .rounded, weight: .medium))
+                    .font(ShedTheme.Type.caption)
             }
-            .foregroundColor(streakDays >= 7 ? Color("BrassAccent") : .secondary)
+            .foregroundColor(streakDays >= 7 ? ShedTheme.Colors.brass : ShedTheme.Colors.textSecondary)
         }
     }
 }
 
-#Preview("Light Mode") {
-    HomeView()
-        .environmentObject(SettingsManager.shared)
-}
-
-#Preview("Dark Mode") {
+#Preview {
     HomeView()
         .environmentObject(SettingsManager.shared)
         .preferredColorScheme(.dark)

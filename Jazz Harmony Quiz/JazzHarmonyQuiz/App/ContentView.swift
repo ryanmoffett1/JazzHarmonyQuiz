@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Root view with tab-based navigation per DESIGN.md Section 3.1
+/// Using ShedTheme for flat modern UI
 struct ContentView: View {
     @EnvironmentObject var settings: SettingsManager
     @State private var selectedTab = 0
@@ -42,17 +43,12 @@ struct ContentView: View {
                 }
                 .tag(4)
         }
-        .tint(Color("BrassAccent"))
+        .tint(ShedTheme.Colors.brass)
+        .preferredColorScheme(.dark)
     }
 }
 
-#Preview("Light Mode") {
+#Preview {
     ContentView()
         .environmentObject(SettingsManager.shared)
-}
-
-#Preview("Dark Mode") {
-    ContentView()
-        .environmentObject(SettingsManager.shared)
-        .preferredColorScheme(.dark)
 }

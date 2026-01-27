@@ -1,33 +1,15 @@
 import SwiftUI
 
+// MARK: - Legacy Progress Wrappers (Using ShedTheme)
+
 /// Progress bar component showing completion percentage
 struct ProgressBar: View {
     let progress: Double // 0.0 to 1.0
-    var height: CGFloat = 8
+    var height: CGFloat = 6
     var showPercentage: Bool = false
     
     var body: some View {
-        VStack(spacing: 4) {
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    // Background
-                    RoundedRectangle(cornerRadius: height / 2)
-                        .fill(Color.gray.opacity(0.2))
-                    
-                    // Progress fill
-                    RoundedRectangle(cornerRadius: height / 2)
-                        .fill(Color("BrassAccent"))
-                        .frame(width: geometry.size.width * max(0, min(1, progress)))
-                }
-            }
-            .frame(height: height)
-            
-            if showPercentage {
-                Text("\(Int(progress * 100))%")
-                    .font(.system(.caption, design: .rounded, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
-        }
+        ShedProgressBar(progress: progress, height: height, showLabel: showPercentage)
     }
 }
 
@@ -37,13 +19,13 @@ struct SessionProgress: View {
     let total: Int
     
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ShedTheme.Space.xs) {
             Text("Question \(current) of \(total)")
-                .font(.system(.subheadline, design: .rounded, weight: .medium))
-                .foregroundColor(.secondary)
+                .font(ShedTheme.Type.caption)
+                .foregroundColor(ShedTheme.Colors.textSecondary)
             
-            ProgressBar(progress: Double(current) / Double(total), height: 6)
-                .frame(maxWidth: 120)
+            ShedProgressBar(progress: Double(current) / Double(total), height: 4)
+                .frame(maxWidth: 100)
         }
     }
 }
@@ -51,45 +33,40 @@ struct SessionProgress: View {
 // MARK: - Previews
 
 #Preview("Progress Bar - Empty") {
-    VStack(spacing: 20) {
+    VStack(spacing: ShedTheme.Space.m) {
         ProgressBar(progress: 0.0)
         ProgressBar(progress: 0.0, showPercentage: true)
     }
-    .padding()
+    .padding(ShedTheme.Space.l)
+    .background(ShedTheme.Colors.bg)
 }
 
 #Preview("Progress Bar - Partial") {
-    VStack(spacing: 20) {
+    VStack(spacing: ShedTheme.Space.m) {
         ProgressBar(progress: 0.25)
         ProgressBar(progress: 0.5)
         ProgressBar(progress: 0.75)
         ProgressBar(progress: 0.75, showPercentage: true)
     }
-    .padding()
+    .padding(ShedTheme.Space.l)
+    .background(ShedTheme.Colors.bg)
 }
 
 #Preview("Progress Bar - Full") {
-    VStack(spacing: 20) {
+    VStack(spacing: ShedTheme.Space.m) {
         ProgressBar(progress: 1.0)
         ProgressBar(progress: 1.0, showPercentage: true)
     }
-    .padding()
+    .padding(ShedTheme.Space.l)
+    .background(ShedTheme.Colors.bg)
 }
 
 #Preview("Session Progress") {
-    VStack(spacing: 20) {
+    VStack(spacing: ShedTheme.Space.m) {
         SessionProgress(current: 1, total: 10)
         SessionProgress(current: 5, total: 10)
         SessionProgress(current: 10, total: 10)
     }
-    .padding()
-}
-
-#Preview("Dark Mode") {
-    VStack(spacing: 20) {
-        ProgressBar(progress: 0.65, showPercentage: true)
-        SessionProgress(current: 7, total: 10)
-    }
-    .padding()
-    .preferredColorScheme(.dark)
+    .padding(ShedTheme.Space.l)
+    .background(ShedTheme.Colors.bg)
 }

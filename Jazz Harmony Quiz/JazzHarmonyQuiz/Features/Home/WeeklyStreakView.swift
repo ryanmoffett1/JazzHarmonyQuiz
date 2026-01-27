@@ -1,15 +1,18 @@
 import SwiftUI
 
 /// Weekly Streak View - shows M-F practice days
-/// Per DESIGN.md Section 5.3.4
+/// Per DESIGN.md Section 5.3.4, using ShedTheme for flat modern UI
 struct WeeklyStreakView: View {
     @ObservedObject private var playerProfile = PlayerProfile.shared
     
     var body: some View {
-        HStack(spacing: 8) {
-            ForEach(weekDays, id: \.self) { day in
-                DayCheckmark(day: day, isCompleted: isDayCompleted(day), isToday: isToday(day))
+        ShedCard {
+            HStack(spacing: ShedTheme.Space.xs) {
+                ForEach(weekDays, id: \.self) { day in
+                    DayCheckmark(day: day, isCompleted: isDayCompleted(day), isToday: isToday(day))
+                }
             }
+            .frame(maxWidth: .infinity)
         }
     }
     
@@ -67,24 +70,24 @@ private struct DayCheckmark: View {
     let isToday: Bool
     
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: ShedTheme.Space.xxs) {
             Text(day)
-                .font(.system(.caption2, design: .rounded, weight: .medium))
-                .foregroundColor(isCompleted ? Color("BrassAccent") : .secondary)
+                .font(ShedTheme.Type.caption)
+                .foregroundColor(isCompleted ? ShedTheme.Colors.brass : ShedTheme.Colors.textTertiary)
             
             ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isCompleted ? Color("BrassAccent").opacity(0.2) : Color.clear)
-                    .frame(width: 40, height: 40)
+                RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
+                    .fill(isCompleted ? ShedTheme.Colors.brass.opacity(0.15) : Color.clear)
+                    .frame(width: 44, height: 44)
                 
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(borderColor, lineWidth: isToday ? 2 : 1.5)
-                    .frame(width: 40, height: 40)
+                RoundedRectangle(cornerRadius: ShedTheme.Radius.s)
+                    .stroke(borderColor, lineWidth: ShedTheme.Stroke.thin)
+                    .frame(width: 44, height: 44)
                 
                 if isCompleted {
                     Image(systemName: "checkmark")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Color("BrassAccent"))
+                        .foregroundColor(ShedTheme.Colors.brass)
                 }
             }
         }
@@ -92,22 +95,18 @@ private struct DayCheckmark: View {
     
     private var borderColor: Color {
         if isCompleted {
-            return Color("BrassAccent")
+            return ShedTheme.Colors.brass
         } else if isToday {
-            return Color("BrassAccent").opacity(0.5)
+            return ShedTheme.Colors.brass.opacity(0.5)
         } else {
-            return Color.secondary.opacity(0.3)
+            return ShedTheme.Colors.stroke
         }
     }
 }
 
-#Preview("Light Mode") {
+#Preview {
     WeeklyStreakView()
         .padding()
-}
-
-#Preview("Dark Mode") {
-    WeeklyStreakView()
-        .padding()
+        .background(ShedTheme.Colors.bg)
         .preferredColorScheme(.dark)
 }

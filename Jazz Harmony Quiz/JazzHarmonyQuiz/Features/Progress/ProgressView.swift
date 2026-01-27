@@ -1,36 +1,34 @@
 import SwiftUI
 
 /// Progress tab view showing statistics, key breakdown, and achievements
-/// Per DESIGN.md Section 9
+/// Per DESIGN.md Section 9, using ShedTheme for flat modern UI
 struct ProgressTabView: View {
     @ObservedObject var playerProfile = PlayerProfile.shared
     @EnvironmentObject var settings: SettingsManager
-    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: ShedTheme.Space.l) {
                     // Level & XP Overview
                     LevelOverview(playerProfile: playerProfile)
-                        .padding(.horizontal)
                     
                     // Stats Overview
                     StatsOverview(playerProfile: playerProfile)
-                        .padding(.horizontal)
                     
                     // Category Breakdown
                     CategoryBreakdown(playerProfile: playerProfile)
-                        .padding(.horizontal)
                     
                     // Achievements List
                     AchievementsList(playerProfile: playerProfile)
-                        .padding(.horizontal)
                 }
-                .padding(.vertical)
+                .padding(.horizontal, ShedTheme.Space.m)
+                .padding(.vertical, ShedTheme.Space.m)
             }
+            .background(ShedTheme.Colors.bg)
             .navigationTitle("Progress")
-            .background(settings.backgroundColor(for: colorScheme))
+            .toolbarBackground(ShedTheme.Colors.bg, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
     }
 }
@@ -40,72 +38,65 @@ struct ProgressTabView: View {
 /// Shows current level based on XP (replaces old Rank display)
 struct LevelOverview: View {
     @ObservedObject var playerProfile: PlayerProfile
-    @EnvironmentObject var settings: SettingsManager
-    @Environment(\.colorScheme) var colorScheme
     
     private var level: PlayerLevel {
         PlayerLevel(xp: playerProfile.currentRating)
     }
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Level badge
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Level \(level.level)")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(settings.primaryText(for: colorScheme))
-                    
-                    Text("\(playerProfile.currentRating) XP")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                // Streak info
-                VStack(alignment: .trailing, spacing: 4) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .foregroundColor(.orange)
-                        Text("\(playerProfile.currentStreak) day streak")
-                            .fontWeight(.medium)
-                    }
-                    .font(.subheadline)
-                    
-                    if playerProfile.longestStreak > playerProfile.currentStreak {
-                        Text("Best: \(playerProfile.longestStreak) days")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-            
-            // Progress to next level
-            VStack(alignment: .leading, spacing: 4) {
+        ShedCard {
+            VStack(spacing: ShedTheme.Space.m) {
+                // Level badge
                 HStack {
-                    Text("Progress to Level \(level.level + 1)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
+                        Text("Level \(level.level)")
+                            .font(ShedTheme.Type.title)
+                            .foregroundColor(ShedTheme.Colors.textPrimary)
+                        
+                        Text("\(playerProfile.currentRating) XP")
+                            .font(ShedTheme.Type.body)
+                            .foregroundColor(ShedTheme.Colors.textSecondary)
+                    }
                     
                     Spacer()
                     
-                    Text("\(level.xpUntilNextLevel) XP needed")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    // Streak info
+                    VStack(alignment: .trailing, spacing: ShedTheme.Space.xxs) {
+                        HStack(spacing: ShedTheme.Space.xxs) {
+                            Image(systemName: "flame.fill")
+                                .foregroundColor(ShedTheme.Colors.warning)
+                            Text("\(playerProfile.currentStreak) day streak")
+                                .font(ShedTheme.Type.bodyBold)
+                        }
+                        .font(ShedTheme.Type.body)
+                        .foregroundColor(ShedTheme.Colors.textPrimary)
+                        
+                        if playerProfile.longestStreak > playerProfile.currentStreak {
+                            Text("Best: \(playerProfile.longestStreak) days")
+                                .font(ShedTheme.Type.caption)
+                                .foregroundColor(ShedTheme.Colors.textTertiary)
+                        }
+                    }
                 }
                 
-                ProgressView(value: level.progressToNextLevel)
-                    .tint(Color("BrassAccent"))
-                    .frame(height: 8)
+                // Progress to next level
+                VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
+                    HStack {
+                        Text("Progress to Level \(level.level + 1)")
+                            .font(ShedTheme.Type.caption)
+                            .foregroundColor(ShedTheme.Colors.textSecondary)
+                        
+                        Spacer()
+                        
+                        Text("\(level.xpUntilNextLevel) XP needed")
+                            .font(ShedTheme.Type.caption)
+                            .foregroundColor(ShedTheme.Colors.textTertiary)
+                    }
+                    
+                    ShedProgressBar(progress: level.progressToNextLevel, showPercentage: false)
+                }
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(settings.cardBackground(for: colorScheme))
-        )
     }
 }
 
@@ -114,4 +105,5 @@ struct LevelOverview: View {
 #Preview {
     ProgressTabView()
         .environmentObject(SettingsManager.shared)
+        .preferredColorScheme(.dark)
 }

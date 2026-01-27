@@ -1,15 +1,19 @@
 import SwiftUI
 
 /// Quick Stats View - summary of practice statistics
-/// Per DESIGN.md Section 5.2 (Home Screen layout)
+/// Per DESIGN.md Section 5.2, using ShedTheme for flat modern UI
 struct QuickStatsView: View {
     @ObservedObject private var playerProfile = PlayerProfile.shared
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            StatRow(label: "Total Sessions", value: "\(totalSessions)")
-            StatRow(label: "This Week", value: "\(sessionsThisWeek)")
-            StatRow(label: "Avg Accuracy", value: "\(averageAccuracy)%")
+        ShedCard {
+            VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
+                ShedRow(label: "Total Sessions", value: "\(totalSessions)")
+                ShedDivider()
+                ShedRow(label: "This Week", value: "\(sessionsThisWeek)")
+                ShedDivider()
+                ShedRow(label: "Avg Accuracy", value: "\(averageAccuracy)%")
+            }
         }
     }
     
@@ -42,32 +46,9 @@ struct QuickStatsView: View {
     }
 }
 
-/// Single stat row
-private struct StatRow: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Text(label)
-                .font(.system(.subheadline, design: .rounded))
-                .foregroundColor(.secondary)
-            
-            Spacer()
-            
-            Text(value)
-                .font(.system(.subheadline, design: .rounded, weight: .semibold))
-        }
-    }
-}
-
-#Preview("Light Mode") {
+#Preview {
     QuickStatsView()
         .padding()
-}
-
-#Preview("Dark Mode") {
-    QuickStatsView()
-        .padding()
+        .background(ShedTheme.Colors.bg)
         .preferredColorScheme(.dark)
 }

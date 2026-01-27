@@ -1,40 +1,41 @@
 import SwiftUI
 
 /// Quick Practice Card - always first, always visible
-/// Per DESIGN.md Section 5.3.1 and 6.2
+/// Per DESIGN.md Section 5.3.1 and 6.2, using ShedTheme for flat modern UI
 struct QuickPracticeCard: View {
     @Binding var showQuickPractice: Bool
     
     var body: some View {
-        HighlightedCard {
-            VStack(alignment: .leading, spacing: 12) {
+        ShedCard(highlighted: true) {
+            VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                 // Title
                 Text("QUICK PRACTICE")
-                    .font(.system(.caption, design: .rounded, weight: .semibold))
-                    .foregroundColor(Color("BrassAccent"))
+                    .font(ShedTheme.Type.caption)
+                    .foregroundColor(ShedTheme.Colors.brass)
                 
-                Divider()
-                    .background(Color("BrassAccent").opacity(0.3))
+                ShedDivider()
                 
                 // Content based on what's available
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                     Text(contentTitle)
-                        .font(.system(.headline, design: .rounded, weight: .semibold))
+                        .font(ShedTheme.Type.bodyBold)
+                        .foregroundColor(ShedTheme.Colors.textPrimary)
                     
                     Text(contentSubtitle)
-                        .font(.system(.subheadline, design: .rounded))
-                        .foregroundColor(.secondary)
+                        .font(ShedTheme.Type.body)
+                        .foregroundColor(ShedTheme.Colors.textSecondary)
                     
                     if let estimate = estimatedTime {
                         Text("Estimated: \(estimate)")
-                            .font(.system(.caption, design: .rounded))
-                            .foregroundColor(.secondary)
+                            .font(ShedTheme.Type.caption)
+                            .foregroundColor(ShedTheme.Colors.textTertiary)
                     }
                 }
                 
                 // Start Button
-                PrimaryButton(
+                ShedButton(
                     title: "Start Session",
+                    style: .primary,
                     action: {
                         showQuickPractice = true
                     }
@@ -46,12 +47,10 @@ struct QuickPracticeCard: View {
     // MARK: - Content Logic
     
     private var dueItemsCount: Int {
-        // TODO: Connect to actual SpacedRepetitionStore
         SpacedRepetitionStore.shared.totalDueCount()
     }
     
     private var hasWeakAreas: Bool {
-        // TODO: Connect to actual Statistics
         false
     }
     
@@ -85,13 +84,9 @@ struct QuickPracticeCard: View {
     }
 }
 
-#Preview("With Due Items") {
+#Preview {
     QuickPracticeCard(showQuickPractice: .constant(false))
         .padding()
-}
-
-#Preview("Dark Mode") {
-    QuickPracticeCard(showQuickPractice: .constant(false))
-        .padding()
+        .background(ShedTheme.Colors.bg)
         .preferredColorScheme(.dark)
 }

@@ -1,30 +1,32 @@
 import SwiftUI
 
 /// Daily Focus Card - shows weak area to practice
-/// Per DESIGN.md Section 5.3.3
+/// Per DESIGN.md Section 5.3.3, using ShedTheme for flat modern UI
 struct DailyFocusCard: View {
     var body: some View {
         if let weakArea = identifiedWeakArea {
-            StandardCard {
-                VStack(alignment: .leading, spacing: 12) {
+            ShedCard {
+                VStack(alignment: .leading, spacing: ShedTheme.Space.s) {
                     // Title
                     Text("DAILY FOCUS")
-                        .font(.system(.caption, design: .rounded, weight: .semibold))
-                        .foregroundColor(.secondary)
+                        .font(ShedTheme.Type.caption)
+                        .foregroundColor(ShedTheme.Colors.textSecondary)
                     
                     // Weak area info
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ShedTheme.Space.xs) {
                         Text("Weak area: \(weakArea.name)")
-                            .font(.system(.headline, design: .rounded, weight: .semibold))
+                            .font(ShedTheme.Type.bodyBold)
+                            .foregroundColor(ShedTheme.Colors.textPrimary)
                         
                         Text("Last accuracy: \(Int(weakArea.accuracy * 100))%")
-                            .font(.system(.subheadline, design: .rounded))
-                            .foregroundColor(.secondary)
+                            .font(ShedTheme.Type.body)
+                            .foregroundColor(ShedTheme.Colors.textSecondary)
                     }
                     
                     // Practice button
-                    SecondaryButton(
+                    ShedButton(
                         title: "Practice \(weakArea.shortName)",
+                        style: .secondary,
                         action: {
                             // TODO: Navigate to focused drill for this weak area
                         }
@@ -56,14 +58,9 @@ struct DailyFocusCard: View {
     }
 }
 
-#Preview("With Weak Area") {
-    // For preview, temporarily show the card
+#Preview {
     DailyFocusCard()
         .padding()
-}
-
-#Preview("Dark Mode") {
-    DailyFocusCard()
-        .padding()
+        .background(ShedTheme.Colors.bg)
         .preferredColorScheme(.dark)
 }

@@ -1,15 +1,15 @@
 import SwiftUI
 
 /// Practice view - drill selection screen per DESIGN.md
+/// Using ShedTheme for flat modern UI
 struct PracticeView: View {
     @EnvironmentObject var quizGame: QuizGame
     @EnvironmentObject var settings: SettingsManager
-    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: ShedTheme.Space.m) {
                     // Chord Drill
                     NavigationLink {
                         ChordDrillView()
@@ -19,8 +19,7 @@ struct PracticeView: View {
                         DrillSelectionCard(
                             title: "Chord Spelling",
                             subtitle: "Spell chord tones on the keyboard",
-                            icon: "music.note.list",
-                            accentColor: Color("BrassAccent")
+                            icon: "music.note.list"
                         )
                     }
                     
@@ -33,8 +32,7 @@ struct PracticeView: View {
                         DrillSelectionCard(
                             title: "Cadence Training",
                             subtitle: "Identify chord progressions by ear",
-                            icon: "arrow.triangle.2.circlepath",
-                            accentColor: Color("BrassAccent")
+                            icon: "arrow.triangle.2.circlepath"
                         )
                     }
                     
@@ -47,8 +45,7 @@ struct PracticeView: View {
                         DrillSelectionCard(
                             title: "Scale Spelling",
                             subtitle: "Build scales from any root",
-                            icon: "waveform.path.ecg",
-                            accentColor: Color("BrassAccent")
+                            icon: "waveform.path.ecg"
                         )
                     }
                     
@@ -61,14 +58,16 @@ struct PracticeView: View {
                         DrillSelectionCard(
                             title: "Interval Training",
                             subtitle: "Recognize intervals by ear",
-                            icon: "tuningfork",
-                            accentColor: Color("BrassAccent")
+                            icon: "tuningfork"
                         )
                     }
                 }
-                .padding()
+                .padding(.horizontal, ShedTheme.Space.m)
             }
+            .background(ShedTheme.Colors.bg)
             .navigationTitle("Practice")
+            .toolbarBackground(ShedTheme.Colors.bg, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
     }
 }
@@ -79,42 +78,34 @@ struct DrillSelectionCard: View {
     let title: String
     let subtitle: String
     let icon: String
-    let accentColor: Color
-    
-    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: ShedTheme.Space.m) {
             // Icon with brass accent background
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(accentColor)
-                .frame(width: 50, height: 50)
-                .background(accentColor.opacity(colorScheme == .dark ? 0.2 : 0.15))
-                .cornerRadius(10)
+            ShedIcon(systemName: icon, size: .large, color: ShedTheme.Colors.brass)
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ShedTheme.Space.xxs) {
                 Text(title)
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                    .font(ShedTheme.Type.bodyBold)
+                    .foregroundColor(ShedTheme.Colors.textPrimary)
                 
                 Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(ShedTheme.Type.body)
+                    .foregroundColor(ShedTheme.Colors.textSecondary)
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundColor(.secondary)
+                .foregroundColor(ShedTheme.Colors.textTertiary)
                 .font(.subheadline)
         }
-        .padding()
-        .background(Color(uiColor: colorScheme == .dark ? .secondarySystemBackground : .systemBackground))
-        .cornerRadius(12)
+        .padding(ShedTheme.Space.m)
+        .background(ShedTheme.Colors.surface)
+        .cornerRadius(ShedTheme.Radius.m)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: ShedTheme.Radius.m)
+                .stroke(ShedTheme.Colors.stroke, lineWidth: ShedTheme.Stroke.thin)
         )
     }
 }
@@ -123,4 +114,5 @@ struct DrillSelectionCard: View {
     PracticeView()
         .environmentObject(QuizGame())
         .environmentObject(SettingsManager.shared)
+        .preferredColorScheme(.dark)
 }
