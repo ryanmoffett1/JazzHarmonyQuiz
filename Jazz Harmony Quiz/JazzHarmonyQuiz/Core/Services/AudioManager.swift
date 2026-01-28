@@ -491,19 +491,28 @@ class AudioManager: ObservableObject {
             sequence = notes + Array(notes.dropLast().reversed())
         }
         
-        // Play each note in sequence
+        // Use a serial queue with precise timing
+        let playbackQueue = DispatchQueue(label: "com.shedpro.scale-playback", qos: .userInteractive)
+        let startTime = CACurrentMediaTime()
+        
+        // Schedule all notes precisely
         for (index, note) in sequence.enumerated() {
-            let delay = Double(index) * noteDuration
+            let noteStartTime = startTime + (Double(index) * noteDuration)
+            let noteStopTime = noteStartTime + (noteDuration * 0.85)
             let midiNote = UInt8(note.midiNumber)
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
+            // Schedule note start
+            playbackQueue.asyncAfter(deadline: .now() + (noteStartTime - CACurrentMediaTime())) {
+                DispatchQueue.main.async {
+                    sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
+                }
             }
             
-            // Stop note slightly before next one for articulation
-            let stopDelay = delay + (noteDuration * 0.85)
-            DispatchQueue.main.asyncAfter(deadline: .now() + stopDelay) {
-                sampler.stopNote(midiNote, onChannel: 0)
+            // Schedule note stop
+            playbackQueue.asyncAfter(deadline: .now() + (noteStopTime - CACurrentMediaTime())) {
+                DispatchQueue.main.async {
+                    sampler.stopNote(midiNote, onChannel: 0)
+                }
             }
         }
     }

@@ -312,55 +312,80 @@ struct ScaleDrillSession: View {
     @ViewBuilder
     private func feedbackNotesView(question: ScaleQuestion) -> some View {
         VStack(spacing: 16) {
-            // For single degree incorrect answers, show both user and correct answer
-            if question.questionType == .singleDegree && !isCorrect {
-                // User's answer
-                VStack(spacing: 8) {
-                    HStack {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title3)
-                        Text("Your answer:")
-                            .font(.headline)
+            // For single degree questions, use simpler display
+            if question.questionType == .singleDegree {
+                if isCorrect {
+                    // Simple confirmation for correct answer
+                    VStack(spacing: 12) {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.largeTitle)
+                            Text("Correct!")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                        }
+                        .foregroundColor(.green)
+                        
+                        if let userNote = userAnswerNotes.first {
+                            Text(displayNoteName(userNote, for: question.scale))
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 12)
+                                .background(ShedTheme.Colors.success.opacity(0.2))
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
                     }
-                    .foregroundColor(.red)
+                } else {
+                    // User's answer
+                    VStack(spacing: 8) {
+                        HStack {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title3)
+                            Text("Your answer:")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.red)
+                        
+                        if let userNote = userAnswerNotes.first {
+                            Text(displayNoteName(userNote, for: question.scale))
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(ShedTheme.Colors.danger.opacity(0.2))
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+                    }
                     
-                    if let userNote = userAnswerNotes.first {
-                        Text(displayNoteName(userNote, for: question.scale))
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(ShedTheme.Colors.danger.opacity(0.2))
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                    }
-                }
-                
-                Divider()
-                
-                // Correct answer
-                VStack(spacing: 8) {
-                    HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.title3)
-                        Text("Correct answer:")
-                            .font(.headline)
-                    }
-                    .foregroundColor(.green)
+                    Divider()
                     
-                    if let correctNote = question.correctNotes.first {
-                        Text(displayNoteName(correctNote, for: question.scale))
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(ShedTheme.Colors.success.opacity(0.2))
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
+                    // Correct answer
+                    VStack(spacing: 8) {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title3)
+                            Text("Correct answer:")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.green)
+                        
+                        if let correctNote = question.correctNotes.first {
+                            Text(displayNoteName(correctNote, for: question.scale))
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(ShedTheme.Colors.success.opacity(0.2))
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
                     }
                 }
             } else {
-                // Original display for other question types and correct answers
+                // Original display for other question types
                 HStack {
                     Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
                         .font(.title)
