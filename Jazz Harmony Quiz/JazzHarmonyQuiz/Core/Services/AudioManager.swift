@@ -19,12 +19,6 @@ class AudioManager: ObservableObject {
     private var playbackGeneration: Int = 0
     private let generationLock = NSLock()
     
-    /// Precise real-time audio scheduler
-    private var playbackQueue: DispatchQueue?
-    private var scheduledNotes: [(time: Double, note: UInt8, isStart: Bool)] = []
-    private var playbackWorkItem: DispatchWorkItem?
-    private var playbackCanceled: Bool = false
-    
     // MARK: - Playback State Tracking (for UI highlighting)
     
     /// Which source is currently playing ("correct", "user", or nil if none)
@@ -107,7 +101,6 @@ class AudioManager: ObservableObject {
             // Sampler will still work with default synthesis
         }
     }
-    
 
     /// Ensure the audio engine is running (restart if needed)
     private func ensureAudioEngineRunning() {
@@ -132,9 +125,8 @@ class AudioManager: ObservableObject {
         generationLock.lock()
         playbackGeneration += 1
         generationLock.unlock()
-                // Cancel scheduled playback
-        cancelScheduledPlayback()
-                // Clear playback state
+        
+        // Clear playback state
         DispatchQueue.main.async {
             self.playingSource = nil
             self.playingChordIndex = -1
@@ -337,7 +329,7 @@ class AudioManager: ObservableObject {
         ]
     }
     
-    /// Play a cadence progression with proper rhythm
+    /// Play a cadence progression with metronome-accurate timing
     /// - Parameters:
     ///   - chords: Array of chord note arrays (e.g., [[ii chord notes], [V chord notes], [I chord notes]])
     ///   - bpm: Tempo in beats per minute (default 90 BPM for a relaxed jazz feel)
@@ -346,8 +338,6 @@ class AudioManager: ObservableObject {
     func playCadenceProgression(_ chords: [[Note]], bpm: Double = 90, beatsPerChord: Double = 2, source: String? = nil) {
         guard isEnabled, let sampler = sampler, !chords.isEmpty else { return }
         
-        // Cancel any existing playback
-        cancelScheduledPlayback()
         stopAllNotes()
         
         // Set the playback source for UI highlighting
@@ -360,21 +350,16 @@ class AudioManager: ObservableObject {
         
         let secondsPerBeat = 60.0 / bpm
         let chordDuration = secondsPerBeat * beatsPerChord
-        
-        // Build schedule of chord events in nanoseconds
-        struct ChordEvent {
-            let timeNs: UInt64
-            let chordIndex: Int
-            let notes: [UInt8]
-            let isStart: Bool
-        }
-        
-        var events: [ChordEvent] = []
         let nsPerSecond: UInt64 = 1_000_000_000
         
-        for (index, chord) in chords.enumerated() {
-            let chordStartNs = UInt64(Double(index) * chordDuration * Double(nsPerSecond))
-            let chordStopNs = UInt64((Double(index) * chordDuration + chordDuration * 0.9) * Double(nsPerSecond))
+        // Schedule all chord events with precise DispatchTime deadlines
+        for (chordIndex, chord) in chords.enumerated() {
+            // Calculate exact nanosecond offsets
+            let chordStartNs = UInt64(Double(chordIndex) * chordDuration * Double(nsPerSecond))
+            let chordStopNs = UInt64((Double(chordIndex) * chordDuration + chordDuration * 0.9) * Double(nsPerSecond))
+            
+            let startDeadline = DispatchTime.now() + DispatchTimeInterval.nanoseconds(Int(chordStartNs))
+            let stopDeadline = DispatchTime.now() + DispatchTimeInterval.nanoseconds(Int(chordStopNs))
             
             // Normalize notes to middle C octave (MIDI 60-71)
             let normalizedMidiNotes = chord.map { note -> UInt8 in
@@ -382,80 +367,49 @@ class AudioManager: ObservableObject {
                 return UInt8(60 + pitchClass)
             }
             
-            events.append(ChordEvent(timeNs: chordStartNs, chordIndex: index, notes: normalizedMidiNotes, isStart: true))
-            events.append(ChordEvent(timeNs: chordStopNs, chordIndex: index, notes: normalizedMidiNotes, isStart: false))
-        }
-        
-        let sortedEvents = events.sorted { $0.timeNs < $1.timeNs }
-        playbackCanceled = false
-        
-        // Use real-time priority queue for precise scheduling
-        let queue = DispatchQueue.global(qos: .userInteractive)
-        let workItem = DispatchWorkItem { [weak self, sampler] in
-            guard let self = self else { return }
-            
-            var timebaseInfo = mach_timebase_info_data_t()
-            mach_timebase_info(&timebaseInfo)
-            let startTime = mach_absolute_time()
-            var eventIndex = 0
-            
-            while eventIndex < sortedEvents.count && !self.playbackCanceled {
-                // Check if playback was canceled
-                guard self.currentGeneration() == startGeneration else { break }
+            // Schedule chord start
+            DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: startDeadline) { [weak self] in
+                guard let self = self,
+                      let sampler = self.sampler,
+                      self.currentGeneration() == startGeneration else { return }
                 
-                let event = sortedEvents[eventIndex]
+                // Start all notes in chord
+                for midiNote in normalizedMidiNotes {
+                    self.trackNoteOn(midiNote)
+                    sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
+                }
                 
-                // Calculate current elapsed time in nanoseconds
-                let currentMachTime = mach_absolute_time()
-                let elapsedMachTime = currentMachTime - startTime
-                let elapsedNs = elapsedMachTime * UInt64(timebaseInfo.numer) / UInt64(timebaseInfo.denom)
-                
-                // If it's time to play this event
-                if elapsedNs >= event.timeNs {
-                    // Call sampler directly - it's thread-safe and avoids main queue latency
-                    if event.isStart {
-                        // Start chord
-                        for midiNote in event.notes {
-                            self.trackNoteOn(midiNote)
-                            sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
-                        }
-                        
-                        // Update UI on main queue (non-critical)
-                        DispatchQueue.main.async {
-                            self.playingChordIndex = event.chordIndex
-                        }
-                    } else {
-                        // Stop chord
-                        for midiNote in event.notes {
-                            self.trackNoteOff(midiNote)
-                            sampler.stopNote(midiNote, onChannel: 0)
-                        }
-                    }
-                    eventIndex += 1
-                } else {
-                    // Sleep for a very short time to avoid busy-waiting
-                    let sleepNs = min(event.timeNs - elapsedNs, 500_000) // Sleep up to 0.5ms
-                    var sleepTime = timespec(tv_sec: 0, tv_nsec: Int(sleepNs))
-                    nanosleep(&sleepTime, nil)
+                // Update UI
+                DispatchQueue.main.async {
+                    self.playingChordIndex = chordIndex
                 }
             }
             
-            // Clear playback state when done
+            // Schedule chord stop
+            DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: stopDeadline) { [weak self] in
+                guard let self = self,
+                      let sampler = self.sampler,
+                      self.currentGeneration() == startGeneration else { return }
+                
+                // Stop all notes in chord
+                for midiNote in normalizedMidiNotes {
+                    self.trackNoteOff(midiNote)
+                    sampler.stopNote(midiNote, onChannel: 0)
+                }
+            }
+        }
+        
+        // Clear playback state after completion
+        let totalDurationNs = UInt64(Double(chords.count) * chordDuration * Double(nsPerSecond))
+        let completionDeadline = DispatchTime.now() + DispatchTimeInterval.nanoseconds(Int(totalDurationNs) + 500_000_000) // +0.5s
+        
+        DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: completionDeadline) { [weak self] in
+            guard let self = self, self.currentGeneration() == startGeneration else { return }
             DispatchQueue.main.async {
                 self.playingSource = nil
                 self.playingChordIndex = -1
             }
         }
-        
-        playbackWorkItem = workItem
-        queue.async(execute: workItem)
-    }
-    
-    /// Cancel any scheduled playback
-    private func cancelScheduledPlayback() {
-        playbackCanceled = true
-        playbackWorkItem?.cancel()
-        playbackWorkItem = nil
     }
     
     /// Play a chord progression with timing between chords
@@ -524,7 +478,7 @@ class AudioManager: ObservableObject {
         case ascendingDescending
     }
     
-    /// Play a scale with proper timing
+    /// Play a scale with metronome-accurate timing
     /// - Parameters:
     ///   - notes: The scale notes (should include root through octave)
     ///   - bpm: Tempo in beats per minute (default 160 BPM for lively playback)
@@ -532,11 +486,11 @@ class AudioManager: ObservableObject {
     func playScale(_ notes: [Note], bpm: Double = 160, direction: ScaleDirection = .ascendingDescending) {
         guard isEnabled, let sampler = sampler, !notes.isEmpty else { return }
         
-        // Cancel any existing playback
-        cancelScheduledPlayback()
+        stopAllNotes()
         
         let secondsPerBeat = 60.0 / bpm
         let noteDuration = secondsPerBeat  // Quarter notes
+        let nsPerSecond: UInt64 = 1_000_000_000
         
         // Prepare the sequence of notes based on direction
         var sequence: [Note] = []
@@ -550,61 +504,28 @@ class AudioManager: ObservableObject {
             sequence = notes + Array(notes.dropLast().reversed())
         }
         
-        // Build schedule of note events in nanoseconds
-        var events: [(timeNs: UInt64, note: UInt8, isStart: Bool)] = []
-        let nsPerSecond: UInt64 = 1_000_000_000
-        
+        // Schedule all notes with precise DispatchTime deadlines
         for (index, note) in sequence.enumerated() {
-            let noteStartNs = UInt64(Double(index) * noteDuration * Double(nsPerSecond))
-            let noteStopNs = UInt64((Double(index) * noteDuration + noteDuration * 0.85) * Double(nsPerSecond))
             let midiNote = UInt8(note.midiNumber)
             
-            events.append((timeNs: noteStartNs, note: midiNote, isStart: true))
-            events.append((timeNs: noteStopNs, note: midiNote, isStart: false))
-        }
-        
-        let sortedEvents = events.sorted { $0.timeNs < $1.timeNs }
-        playbackCanceled = false
-        
-        // Use real-time priority queue for precise scheduling
-        let queue = DispatchQueue.global(qos: .userInteractive)
-        let workItem = DispatchWorkItem { [weak self, sampler] in
-            guard let self = self else { return }
+            // Calculate exact nanosecond offsets from now
+            let noteStartNs = UInt64(Double(index) * noteDuration * Double(nsPerSecond))
+            let noteStopNs = UInt64((Double(index) * noteDuration + noteDuration * 0.85) * Double(nsPerSecond))
             
-            var timebaseInfo = mach_timebase_info_data_t()
-            mach_timebase_info(&timebaseInfo)
-            let startTime = mach_absolute_time()
-            var eventIndex = 0
+            let startDeadline = DispatchTime.now() + DispatchTimeInterval.nanoseconds(Int(noteStartNs))
+            let stopDeadline = DispatchTime.now() + DispatchTimeInterval.nanoseconds(Int(noteStopNs))
             
-            while eventIndex < sortedEvents.count && !self.playbackCanceled {
-                let event = sortedEvents[eventIndex]
-                
-                // Calculate current elapsed time in nanoseconds
-                let currentMachTime = mach_absolute_time()
-                let elapsedMachTime = currentMachTime - startTime
-                let elapsedNs = elapsedMachTime * UInt64(timebaseInfo.numer) / UInt64(timebaseInfo.denom)
-                
-                // If it's time to play this event
-                if elapsedNs >= event.timeNs {
-                    // Call sampler directly - it's thread-safe and avoids main queue latency
-                    if event.isStart {
-                        sampler.startNote(event.note, withVelocity: 75, onChannel: 0)
-                    } else {
-                        sampler.stopNote(event.note, onChannel: 0)
-                    }
-                    eventIndex += 1
-                } else {
-                    // Sleep for a very short time to avoid busy-waiting
-                    // Use nanosleep for sub-millisecond precision
-                    let sleepNs = min(event.timeNs - elapsedNs, 500_000) // Sleep up to 0.5ms
-                    var sleepTime = timespec(tv_sec: 0, tv_nsec: Int(sleepNs))
-                    nanosleep(&sleepTime, nil)
-                }
+            // Schedule on a QoS.userInteractive queue for highest priority
+            DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: startDeadline) { [weak self] in
+                guard let self = self, let sampler = self.sampler else { return }
+                sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
+            }
+            
+            DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: stopDeadline) { [weak self] in
+                guard let self = self, let sampler = self.sampler else { return }
+                sampler.stopNote(midiNote, onChannel: 0)
             }
         }
-        
-        playbackWorkItem = workItem
-        queue.async(execute: workItem)
     }
     
     /// Play a scale from a Scale object (ascending then descending)
