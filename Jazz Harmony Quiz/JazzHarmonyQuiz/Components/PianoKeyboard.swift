@@ -6,6 +6,7 @@ struct PianoKeyboard: View {
     @State private var pressedKeys: Set<Note> = []
     @State private var scrollOffset: CGFloat = 0
     @State private var currentOctave: Int = 4
+    @State private var visibleRect: CGRect = .zero
     
     let octaveRange: ClosedRange<Int>
     let showNoteNames: Bool
@@ -41,26 +42,34 @@ struct PianoKeyboard: View {
             
             // Scrollable keyboard
             ScrollViewReader { proxy in
-                ScrollView(.horizontal, showsIndicators: false) {
-                    GeometryReader { geometry in
-                        Color.clear.preference(
-                            key: ScrollOffsetPreferenceKey.self,
-                            value: geometry.frame(in: .named("scroll")).origin.x
-                        )
-                    }
-                    .frame(height: 0)
-                    
-                    keyboardContent
-                        .onAppear {
-                            // Scroll to C4 on appear
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                scrollToNote(name: "C", octave: 4, proxy: proxy)
-                            }
+                GeometryReader { outerGeometry in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        GeometryReader { geometry in
+                            Color.clear.preference(
+                                key: VisibleRectPreferenceKey.self,
+                                value: geometry.frame(in: .named("scroll"))
+                            )
                         }
-                }
-                .coordinateSpace(name: "scroll")
-                .onPreferenceChange(ScrollOffsetPreferenceKey.self) { offset in
-                    updateCurrentOctave(offset: offset)
+                        .frame(height: 0)
+                        
+                        keyboardContent
+                            .background(
+                                GeometryReader { keyboardGeometry in
+                                    Color.clear
+                                }
+                            )
+                            .onAppear {
+                                // Scroll to C4 on appear
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    scrollToNote(name: "C", octave: 4, proxy: proxy)
+                                }
+                            }
+                    }
+                    .coordinateSpace(name: "scroll")
+                    .onPreferenceChange(VisibleRectPreferenceKey.self) { rect in
+                        visibleRect = rect
+                        updateCurrentOctave(visibleRect: rect, containerWidth: outerGeometry.size.width)
+                    }
                 }
             }
         }
@@ -111,21 +120,19 @@ struct PianoKeyboard: View {
             }
             
             // Black keys overlay
-            ForEach(Array(whiteKeys.enumerated()), id: \.element.midiNumber) { index, whiteKey in
-                if let blackKey = blackKeyAfter(whiteKey: whiteKey) {
-                    BlackKeyView(
-                        note: blackKey,
-                        isPressed: pressedKeys.contains(blackKey),
-                        isSelected: selectedNotes.contains(blackKey),
-                        width: blackKeyWidth,
-                        height: blackKeyHeight,
-                        showNoteName: showNoteNames
-                    ) {
-                        handleKeyPress(blackKey)
-                    }
-                    .offset(x: CGFloat(index + 1) * whiteKeyWidth - (blackKeyWidth / 2), y: 0)
-                    .id(blackKey.midiNumber)
+            ForEach(blackKeys, id: \.midiNumber) { blackKey in
+                BlackKeyView(
+                    note: blackKey,
+                    isPressed: pressedKeys.contains(blackKey),
+                    isSelected: selectedNotes.contains(blackKey),
+                    width: blackKeyWidth,
+                    height: blackKeyHeight,
+                    showNoteName: showNoteNames
+                ) {
+                    handleKeyPress(blackKey)
                 }
+                .offset(x: xPositionForBlackKey(blackKey), y: 0)
+                .id(blackKey.midiNumber)
             }
         }
         .frame(width: totalWidth, height: whiteKeyHeight)
@@ -158,6 +165,41 @@ struct PianoKeyboard: View {
         }
         
         return keys
+    }
+    
+    // Generate black keys for all octaves
+    private var blackKeys: [Note] {
+        var keys: [Note] = []
+        
+        // Black key pattern: C# D# F# G# A# (5 per octave)
+        let blackKeyOffsets = [1, 3, 6, 8, 10] // Semitones from C
+        let blackKeyNames = ["C#", "D#", "F#", "G#", "A#"]
+        
+        for octave in 2...6 {
+            let octaveBase = (octave + 1) * 12
+            for (index, offset) in blackKeyOffsets.enumerated() {
+                let midiNumber = octaveBase + offset
+                if midiNumber < 84 { // Don't go past C6
+                    let note = Note(
+                        name: blackKeyNames[index],
+                        midiNumber: midiNumber,
+                        isSharp: true
+                    )
+                    keys.append(note)
+                }
+            }
+        }
+        
+        return keys
+    }
+    
+    // Calculate X position for a black key based on its MIDI number
+    private func xPositionForBlackKey(_ blackKey: Note) -> CGFloat {
+        // Count how many white keys come before this black key
+        let whiteKeysBefore = whiteKeys.filter { $0.midiNumber < blackKey.midiNumber }.count
+        
+        // Position black key between white keys
+        return CGFloat(whiteKeysBefore) * whiteKeyWidth + whiteKeyWidth - (blackKeyWidth / 2)
     }
     
     // Get the black key that appears after a given white key, if any
@@ -220,20 +262,20 @@ struct PianoKeyboard: View {
     
     // MARK: - Scroll Helpers
     
-    private func updateCurrentOctave(offset: CGFloat) {
-        // Calculate which octave is most visible based on scroll position
-        let whiteKeysPerOctave: CGFloat = 7
+    private func updateCurrentOctave(visibleRect: CGRect, containerWidth: CGFloat) {
+        // Calculate the center of the visible area
+        let centerX = abs(visibleRect.origin.x) + (containerWidth / 2)
         
-        // Offset is negative when scrolled right
-        let scrolledKeys = abs(offset) / whiteKeyWidth
+        // Find which white key index is at the center
+        let centerKeyIndex = Int(centerX / whiteKeyWidth)
         
-        // Each octave starts at C
-        let octaveOffset = Int(scrolledKeys / whiteKeysPerOctave)
-        let newOctave = min(max(2 + octaveOffset, 2), 6)
+        // Each octave has 7 white keys (C D E F G A B)
+        // C2 starts at index 0, C3 at index 7, C4 at index 14, etc.
+        let octaveFromIndex = min(max(2 + (centerKeyIndex / 7), 2), 6)
         
-        if newOctave != currentOctave {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                currentOctave = newOctave
+        if octaveFromIndex != currentOctave {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                currentOctave = octaveFromIndex
             }
         }
     }
@@ -271,6 +313,14 @@ struct WhiteKeyView: View {
                     )
                 
                 VStack {
+                    // Octave indicator dot at top for C notes
+                    if note.name == "C" {
+                        Circle()
+                            .fill(Color.black.opacity(0.4))
+                            .frame(width: 6, height: 6)
+                            .padding(.top, 8)
+                    }
+                    
                     Spacer()
                     
                     // Selection indicator at bottom
@@ -366,11 +416,11 @@ struct BlackKeyView: View {
     }
 }
 
-// MARK: - Scroll Offset Preference Key
+// MARK: - Visible Rect Preference Key
 
-struct ScrollOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+struct VisibleRectPreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
         value = nextValue()
     }
 }
