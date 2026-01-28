@@ -412,22 +412,23 @@ class AudioManager: ObservableObject {
                 
                 // If it's time to play this event
                 if elapsedNs >= event.timeNs {
-                    DispatchQueue.main.async {
-                        if event.isStart {
-                            // Update which chord is playing for UI highlighting
+                    // Call sampler directly - it's thread-safe and avoids main queue latency
+                    if event.isStart {
+                        // Start chord
+                        for midiNote in event.notes {
+                            self.trackNoteOn(midiNote)
+                            sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
+                        }
+                        
+                        // Update UI on main queue (non-critical)
+                        DispatchQueue.main.async {
                             self.playingChordIndex = event.chordIndex
-                            
-                            // Start chord
-                            for midiNote in event.notes {
-                                self.trackNoteOn(midiNote)
-                                sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
-                            }
-                        } else {
-                            // Stop chord
-                            for midiNote in event.notes {
-                                self.trackNoteOff(midiNote)
-                                sampler.stopNote(midiNote, onChannel: 0)
-                            }
+                        }
+                    } else {
+                        // Stop chord
+                        for midiNote in event.notes {
+                            self.trackNoteOff(midiNote)
+                            sampler.stopNote(midiNote, onChannel: 0)
                         }
                     }
                     eventIndex += 1
@@ -585,12 +586,11 @@ class AudioManager: ObservableObject {
                 
                 // If it's time to play this event
                 if elapsedNs >= event.timeNs {
-                    DispatchQueue.main.async {
-                        if event.isStart {
-                            sampler.startNote(event.note, withVelocity: 75, onChannel: 0)
-                        } else {
-                            sampler.stopNote(event.note, onChannel: 0)
-                        }
+                    // Call sampler directly - it's thread-safe and avoids main queue latency
+                    if event.isStart {
+                        sampler.startNote(event.note, withVelocity: 75, onChannel: 0)
+                    } else {
+                        sampler.stopNote(event.note, onChannel: 0)
                     }
                     eventIndex += 1
                 } else {
