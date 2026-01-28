@@ -312,39 +312,88 @@ struct ScaleDrillSession: View {
     @ViewBuilder
     private func feedbackNotesView(question: ScaleQuestion) -> some View {
         VStack(spacing: 16) {
-            // Header
-            HStack {
-                Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                    .font(.title)
-                Text(isCorrect ? "Correct!" : (feedbackPhase == .showingUserAnswer ? "Your answer:" : "Correct answer:"))
-                    .font(.headline)
-            }
-            .foregroundColor(isCorrect ? .green : (feedbackPhase == .showingCorrectAnswer ? .green : .red))
-            
-            // Notes display
-            if isCorrect || feedbackPhase == .showingCorrectAnswer {
-                correctNotesDisplay(question: question)
+            // For single degree incorrect answers, show both user and correct answer
+            if question.questionType == .singleDegree && !isCorrect {
+                // User's answer
+                VStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title3)
+                        Text("Your answer:")
+                            .font(.headline)
+                    }
+                    .foregroundColor(.red)
+                    
+                    if let userNote = userAnswerNotes.first {
+                        Text(displayNoteName(userNote, for: question.scale))
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(ShedTheme.Colors.danger.opacity(0.2))
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                }
+                
+                Divider()
+                
+                // Correct answer
+                VStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                        Text("Correct answer:")
+                            .font(.headline)
+                    }
+                    .foregroundColor(.green)
+                    
+                    if let correctNote = question.correctNotes.first {
+                        Text(displayNoteName(correctNote, for: question.scale))
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(ShedTheme.Colors.success.opacity(0.2))
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                }
             } else {
-                userNotesDisplay(question: question)
-            }
-            
-            // Continue button for wrong answers in phase 1
-            if !isCorrect && feedbackPhase == .showingUserAnswer && showContinueButton {
-                Button(action: showCorrectAnswer) {
-                    Text("See Correct Answer")
+                // Original display for other question types and correct answers
+                HStack {
+                    Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.title)
+                    Text(isCorrect ? "Correct!" : (feedbackPhase == .showingUserAnswer ? "Your answer:" : "Correct answer:"))
                         .font(.headline)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(ShedTheme.Colors.brass)
-                        .cornerRadius(10)
+                }
+                .foregroundColor(isCorrect ? .green : (feedbackPhase == .showingCorrectAnswer ? .green : .red))
+                
+                // Notes display
+                if isCorrect || feedbackPhase == .showingCorrectAnswer {
+                    correctNotesDisplay(question: question)
+                } else {
+                    userNotesDisplay(question: question)
+                }
+                
+                // Continue button for wrong answers in phase 1 (not for single degree)
+                if !isCorrect && feedbackPhase == .showingUserAnswer && showContinueButton && question.questionType != .singleDegree {
+                    Button(action: showCorrectAnswer) {
+                        Text("See Correct Answer")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .background(ShedTheme.Colors.brass)
+                            .cornerRadius(10)
+                    }
                 }
             }
         }
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(isCorrect ? ShedTheme.Colors.success.opacity(0.1) : (feedbackPhase == .showingCorrectAnswer ? ShedTheme.Colors.success.opacity(0.1) : ShedTheme.Colors.danger.opacity(0.1)))
+                .fill(isCorrect ? ShedTheme.Colors.success.opacity(0.1) : ShedTheme.Colors.danger.opacity(0.1))
         )
         .padding(.horizontal)
     }
@@ -657,7 +706,6 @@ struct ScaleDrillSession: View {
         }
         
         userAnswerNotes = Array(selectedNotes)
-        feedbackPhase = .showingUserAnswer
         highlightedNoteIndex = nil
         showContinueButton = false
         
@@ -665,14 +713,28 @@ struct ScaleDrillSession: View {
         hasSubmitted = true
         showingFeedback = true
         
-        if isCorrect {
-            feedbackMessage = "Correct! 🎉"
-            ScaleDrillHaptics.success()
-            playScaleWithHighlight(notes: question.correctNotes)
+        // For single degree, show both answers immediately without playback
+        if question.questionType == .singleDegree {
+            feedbackPhase = .showingCorrectAnswer
+            if isCorrect {
+                feedbackMessage = "Correct! 🎉"
+                ScaleDrillHaptics.success()
+            } else {
+                feedbackMessage = "Incorrect"
+                ScaleDrillHaptics.error()
+            }
         } else {
-            feedbackMessage = "Incorrect"
-            ScaleDrillHaptics.error()
-            playUserAnswerWithHighlight()
+            // For all degrees, use the original flow with playback
+            feedbackPhase = .showingUserAnswer
+            if isCorrect {
+                feedbackMessage = "Correct! 🎉"
+                ScaleDrillHaptics.success()
+                playScaleWithHighlight(notes: question.correctNotes)
+            } else {
+                feedbackMessage = "Incorrect"
+                ScaleDrillHaptics.error()
+                playUserAnswerWithHighlight()
+            }
         }
     }
     
