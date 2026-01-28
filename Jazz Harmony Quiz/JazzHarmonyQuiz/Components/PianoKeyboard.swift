@@ -33,13 +33,6 @@ struct PianoKeyboard: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            // Octave indicator overlay
-            HStack {
-                Spacer()
-                octaveIndicator
-                    .padding(.trailing, 16)
-            }
-            
             // Scrollable keyboard
             ScrollViewReader { proxy in
                 GeometryReader { outerGeometry in
@@ -77,25 +70,6 @@ struct PianoKeyboard: View {
         .cornerRadius(8)
     }
     
-    // MARK: - Octave Indicator
-    
-    private var octaveIndicator: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "music.note")
-                .font(.caption2)
-            Text("C\(currentOctave)")
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
-        }
-        .foregroundColor(.white)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(
-            Capsule()
-                .fill(ShedTheme.Colors.brass)
-                .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-        )
-    }
-    
     // MARK: - Keyboard Content
     
     private var keyboardContent: some View {
@@ -119,18 +93,22 @@ struct PianoKeyboard: View {
                 }
             }
             
-            // Black keys overlay
+            // Black keys overlay - aligned to top
             ForEach(blackKeys, id: \.midiNumber) { blackKey in
-                BlackKeyView(
-                    note: blackKey,
-                    isPressed: pressedKeys.contains(blackKey),
-                    isSelected: selectedNotes.contains(blackKey),
-                    width: blackKeyWidth,
-                    height: blackKeyHeight,
-                    showNoteName: showNoteNames
-                ) {
-                    handleKeyPress(blackKey)
+                VStack {
+                    BlackKeyView(
+                        note: blackKey,
+                        isPressed: pressedKeys.contains(blackKey),
+                        isSelected: selectedNotes.contains(blackKey),
+                        width: blackKeyWidth,
+                        height: blackKeyHeight,
+                        showNoteName: showNoteNames
+                    ) {
+                        handleKeyPress(blackKey)
+                    }
+                    Spacer()
                 }
+                .frame(height: whiteKeyHeight)
                 .offset(x: xPositionForBlackKey(blackKey), y: 0)
                 .id(blackKey.midiNumber)
             }
@@ -314,12 +292,17 @@ struct WhiteKeyView: View {
                     )
                 
                 VStack {
-                    // Octave indicator dot at top for C notes
+                    // Octave number above C keys
                     if note.name == "C" {
-                        Circle()
-                            .fill(Color.black.opacity(0.4))
-                            .frame(width: 6, height: 6)
-                            .padding(.top, 8)
+                        VStack(spacing: 2) {
+                            Text("\(octaveNumber(from: note.midiNumber))")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(ShedTheme.Colors.brass)
+                            Circle()
+                                .fill(Color.black.opacity(0.4))
+                                .frame(width: 6, height: 6)
+                        }
+                        .padding(.top, 6)
                     }
                     
                     Spacer()
@@ -355,6 +338,12 @@ struct WhiteKeyView: View {
         } else {
             return .white
         }
+    }
+    
+    // Calculate octave number from MIDI number
+    // MIDI: C2=36, C3=48, C4=60, C5=72, C6=84
+    private func octaveNumber(from midiNumber: Int) -> Int {
+        return (midiNumber / 12) - 1
     }
 }
 
