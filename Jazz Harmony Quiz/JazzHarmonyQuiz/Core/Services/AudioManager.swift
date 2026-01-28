@@ -509,12 +509,12 @@ class AudioManager: ObservableObject {
     }
     
     /// Play a scale from a Scale object (ascending then descending)
-    /// Adjusts MIDI numbers so the scale plays in proper ascending order from middle C
+    /// Uses the actual scale's root note to ensure audio matches the displayed root
     func playScaleObject(_ scale: Scale, bpm: Double = 160) {
         guard isEnabled, let sampler = sampler else { return }
         
         let ascendingNotes = scale.notesAscending()
-        let rootMidi = 60  // Start from middle C
+        let rootMidi = scale.root.midiNumber  // Use the actual root from the scale
         
         // Build adjusted notes with correct MIDI numbers
         var adjustedNotes: [Note] = []
