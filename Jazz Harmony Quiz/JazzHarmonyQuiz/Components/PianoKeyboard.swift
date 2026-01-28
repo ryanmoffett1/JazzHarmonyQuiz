@@ -105,6 +105,7 @@ struct PianoKeyboard: View {
                 ) {
                     handleKeyPress(blackKey)
                 }
+                .alignmentGuide(.top) { d in d[.top] }
                 .offset(x: xPositionForBlackKey(blackKey), y: 0)
                 .id(blackKey.midiNumber)
             }
