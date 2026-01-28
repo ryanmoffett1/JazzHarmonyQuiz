@@ -95,7 +95,7 @@ struct PianoKeyboard: View {
             
             // Black keys overlay - aligned to top
             ForEach(blackKeys, id: \.midiNumber) { blackKey in
-                VStack {
+                VStack(alignment: .center, spacing: 0) {
                     BlackKeyView(
                         note: blackKey,
                         isPressed: pressedKeys.contains(blackKey),
@@ -106,9 +106,9 @@ struct PianoKeyboard: View {
                     ) {
                         handleKeyPress(blackKey)
                     }
-                    Spacer()
+                    Spacer(minLength: 0)
                 }
-                .frame(height: whiteKeyHeight)
+                .frame(width: blackKeyWidth, height: whiteKeyHeight, alignment: .top)
                 .offset(x: xPositionForBlackKey(blackKey), y: 0)
                 .id(blackKey.midiNumber)
             }
