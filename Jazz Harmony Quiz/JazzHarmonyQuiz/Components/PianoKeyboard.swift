@@ -95,20 +95,16 @@ struct PianoKeyboard: View {
             
             // Black keys overlay - aligned to top
             ForEach(blackKeys, id: \.midiNumber) { blackKey in
-                VStack(alignment: .center, spacing: 0) {
-                    BlackKeyView(
-                        note: blackKey,
-                        isPressed: pressedKeys.contains(blackKey),
-                        isSelected: selectedNotes.contains(blackKey),
-                        width: blackKeyWidth,
-                        height: blackKeyHeight,
-                        showNoteName: showNoteNames
-                    ) {
-                        handleKeyPress(blackKey)
-                    }
-                    Spacer(minLength: 0)
+                BlackKeyView(
+                    note: blackKey,
+                    isPressed: pressedKeys.contains(blackKey),
+                    isSelected: selectedNotes.contains(blackKey),
+                    width: blackKeyWidth,
+                    height: blackKeyHeight,
+                    showNoteName: showNoteNames
+                ) {
+                    handleKeyPress(blackKey)
                 }
-                .frame(width: blackKeyWidth, height: whiteKeyHeight, alignment: .top)
                 .offset(x: xPositionForBlackKey(blackKey), y: 0)
                 .id(blackKey.midiNumber)
             }
