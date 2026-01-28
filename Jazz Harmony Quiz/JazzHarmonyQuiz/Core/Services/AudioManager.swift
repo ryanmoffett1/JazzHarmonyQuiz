@@ -19,6 +19,11 @@ class AudioManager: ObservableObject {
     private var playbackGeneration: Int = 0
     private let generationLock = NSLock()
     
+    /// Precise timer for audio playback scheduling
+    private var playbackTimer: Timer?
+    private var scheduledNotes: [(time: Double, note: UInt8, isStart: Bool)] = []
+    private var playbackStartTime: Double = 0
+    
     // MARK: - Playback State Tracking (for UI highlighting)
     
     /// Which source is currently playing ("correct", "user", or nil if none)
@@ -337,10 +342,13 @@ class AudioManager: ObservableObject {
     ///   - beatsPerChord: How many beats each chord rings (default 2 beats)
     ///   - source: Identifier for UI highlighting ("correct", "user", or nil)
     func playCadenceProgression(_ chords: [[Note]], bpm: Double = 90, beatsPerChord: Double = 2, source: String? = nil) {
-        guard isEnabled, let sampler = sampler else { return }
+        guard isEnabled, let sampler = sampler, !chords.isEmpty else { return }
         
-        // Stop any currently playing sounds first (this also increments generation)
+        // Stop any currently playing sounds and cancel existing timer
         stopAllNotes()
+        playbackTimer?.invalidate()
+        playbackTimer = nil
+        scheduledNotes.removeAll()
         
         // Set the playback source for UI highlighting
         DispatchQueue.main.async {
@@ -353,52 +361,77 @@ class AudioManager: ObservableObject {
         let secondsPerBeat = 60.0 / bpm
         let chordDuration = secondsPerBeat * beatsPerChord
         
+        // Build schedule of chord events
+        var events: [(time: Double, chordIndex: Int, notes: [UInt8], isStart: Bool)] = []
+        
         for (index, chord) in chords.enumerated() {
-            let delay = Double(index) * chordDuration
+            let chordStartTime = Double(index) * chordDuration
+            let chordStopTime = chordStartTime + (chordDuration * 0.9) // 90% duration for slight gap
             
             // Normalize notes to middle C octave (MIDI 60-71)
             let normalizedMidiNotes = chord.map { note -> UInt8 in
                 let pitchClass = note.midiNumber % 12
-                return UInt8(60 + pitchClass)  // Octave 4 (middle C)
+                return UInt8(60 + pitchClass)
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-                guard let self = self else { return }
-                // Check if playback was canceled
-                guard self.currentGeneration() == startGeneration else { return }
+            events.append((time: chordStartTime, chordIndex: index, notes: normalizedMidiNotes, isStart: true))
+            events.append((time: chordStopTime, chordIndex: index, notes: normalizedMidiNotes, isStart: false))
+        }
+        
+        var sortedEvents = events.sorted { $0.time < $1.time }
+        playbackStartTime = CACurrentMediaTime()
+        let totalDuration = Double(chords.count) * chordDuration
+        
+        // Use a high-frequency timer for precise scheduling
+        playbackTimer = Timer.scheduledTimer(withTimeInterval: 0.001, repeats: true) { [weak self] timer in
+            guard let self = self else {
+                timer.invalidate()
+                return
+            }
+            
+            // Check if playback was canceled
+            guard self.currentGeneration() == startGeneration else {
+                timer.invalidate()
+                self.playbackTimer = nil
+                return
+            }
+            
+            let currentTime = CACurrentMediaTime() - self.playbackStartTime
+            
+            // Process all events that should have fired by now
+            while !sortedEvents.isEmpty && sortedEvents[0].time <= currentTime {
+                let event = sortedEvents.removeFirst()
                 
-                // Update which chord is playing for UI highlighting
-                self.playingChordIndex = index
-                
-                // Start chord
-                for midiNote in normalizedMidiNotes {
-                    self.trackNoteOn(midiNote)
-                    sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
+                if event.isStart {
+                    // Update which chord is playing for UI highlighting
+                    self.playingChordIndex = event.chordIndex
+                    
+                    // Start chord
+                    for midiNote in event.notes {
+                        self.trackNoteOn(midiNote)
+                        sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
+                    }
+                } else {
+                    // Stop chord
+                    for midiNote in event.notes {
+                        self.trackNoteOff(midiNote)
+                        sampler.stopNote(midiNote, onChannel: 0)
+                    }
                 }
             }
             
-            // Stop chord slightly before next one (legato feel with small gap)
-            let stopDelay = delay + (chordDuration * 0.9)
-            DispatchQueue.main.asyncAfter(deadline: .now() + stopDelay) { [weak self] in
-                guard let self = self else { return }
-                // Check if playback was canceled
-                guard self.currentGeneration() == startGeneration else { return }
-                
-                for midiNote in normalizedMidiNotes {
-                    self.trackNoteOff(midiNote)
-                    sampler.stopNote(midiNote, onChannel: 0)
-                }
+            // Stop timer when all events are processed
+            if sortedEvents.isEmpty || currentTime >= totalDuration {
+                timer.invalidate()
+                self.playbackTimer = nil
+                self.playingSource = nil
+                self.playingChordIndex = -1
             }
         }
         
-        // Clear playback state after all chords finish
-        let totalDuration = Double(chords.count) * chordDuration
-        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) { [weak self] in
-            guard let self = self else { return }
-            // Only clear if this playback wasn't canceled
-            guard self.currentGeneration() == startGeneration else { return }
-            self.playingSource = nil
-            self.playingChordIndex = -1
+        // Ensure timer runs on common run loop mode for precision
+        if let timer = playbackTimer {
+            RunLoop.current.add(timer, forMode: .common)
         }
     }
     
@@ -476,6 +509,11 @@ class AudioManager: ObservableObject {
     func playScale(_ notes: [Note], bpm: Double = 160, direction: ScaleDirection = .ascendingDescending) {
         guard isEnabled, let sampler = sampler, !notes.isEmpty else { return }
         
+        // Cancel any existing playback
+        playbackTimer?.invalidate()
+        playbackTimer = nil
+        scheduledNotes.removeAll()
+        
         let secondsPerBeat = 60.0 / bpm
         let noteDuration = secondsPerBeat  // Quarter notes
         
@@ -491,29 +529,50 @@ class AudioManager: ObservableObject {
             sequence = notes + Array(notes.dropLast().reversed())
         }
         
-        // Use a serial queue with precise timing
-        let playbackQueue = DispatchQueue(label: "com.shedpro.scale-playback", qos: .userInteractive)
-        let startTime = CACurrentMediaTime()
-        
-        // Schedule all notes precisely
+        // Build schedule of note events
+        var events: [(time: Double, note: UInt8, isStart: Bool)] = []
         for (index, note) in sequence.enumerated() {
-            let noteStartTime = startTime + (Double(index) * noteDuration)
+            let noteStartTime = Double(index) * noteDuration
             let noteStopTime = noteStartTime + (noteDuration * 0.85)
             let midiNote = UInt8(note.midiNumber)
             
-            // Schedule note start
-            playbackQueue.asyncAfter(deadline: .now() + (noteStartTime - CACurrentMediaTime())) {
-                DispatchQueue.main.async {
-                    sampler.startNote(midiNote, withVelocity: 75, onChannel: 0)
+            events.append((time: noteStartTime, note: midiNote, isStart: true))
+            events.append((time: noteStopTime, note: midiNote, isStart: false))
+        }
+        
+        scheduledNotes = events.sorted { $0.time < $1.time }
+        playbackStartTime = CACurrentMediaTime()
+        
+        // Use a high-frequency timer for precise scheduling
+        playbackTimer = Timer.scheduledTimer(withTimeInterval: 0.001, repeats: true) { [weak self] timer in
+            guard let self = self else {
+                timer.invalidate()
+                return
+            }
+            
+            let currentTime = CACurrentMediaTime() - self.playbackStartTime
+            
+            // Process all events that should have fired by now
+            while !self.scheduledNotes.isEmpty && self.scheduledNotes[0].time <= currentTime {
+                let event = self.scheduledNotes.removeFirst()
+                
+                if event.isStart {
+                    sampler.startNote(event.note, withVelocity: 75, onChannel: 0)
+                } else {
+                    sampler.stopNote(event.note, onChannel: 0)
                 }
             }
             
-            // Schedule note stop
-            playbackQueue.asyncAfter(deadline: .now() + (noteStopTime - CACurrentMediaTime())) {
-                DispatchQueue.main.async {
-                    sampler.stopNote(midiNote, onChannel: 0)
-                }
+            // Stop timer when all events are processed
+            if self.scheduledNotes.isEmpty {
+                timer.invalidate()
+                self.playbackTimer = nil
             }
+        }
+        
+        // Ensure timer runs on common run loop mode for precision
+        if let timer = playbackTimer {
+            RunLoop.current.add(timer, forMode: .common)
         }
     }
     
