@@ -40,7 +40,7 @@ struct HomeView: View {
                 .padding(.top, ShedTheme.Space.s)
             }
             .background(ShedTheme.Colors.bg.ignoresSafeArea())
-            .navigationTitle("Shed")
+            .navigationTitle("ShedPro")
             .navigationBarTitleDisplayMode(.large)
             .toolbarBackground(ShedTheme.Colors.bg, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
