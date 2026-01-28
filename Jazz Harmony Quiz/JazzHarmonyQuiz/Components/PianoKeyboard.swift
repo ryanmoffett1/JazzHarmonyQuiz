@@ -198,8 +198,9 @@ struct PianoKeyboard: View {
         // Count how many white keys come before this black key
         let whiteKeysBefore = whiteKeys.filter { $0.midiNumber < blackKey.midiNumber }.count
         
-        // Position black key between white keys
-        return CGFloat(whiteKeysBefore) * whiteKeyWidth + whiteKeyWidth - (blackKeyWidth / 2)
+        // Position black key at the right edge of the previous white key
+        // For example: C# comes after C (1 white key before), so position at 1 * 30 - 10 = 20
+        return CGFloat(whiteKeysBefore) * whiteKeyWidth - (blackKeyWidth / 2)
     }
     
     // Get the black key that appears after a given white key, if any
