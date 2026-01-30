@@ -117,7 +117,9 @@ struct Scale: Identifiable, Hashable, Codable {
         var notes: [Note] = []
         for degree in scaleType.degrees {
             let midiNumber = root.midiNumber + degree.semitonesFromRoot
-            if let note = Note.noteFromMidi(midiNumber, preferSharps: preferSharps) {
+            if let baseNote = Note.noteFromMidi(midiNumber, preferSharps: preferSharps) {
+                // Create a new Note instance with the actual MIDI number (not the base octave)
+                let note = Note(name: baseNote.name, midiNumber: midiNumber, isSharp: baseNote.isSharp)
                 notes.append(note)
             }
         }

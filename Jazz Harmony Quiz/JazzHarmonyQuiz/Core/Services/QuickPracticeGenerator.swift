@@ -163,20 +163,44 @@ class QuickPracticeGenerator {
     
     private func generateScaleItems(count: Int) -> [QuickPracticeItem] {
         var items: [QuickPracticeItem] = []
-        let rootNotes = ["C", "D", "E", "F", "G", "A", "B"]
-        let scaleTypes = ["Major", "Dorian", "Mixolydian"]
+        let scaleDatabase = JazzScaleDatabase.shared
+        let rootNotes: [(name: String, midi: Int, isSharp: Bool)] = [
+            ("C", 60, false),
+            ("D", 62, false),
+            ("E", 64, false),
+            ("F", 65, false),
+            ("G", 67, false),
+            ("A", 69, false),
+            ("B", 71, false)
+        ]
+        let scaleTypeNames = ["Major", "Dorian", "Mixolydian"]
         
         for _ in 0..<count {
             guard let root = rootNotes.randomElement(),
-                  let scaleType = scaleTypes.randomElement() else { continue }
+                  let scaleTypeName = scaleTypeNames.randomElement(),
+                  let scaleType = scaleDatabase.scaleTypes.first(where: { $0.name == scaleTypeName }) else { continue }
+            
+            let rootNote = Note(name: root.name, midiNumber: root.midi, isSharp: root.isSharp)
+            let scale = Scale(root: rootNote, scaleType: scaleType)
+            
+            // Map ScaleDifficulty to ChordType.ChordDifficulty
+            let chordDifficulty: ChordType.ChordDifficulty
+            switch scaleType.difficulty {
+            case .beginner:
+                chordDifficulty = .beginner
+            case .intermediate:
+                chordDifficulty = .intermediate
+            case .advanced, .custom:
+                chordDifficulty = .advanced
+            }
             
             items.append(QuickPracticeItem(
                 id: UUID(),
                 type: .scaleSpelling,
-                question: "Spell: \(root) \(scaleType)",
-                displayName: "\(root) \(scaleType)",
-                correctNotes: [],  // Will be validated by ScaleGame
-                difficulty: .beginner,
+                question: "Spell: \(root.name) \(scaleType.name)",
+                displayName: "\(root.name) \(scaleType.name)",
+                correctNotes: scale.scaleNotes,
+                difficulty: chordDifficulty,
                 category: "Scale"
             ))
         }
@@ -186,19 +210,53 @@ class QuickPracticeGenerator {
     
     private func generateIntervalItems(count: Int) -> [QuickPracticeItem] {
         var items: [QuickPracticeItem] = []
-        let intervals = ["Minor 2nd", "Major 2nd", "Minor 3rd", "Major 3rd", "Perfect 4th", "Perfect 5th"]
-        let rootNotes = ["C", "D", "E", "F", "G", "A", "B"]
+        
+        // Define intervals with their semitone distances
+        let intervals: [(name: String, semitones: Int)] = [
+            ("Minor 2nd", 1),
+            ("Major 2nd", 2),
+            ("Minor 3rd", 3),
+            ("Major 3rd", 4),
+            ("Perfect 4th", 5),
+            ("Perfect 5th", 7),
+            ("Minor 6th", 8),
+            ("Major 6th", 9),
+            ("Minor 7th", 10),
+            ("Major 7th", 11)
+        ]
+        
+        let rootNotes: [(name: String, midi: Int, isSharp: Bool)] = [
+            ("C", 60, false),
+            ("D", 62, false),
+            ("E", 64, false),
+            ("F", 65, false),
+            ("G", 67, false),
+            ("A", 69, false),
+            ("B", 71, false)
+        ]
         
         for _ in 0..<count {
             guard let interval = intervals.randomElement(),
                   let root = rootNotes.randomElement() else { continue }
             
+            // Calculate the target note
+            let targetMidi = root.midi + interval.semitones
+            let targetPitchClass = targetMidi % 12
+            
+            // Determine the target note name
+            let noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+            let targetName = noteNames[targetPitchClass]
+            let targetIsSharp = targetName.contains("#")
+            
             items.append(QuickPracticeItem(
                 id: UUID(),
                 type: .intervalBuilding,
-                question: "\(interval) from \(root)",
-                displayName: "\(interval) from \(root)",
-                correctNotes: [],  // Will be validated by IntervalGame
+                question: "\(interval.name) from \(root.name)",
+                displayName: "\(interval.name) from \(root.name)",
+                correctNotes: [
+                    Note(name: root.name, midiNumber: root.midi, isSharp: root.isSharp),
+                    Note(name: targetName, midiNumber: targetMidi, isSharp: targetIsSharp)
+                ],
                 difficulty: .beginner,
                 category: "Interval"
             ))

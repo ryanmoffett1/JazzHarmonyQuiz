@@ -430,9 +430,13 @@ struct QuickPracticeSession: View {
     }
     
     private func validateScaleAnswer(item: QuickPracticeItem) -> Bool {
-        // Scale validation - for now, just check count
-        // TODO: Integrate with ScaleGame validation
-        return selectedNotes.count >= 7
+        // Scale validation - compare pitch classes
+        guard selectedNotes.count == item.correctNotes.count else {
+            return false
+        }
+        let selectedPitchClasses = Set(selectedNotes.map { $0.midiNumber % 12 })
+        let correctPitchClasses = Set(item.correctNotes.map { $0.midiNumber % 12 })
+        return selectedPitchClasses == correctPitchClasses
     }
     
     private func nextQuestion() {

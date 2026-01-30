@@ -212,4 +212,85 @@ final class QuickPracticeGeneratorTests: XCTestCase {
             _ = generator.generateSession()
         }
     }
+    
+    // MARK: - Interval Item Validation Tests
+    
+    func test_intervalItems_haveCorrectNotes() {
+        // When
+        let session = generator.generateSession()
+        let intervalItems = session.filter { $0.type == .intervalBuilding }
+        
+        // Then - Every interval item must have exactly 2 correct notes (root + target)
+        for item in intervalItems {
+            XCTAssertEqual(item.correctNotes.count, 2, 
+                          "Interval item '\(item.question)' should have exactly 2 correct notes (root + target)")
+            
+            // Verify the notes are different
+            let note1 = item.correctNotes[0]
+            let note2 = item.correctNotes[1]
+            XCTAssertNotEqual(note1.midiNumber, note2.midiNumber,
+                            "Interval notes should be different")
+        }
+    }
+    
+    func test_intervalItems_calculateCorrectSemitones() {
+        // When
+        let session = generator.generateSession()
+        let intervalItems = session.filter { $0.type == .intervalBuilding }
+        
+        // Then - Verify interval calculations are correct
+        for item in intervalItems {
+            guard item.correctNotes.count == 2 else {
+                XCTFail("Interval item should have 2 notes")
+                continue
+            }
+            
+            let semitones = abs(item.correctNotes[1].midiNumber - item.correctNotes[0].midiNumber) % 12
+            let question = item.question
+            
+            // Verify semitone count matches interval name
+            if question.contains("Minor 2nd") {
+                XCTAssertEqual(semitones, 1)
+            } else if question.contains("Major 2nd") {
+                XCTAssertEqual(semitones, 2)
+            } else if question.contains("Minor 3rd") {
+                XCTAssertEqual(semitones, 3)
+            } else if question.contains("Major 3rd") {
+                XCTAssertEqual(semitones, 4)
+            } else if question.contains("Perfect 4th") {
+                XCTAssertEqual(semitones, 5)
+            } else if question.contains("Perfect 5th") {
+                XCTAssertEqual(semitones, 7)
+            } else if question.contains("Minor 6th") {
+                XCTAssertEqual(semitones, 8)
+            } else if question.contains("Major 6th") {
+                XCTAssertEqual(semitones, 9)
+            } else if question.contains("Minor 7th") {
+                XCTAssertEqual(semitones, 10)
+            } else if question.contains("Major 7th") {
+                XCTAssertEqual(semitones, 11)
+            }
+        }
+    }
+    
+    // MARK: - Scale Item Validation Tests
+    
+    // MARK: - Scale Generation Tests
+    
+    func test_scaleGeneration_createsCorrectNotes() {
+        // Test that the Scale model generates correct notes
+        let rootNote = Note(name: "C", midiNumber: 60, isSharp: false)
+        let scaleDatabase = JazzScaleDatabase.shared
+        guard let majorScaleType = scaleDatabase.scaleTypes.first(where: { $0.name == "Major" }) else {
+            XCTFail("Could not find Major scale type")
+            return
+        }
+        
+        let scale = Scale(root: rootNote, scaleType: majorScaleType)
+        
+        // Verify the Scale model generates correct notes
+        XCTAssertEqual(scale.scaleNotes.count, 8, "C Major should have 8 notes (including octave)")
+        XCTAssertEqual(scale.scaleNotes.first?.name, "C", "First note should be C")
+        XCTAssertEqual(scale.scaleNotes.last?.midiNumber, 72, "Last note should be C an octave higher (MIDI 72)")
+    }
 }
