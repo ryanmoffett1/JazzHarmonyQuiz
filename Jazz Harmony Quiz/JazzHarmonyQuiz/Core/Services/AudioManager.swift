@@ -57,7 +57,7 @@ class AudioManager: ObservableObject {
             return
         }
         
-        // Add sampler node
+        // Add sampler node (use Sampler on iOS, supports SF2 via kMusicDeviceProperty_SoundBankURL)
         var samplerDescription = AudioComponentDescription(
             componentType: kAudioUnitType_MusicDevice,
             componentSubType: kAudioUnitSubType_Sampler,
@@ -106,47 +106,65 @@ class AudioManager: ObservableObject {
             return
         }
         
-        // Load soundfont
-        do {
-            // Try bundled soundfont first
-            if let soundFontURL = Bundle.main.url(forResource: "Piano", withExtension: "sf2") {
-                var bankURL = soundFontURL as CFURL
-                var presetNumber: UInt8 = 0
-                status = AudioUnitSetProperty(
-                    unit,
-                    AudioUnitPropertyID(kMusicDeviceProperty_SoundBankURL),
-                    AudioUnitScope(kAudioUnitScope_Global),
-                    0,
-                    &bankURL,
-                    UInt32(MemoryLayout<CFURL>.size)
-                )
-                if status == noErr {
-                    print("Loaded bundled Piano.sf2")
-                } else {
-                    print("Failed to load soundfont: \(status)")
-                }
-            }
-            
-            // Initialize and start the graph
-            status = AUGraphInitialize(graph)
-            guard status == noErr else {
-                print("Failed to initialize AUGraph")
-                return
-            }
-            
-            status = AUGraphStart(graph)
-            guard status == noErr else {
-                print("Failed to start AUGraph")
-                return
-            }
-            
-            // Create MusicSequence and MusicPlayer
-            NewMusicSequence(&musicSequence)
-            NewMusicPlayer(&musicPlayer)
-            
-            print("✅ AUGraph and MusicSequence initialized successfully")
-            
+        // Initialize the graph FIRST (required before loading instruments)
+        status = AUGraphInitialize(graph)
+        guard status == noErr else {
+            print("❌ Failed to initialize AUGraph: OSStatus \(status)")
+            return
         }
+        
+        // Load preset into the sampler AFTER graph initialization
+        if let soundFontURL = Bundle.main.url(forResource: "Piano", withExtension: "sf2") {
+            print("📁 Found Piano.sf2 at: \(soundFontURL.path)")
+            
+            // Load the soundfont using AUPreset data
+            var presetData = AUSamplerInstrumentData(
+                fileURL: Unmanaged.passRetained(soundFontURL as CFURL),
+                instrumentType: UInt8(kInstrumentType_SF2Preset),
+                bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
+                bankLSB: UInt8(kAUSampler_DefaultBankLSB),
+                presetID: 0
+            )
+            
+            status = AudioUnitSetProperty(
+                unit,
+                AudioUnitPropertyID(kAUSamplerProperty_LoadInstrument),
+                AudioUnitScope(kAudioUnitScope_Global),
+                0,
+                &presetData,
+                UInt32(MemoryLayout<AUSamplerInstrumentData>.size)
+            )
+            
+            if status == noErr {
+                print("✅ Loaded Piano.sf2 successfully")
+            } else {
+                print("⚠️ Failed to load Piano.sf2: OSStatus \(status)")
+            }
+        } else {
+            print("⚠️ Piano.sf2 not found in bundle")
+        }
+        
+        status = AUGraphStart(graph)
+        guard status == noErr else {
+            print("❌ Failed to start AUGraph: OSStatus \(status)")
+            return
+        }
+        
+        // Create MusicSequence and MusicPlayer
+        NewMusicSequence(&musicSequence)
+        NewMusicPlayer(&musicPlayer)
+        
+        // CRITICAL: Connect the sequence to our AUGraph (so it uses our loaded soundfont)
+        if let sequence = musicSequence {
+            status = MusicSequenceSetAUGraph(sequence, graph)
+            if status == noErr {
+                print("✅ MusicSequence connected to AUGraph")
+            } else {
+                print("⚠️ Failed to connect MusicSequence to AUGraph: OSStatus \(status)")
+            }
+        }
+        
+        print("✅ AUGraph and MusicSequence initialized successfully")
     }
     
     /// Stop all currently playing notes immediately and cancel scheduled playback
@@ -240,30 +258,75 @@ class AudioManager: ObservableObject {
     
     /// Play a chord (multiple notes together)
     func playChord(_ notes: [Note], velocity: UInt8 = 80, duration: TimeInterval = 1.5) {
-        guard isEnabled, let unit = samplerUnit, !notes.isEmpty else { return }
-
+        guard isEnabled, !notes.isEmpty else { return }
+        
         // Stop any currently playing sounds first
         stopAllNotes()
-
+        
         // Normalize notes to middle C octave (MIDI 60-71)
         let normalizedMidiNotes = notes.map { note -> UInt8 in
             let pitchClass = note.midiNumber % 12
             return UInt8(60 + pitchClass)  // Octave 4 (middle C)
         }
-
-        // Start all notes
-        for midiNote in normalizedMidiNotes {
-            trackNoteOn(midiNote)
-            sendMIDINoteOn(unit: unit, note: midiNote, velocity: velocity)
-        }
-
-        // Stop all notes after duration
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
-            guard let self = self, let unit = self.samplerUnit else { return }
-            for midiNote in normalizedMidiNotes {
-                self.trackNoteOff(midiNote)
-                self.sendMIDINoteOff(unit: unit, note: midiNote)
+        
+        // Use MusicSequence for sample-accurate timing
+        guard let sequence = musicSequence, let player = musicPlayer else { return }
+        
+        var status: OSStatus
+        
+        // Stop any currently playing sequence
+        status = MusicPlayerStop(player)
+        
+        // Clear sequence
+        var trackCount: UInt32 = 0
+        status = MusicSequenceGetTrackCount(sequence, &trackCount)
+        for i in (0..<trackCount).reversed() {
+            var track: MusicTrack?
+            status = MusicSequenceGetIndTrack(sequence, UInt32(i), &track)
+            if let track = track {
+                MusicSequenceDisposeTrack(sequence, track)
             }
+        }
+        
+        // Create new track
+        var track: MusicTrack?
+        status = MusicSequenceNewTrack(sequence, &track)
+        guard status == noErr, let track = track else { return }
+        
+        // Set track to use our sampler node
+        if samplerNode != -1 {
+            MusicTrackSetDestNode(track, samplerNode)
+        }
+        
+        // Add note events - all start at beat 0 (simultaneous)
+        for midiNote in normalizedMidiNotes {
+            var message = MIDINoteMessage(
+                channel: 0,
+                note: midiNote,
+                velocity: velocity,
+                releaseVelocity: 0,
+                duration: Float32(duration)
+            )
+            
+            status = MusicTrackNewMIDINoteEvent(track, 0, &message)
+            guard status == noErr else { continue }
+        }
+        
+        // Set sequence length
+        var length = MusicTimeStamp(duration)
+        status = MusicTrackSetProperty(track, kSequenceTrackProperty_TrackLength, &length, UInt32(MemoryLayout<MusicTimeStamp>.size))
+        
+        // Configure and play
+        status = MusicPlayerSetSequence(player, sequence)
+        status = MusicPlayerPreroll(player)
+        status = MusicPlayerSetTime(player, 0)
+        status = MusicPlayerStart(player)
+        
+        // Stop player after duration
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.1) { [weak self] in
+            guard let self = self, let player = self.musicPlayer else { return }
+            MusicPlayerStop(player)
+            self.stopAllNotes()
         }
     }
 
@@ -296,54 +359,10 @@ class AudioManager: ObservableObject {
             }
 
         case .arpeggioUp:
-            // Play notes ascending with tempo-based delay
-            let delayBetweenNotes = 60.0 / tempo  // BPM to seconds
-            let sortedNotes = notes.sorted { $0.midiNumber < $1.midiNumber }
-
-            for (index, note) in sortedNotes.enumerated() {
-                let playDelay = Double(index) * delayBetweenNotes
-                DispatchQueue.main.asyncAfter(deadline: .now() + playDelay) { [weak self] in
-                    guard let self = self, let unit = self.samplerUnit else { return }
-                    let pitchClass = note.midiNumber % 12
-                    let normalizedMidi = UInt8(60 + pitchClass)
-                    self.trackNoteOn(normalizedMidi)
-                    self.sendMIDINoteOn(unit: unit, note: normalizedMidi, velocity: 80)
-
-                    DispatchQueue.main.asyncAfter(deadline: .now() + delayBetweenNotes * 0.8) {
-                        self.trackNoteOff(normalizedMidi)
-                        self.sendMIDINoteOff(unit: unit, note: normalizedMidi)
-                    }
-                }
-            }
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(sortedNotes.count) * delayBetweenNotes) {
-                completion?()
-            }
+            playArpeggio(notes: notes.sorted { $0.midiNumber < $1.midiNumber }, tempo: tempo, completion: completion)
 
         case .arpeggioDown:
-            // Play notes descending
-            let delayBetweenNotes = 60.0 / tempo
-            let sortedNotes = notes.sorted { $0.midiNumber > $1.midiNumber }
-
-            for (index, note) in sortedNotes.enumerated() {
-                let playDelay = Double(index) * delayBetweenNotes
-                DispatchQueue.main.asyncAfter(deadline: .now() + playDelay) { [weak self] in
-                    guard let self = self, let unit = self.samplerUnit else { return }
-                    let pitchClass = note.midiNumber % 12
-                    let normalizedMidi = UInt8(60 + pitchClass)
-                    self.trackNoteOn(normalizedMidi)
-                    self.sendMIDINoteOn(unit: unit, note: normalizedMidi, velocity: 80)
-
-                    DispatchQueue.main.asyncAfter(deadline: .now() + delayBetweenNotes * 0.8) {
-                        self.trackNoteOff(normalizedMidi)
-                        self.sendMIDINoteOff(unit: unit, note: normalizedMidi)
-                    }
-                }
-            }
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(sortedNotes.count) * delayBetweenNotes) {
-                completion?()
-            }
+            playArpeggio(notes: notes.sorted { $0.midiNumber > $1.midiNumber }, tempo: tempo, completion: completion)
 
         case .guideTones:
             // Extract and play root, 3rd, 7th only
@@ -368,72 +387,169 @@ class AudioManager: ObservableObject {
         ]
     }
     
-    /// Play a cadence progression with simple timing
+    /// Play arpeggio using MusicSequence for sample-accurate timing
+    private func playArpeggio(notes: [Note], tempo: Double, completion: (() -> Void)?) {
+        guard let sequence = musicSequence, let player = musicPlayer else {
+            completion?()
+            return
+        }
+        
+        var status: OSStatus
+        let beatsPerNote = 1.0
+        let noteDuration = beatsPerNote * 0.8
+        
+        // Stop current playback
+        MusicPlayerStop(player)
+        
+        // Clear sequence
+        var trackCount: UInt32 = 0
+        status = MusicSequenceGetTrackCount(sequence, &trackCount)
+        for i in (0..<trackCount).reversed() {
+            var track: MusicTrack?
+            status = MusicSequenceGetIndTrack(sequence, UInt32(i), &track)
+            if let track = track {
+                MusicSequenceDisposeTrack(sequence, track)
+            }
+        }
+        
+        // Create track
+        var track: MusicTrack?
+        status = MusicSequenceNewTrack(sequence, &track)
+        guard status == noErr, let track = track else {
+            completion?()
+            return
+        }
+        
+        if samplerNode != -1 {
+            MusicTrackSetDestNode(track, samplerNode)
+        }
+        
+        // Add notes
+        for (index, note) in notes.enumerated() {
+            let pitchClass = note.midiNumber % 12
+            let normalizedMidi = UInt8(60 + pitchClass)
+            let startBeat = MusicTimeStamp(Double(index) * beatsPerNote)
+            
+            var message = MIDINoteMessage(
+                channel: 0,
+                note: normalizedMidi,
+                velocity: 80,
+                releaseVelocity: 0,
+                duration: Float32(noteDuration)
+            )
+            
+            MusicTrackNewMIDINoteEvent(track, startBeat, &message)
+        }
+        
+        // Set tempo
+        var tempoTrack: MusicTrack?
+        MusicSequenceGetTempoTrack(sequence, &tempoTrack)
+        if let tempoTrack = tempoTrack {
+            MusicTrackClear(tempoTrack, 0, 1000)
+            MusicTrackNewExtendedTempoEvent(tempoTrack, 0, tempo)
+        }
+        
+        // Play
+        MusicPlayerSetSequence(player, sequence)
+        MusicPlayerPreroll(player)
+        MusicPlayerSetTime(player, 0)
+        MusicPlayerStart(player)
+        
+        // Call completion
+        let totalDuration = (60.0 / tempo) * Double(notes.count) * beatsPerNote
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
+            completion?()
+        }
+    }
+    
+    /// Play a cadence progression with MusicSequence timing
     /// - Parameters:
     ///   - chords: Array of chord note arrays (e.g., [[ii chord notes], [V chord notes], [I chord notes]])
     ///   - bpm: Tempo in beats per minute (default 90 BPM for a relaxed jazz feel)
     ///   - beatsPerChord: How many beats each chord rings (default 2 beats)
     ///   - source: Identifier for UI highlighting ("correct", "user", or nil)
     func playCadenceProgression(_ chords: [[Note]], bpm: Double = 90, beatsPerChord: Double = 2, source: String? = nil) {
-        guard isEnabled, let unit = samplerUnit, !chords.isEmpty else { return }
+        guard isEnabled, !chords.isEmpty else { return }
+        guard let sequence = musicSequence, let player = musicPlayer else { return }
         
         stopAllNotes()
         
-        // Set the playback source for UI highlighting
+        // Set playback source for UI
         DispatchQueue.main.async {
             self.playingSource = source
         }
         
-        // Capture the current generation - if it changes, we abort
         let startGeneration = currentGeneration()
+        var status: OSStatus
         
-        let secondsPerBeat = 60.0 / bpm
-        let chordDuration = secondsPerBeat * beatsPerChord
-        
-        // Schedule all chords
-        for (chordIndex, chord) in chords.enumerated() {
-            let delay = Double(chordIndex) * chordDuration
-            
-            // Schedule chord start
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-                guard let self = self,
-                      let unit = self.samplerUnit,
-                      self.currentGeneration() == startGeneration else { return }
-                
-                // Update UI
-                self.playingChordIndex = chordIndex
-                
-                // Normalize notes to middle C octave
-                let normalizedMidiNotes = chord.map { note -> UInt8 in
-                    let pitchClass = note.midiNumber % 12
-                    return UInt8(60 + pitchClass)
-                }
-                
-                // Play all notes
-                for midiNote in normalizedMidiNotes {
-                    self.trackNoteOn(midiNote)
-                    self.sendMIDINoteOn(unit: unit, note: midiNote, velocity: 75)
-                }
-                
-                // Stop notes after duration (90% articulation)
-                let stopDelay = chordDuration * 0.9
-                DispatchQueue.main.asyncAfter(deadline: .now() + stopDelay) { [weak self] in
-                    guard let self = self,
-                          let unit = self.samplerUnit,
-                          self.currentGeneration() == startGeneration else { return }
-                    for midiNote in normalizedMidiNotes {
-                        self.trackNoteOff(midiNote)
-                        self.sendMIDINoteOff(unit: unit, note: midiNote)
-                    }
-                }
+        // Stop and clear
+        MusicPlayerStop(player)
+        var trackCount: UInt32 = 0
+        status = MusicSequenceGetTrackCount(sequence, &trackCount)
+        for i in (0..<trackCount).reversed() {
+            var track: MusicTrack?
+            status = MusicSequenceGetIndTrack(sequence, UInt32(i), &track)
+            if let track = track {
+                MusicSequenceDisposeTrack(sequence, track)
             }
         }
         
-        // Clear playback state after completion
-        let totalDuration = Double(chords.count) * chordDuration + 0.5
+        // Create track
+        var track: MusicTrack?
+        status = MusicSequenceNewTrack(sequence, &track)
+        guard status == noErr, let track = track else { return }
+        
+        if samplerNode != -1 {
+            MusicTrackSetDestNode(track, samplerNode)
+        }
+        
+        // Add chords
+        let noteDuration = beatsPerChord * 0.9
+        for (chordIndex, chord) in chords.enumerated() {
+            let startBeat = MusicTimeStamp(Double(chordIndex) * beatsPerChord)
+            
+            let normalizedMidiNotes = chord.map { note -> UInt8 in
+                let pitchClass = note.midiNumber % 12
+                return UInt8(60 + pitchClass)
+            }
+            
+            for midiNote in normalizedMidiNotes {
+                var message = MIDINoteMessage(
+                    channel: 0,
+                    note: midiNote,
+                    velocity: 75,
+                    releaseVelocity: 0,
+                    duration: Float32(noteDuration)
+                )
+                MusicTrackNewMIDINoteEvent(track, startBeat, &message)
+            }
+            
+            // Schedule UI update
+            let delay = (60.0 / bpm) * Double(chordIndex) * beatsPerChord
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                guard let self = self, self.currentGeneration() == startGeneration else { return }
+                self.playingChordIndex = chordIndex
+            }
+        }
+        
+        // Set tempo
+        var tempoTrack: MusicTrack?
+        MusicSequenceGetTempoTrack(sequence, &tempoTrack)
+        if let tempoTrack = tempoTrack {
+            MusicTrackClear(tempoTrack, 0, 1000)
+            MusicTrackNewExtendedTempoEvent(tempoTrack, 0, bpm)
+        }
+        
+        // Play
+        MusicPlayerSetSequence(player, sequence)
+        MusicPlayerPreroll(player)
+        MusicPlayerSetTime(player, 0)
+        MusicPlayerStart(player)
+        
+        // Clear state after completion
+        let totalDuration = (60.0 / bpm) * Double(chords.count) * beatsPerChord + 0.5
         DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) { [weak self] in
-            guard let self = self,
-                  self.currentGeneration() == startGeneration else { return }
+            guard let self = self, self.currentGeneration() == startGeneration else { return }
             self.playingSource = nil
             self.playingChordIndex = -1
         }
@@ -689,48 +805,115 @@ class AudioManager: ObservableObject {
         }
     }
     
-    /// Play both notes of an interval simultaneously
+    /// Play both notes of an interval simultaneously using MusicSequence
     private func playHarmonicInterval(rootMidi: UInt8, targetMidi: UInt8, velocity: UInt8, completion: (() -> Void)?) {
-        guard let unit = samplerUnit else { return }
+        guard let sequence = musicSequence, let player = musicPlayer else {
+            completion?()
+            return
+        }
         
-        // Start both notes
-        sendMIDINoteOn(unit: unit, note: rootMidi, velocity: velocity)
-        sendMIDINoteOn(unit: unit, note: targetMidi, velocity: velocity)
+        var status: OSStatus
+        let duration = 1.5
         
-        // Hold for 1.5 seconds
-        let duration: TimeInterval = 1.5
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
-            guard let self = self, let unit = self.samplerUnit else { return }
-            self.sendMIDINoteOff(unit: unit, note: rootMidi)
-            self.sendMIDINoteOff(unit: unit, note: targetMidi)
+        // Stop and clear
+        MusicPlayerStop(player)
+        var trackCount: UInt32 = 0
+        status = MusicSequenceGetTrackCount(sequence, &trackCount)
+        for i in (0..<trackCount).reversed() {
+            var track: MusicTrack?
+            status = MusicSequenceGetIndTrack(sequence, UInt32(i), &track)
+            if let track = track {
+                MusicSequenceDisposeTrack(sequence, track)
+            }
+        }
+        
+        // Create track
+        var track: MusicTrack?
+        status = MusicSequenceNewTrack(sequence, &track)
+        guard status == noErr, let track = track else {
+            completion?()
+            return
+        }
+        
+        if samplerNode != -1 {
+            MusicTrackSetDestNode(track, samplerNode)
+        }
+        
+        // Add both notes at beat 0
+        var rootMessage = MIDINoteMessage(channel: 0, note: rootMidi, velocity: velocity, releaseVelocity: 0, duration: Float32(duration))
+        var targetMessage = MIDINoteMessage(channel: 0, note: targetMidi, velocity: velocity, releaseVelocity: 0, duration: Float32(duration))
+        MusicTrackNewMIDINoteEvent(track, 0, &rootMessage)
+        MusicTrackNewMIDINoteEvent(track, 0, &targetMessage)
+        
+        // Play
+        MusicPlayerSetSequence(player, sequence)
+        MusicPlayerPreroll(player)
+        MusicPlayerSetTime(player, 0)
+        MusicPlayerStart(player)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.1) {
             completion?()
         }
     }
     
-    /// Play two notes sequentially
+    /// Play two notes sequentially using MusicSequence
     private func playMelodicInterval(firstMidi: UInt8, secondMidi: UInt8, tempo: Double, velocity: UInt8, completion: (() -> Void)?) {
-        guard let unit = samplerUnit else { return }
+        guard let sequence = musicSequence, let player = musicPlayer else {
+            completion?()
+            return
+        }
         
-        let secondsPerBeat = 60.0 / tempo
-        let noteDuration = secondsPerBeat * 2.0  // Each note lasts 2 beats
+        var status: OSStatus
+        let beatsPerNote = 2.0
+        let noteDuration = beatsPerNote * 0.9
         
-        // Play first note
-        sendMIDINoteOn(unit: unit, note: firstMidi, velocity: velocity)
-        
-        // Stop first note after duration
-        DispatchQueue.main.asyncAfter(deadline: .now() + noteDuration) { [weak self] in
-            guard let self = self, let unit = self.samplerUnit else { return }
-            self.sendMIDINoteOff(unit: unit, note: firstMidi)
-            
-            // Play second note
-            self.sendMIDINoteOn(unit: unit, note: secondMidi, velocity: velocity)
-            
-            // Stop second note after duration
-            DispatchQueue.main.asyncAfter(deadline: .now() + noteDuration) { [weak self] in
-                guard let self = self, let unit = self.samplerUnit else { return }
-                self.sendMIDINoteOff(unit: unit, note: secondMidi)
-                completion?()
+        // Stop and clear
+        MusicPlayerStop(player)
+        var trackCount: UInt32 = 0
+        status = MusicSequenceGetTrackCount(sequence, &trackCount)
+        for i in (0..<trackCount).reversed() {
+            var track: MusicTrack?
+            status = MusicSequenceGetIndTrack(sequence, UInt32(i), &track)
+            if let track = track {
+                MusicSequenceDisposeTrack(sequence, track)
             }
+        }
+        
+        // Create track
+        var track: MusicTrack?
+        status = MusicSequenceNewTrack(sequence, &track)
+        guard status == noErr, let track = track else {
+            completion?()
+            return
+        }
+        
+        if samplerNode != -1 {
+            MusicTrackSetDestNode(track, samplerNode)
+        }
+        
+        // Add notes sequentially
+        var firstMessage = MIDINoteMessage(channel: 0, note: firstMidi, velocity: velocity, releaseVelocity: 0, duration: Float32(noteDuration))
+        var secondMessage = MIDINoteMessage(channel: 0, note: secondMidi, velocity: velocity, releaseVelocity: 0, duration: Float32(noteDuration))
+        MusicTrackNewMIDINoteEvent(track, 0, &firstMessage)
+        MusicTrackNewMIDINoteEvent(track, MusicTimeStamp(beatsPerNote), &secondMessage)
+        
+        // Set tempo
+        var tempoTrack: MusicTrack?
+        MusicSequenceGetTempoTrack(sequence, &tempoTrack)
+        if let tempoTrack = tempoTrack {
+            MusicTrackClear(tempoTrack, 0, 1000)
+            MusicTrackNewExtendedTempoEvent(tempoTrack, 0, tempo)
+        }
+        
+        // Play
+        MusicPlayerSetSequence(player, sequence)
+        MusicPlayerPreroll(player)
+        MusicPlayerSetTime(player, 0)
+        MusicPlayerStart(player)
+        
+        let totalDuration = (60.0 / tempo) * beatsPerNote * 2.0
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration + 0.1) {
+            completion?()
         }
     }
     
