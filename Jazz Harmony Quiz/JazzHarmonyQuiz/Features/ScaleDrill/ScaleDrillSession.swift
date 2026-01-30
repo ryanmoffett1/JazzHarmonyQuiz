@@ -797,50 +797,57 @@ struct ScaleDrillSession: View {
         let rootPitchClass = question.scale.root.pitchClass
         let rootMidi = question.scale.root.midiNumber
         let sortedNotes = sortNotesForScale(userAnswerNotes, rootPitchClass: rootPitchClass)
-        let beatDuration: TimeInterval = 0.3
         
-        var playbackSequence: [(midi: Int, displayIndex: Int)] = []
-        
-        for (index, note) in sortedNotes.enumerated() {
+        // Build note sequence for MusicSequence playback
+        var noteSequence: [Note] = []
+        for note in sortedNotes {
             let interval = (note.pitchClass - rootPitchClass + 12) % 12
             let midi = rootMidi + interval
-            playbackSequence.append((midi: midi, displayIndex: index))
+            noteSequence.append(Note(name: note.name, midiNumber: midi, isSharp: note.isSharp))
         }
         
+        // If user entered all notes, play ascending-descending
         if sortedNotes.count == question.correctNotes.count {
-            playbackSequence.append((midi: rootMidi + 12, displayIndex: sortedNotes.count))
-            
+            // Add octave
+            noteSequence.append(Note(name: sortedNotes[0].name, midiNumber: rootMidi + 12, isSharp: sortedNotes[0].isSharp))
+            // Descending (skip octave at top)
             for i in stride(from: sortedNotes.count - 1, through: 0, by: -1) {
                 let note = sortedNotes[i]
                 let interval = (note.pitchClass - rootPitchClass + 12) % 12
                 let midi = rootMidi + interval
-                playbackSequence.append((midi: midi, displayIndex: i))
+                noteSequence.append(Note(name: note.name, midiNumber: midi, isSharp: note.isSharp))
             }
         }
         
+        // Use sample-accurate MusicSequence playback (same as correct answer)
+        audioManager.playScale(noteSequence, bpm: 200, direction: .ascending)
+        
+        // Handle highlighting with proper timing (200 BPM = 0.3s per beat)
+        let beatDuration: TimeInterval = 0.3
         let baseTime = DispatchTime.now()
-        let totalNotes = playbackSequence.count
         
-        for (index, item) in playbackSequence.enumerated() {
-            let noteStartTime = baseTime + .milliseconds(Int(Double(index) * beatDuration * 1000))
-            let noteStopTime = baseTime + .milliseconds(Int((Double(index) + 0.8) * beatDuration * 1000))
-            
-            DispatchQueue.main.asyncAfter(deadline: noteStartTime) { [self] in
-                self.highlightedNoteIndex = item.displayIndex
-            }
-            
-            if settings.audioEnabled {
-                DispatchQueue.main.asyncAfter(deadline: noteStartTime) { [self] in
-                    audioManager.playNote(UInt8(item.midi), velocity: 80)
-                }
-                
-                DispatchQueue.main.asyncAfter(deadline: noteStopTime) { [self] in
-                    audioManager.stopNote(UInt8(item.midi))
-                }
+        // Build display index sequence
+        var displaySequence: [Int] = []
+        for i in 0..<sortedNotes.count {
+            displaySequence.append(i)
+        }
+        if sortedNotes.count == question.correctNotes.count {
+            displaySequence.append(sortedNotes.count) // octave
+            for i in stride(from: sortedNotes.count - 1, through: 0, by: -1) {
+                displaySequence.append(i)
             }
         }
         
-        let endTime = baseTime + .milliseconds(Int(Double(totalNotes) * beatDuration * 1000 + 200))
+        // Schedule highlighting
+        for (index, displayIndex) in displaySequence.enumerated() {
+            let delay = baseTime + .milliseconds(Int(Double(index) * beatDuration * 1000))
+            DispatchQueue.main.asyncAfter(deadline: delay) { [self] in
+                self.highlightedNoteIndex = displayIndex
+            }
+        }
+        
+        // Clear highlight and show continue button
+        let endTime = baseTime + .milliseconds(Int(Double(displaySequence.count) * beatDuration * 1000 + 200))
         DispatchQueue.main.asyncAfter(deadline: endTime) { [self] in
             self.highlightedNoteIndex = nil
             self.showContinueButton = true
