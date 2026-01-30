@@ -40,7 +40,7 @@ final class ChordDrillGameTests: XCTestCase {
     
     func testBasicTriadsPreset() {
         let config = ChordDrillConfig.fromPreset(.basicTriads)
-        XCTAssertEqual(config.chordTypes, ["", "m", "dim", "aug"])
+        XCTAssertEqual(config.chordTypes, ["", "m"])  // Only major and minor triads exist in database
         XCTAssertEqual(config.keyDifficulty, .easy)
         XCTAssertEqual(config.difficulty, .beginner)
         XCTAssertEqual(config.questionCount, 10)
@@ -50,7 +50,7 @@ final class ChordDrillGameTests: XCTestCase {
         let config = ChordDrillConfig.fromPreset(.seventhChords)
         XCTAssertEqual(config.chordTypes, ["7", "maj7", "m7", "m7b5", "dim7"])
         XCTAssertEqual(config.keyDifficulty, .medium)
-        XCTAssertEqual(config.difficulty, .intermediate)
+        XCTAssertEqual(config.difficulty, .beginner)  // Changed to beginner since 7, maj7, m7 are beginner level
     }
     
     func testFullWorkoutPreset() {
@@ -59,6 +59,43 @@ final class ChordDrillGameTests: XCTestCase {
         XCTAssertEqual(config.keyDifficulty, .all)
         XCTAssertEqual(config.difficulty, .advanced)
         XCTAssertEqual(config.questionCount, 15)
+    }
+    
+    // MARK: - Preset Chord Type Validation Tests
+    
+    func testBasicTriadsPresetOnlyUsesExistingChordTypes() {
+        // Verify that all chord symbols in the preset actually exist in the database
+        let config = ChordDrillConfig.fromPreset(.basicTriads)
+        let database = JazzChordDatabase.shared
+        let availableSymbols = Set(database.chordTypes.map { $0.symbol })
+        
+        for symbol in config.chordTypes {
+            XCTAssertTrue(availableSymbols.contains(symbol),
+                         "Chord symbol '\(symbol)' from basicTriads preset doesn't exist in database")
+        }
+    }
+    
+    func testSeventhChordsPresetOnlyUsesExistingChordTypes() {
+        let config = ChordDrillConfig.fromPreset(.seventhChords)
+        let database = JazzChordDatabase.shared
+        let availableSymbols = Set(database.chordTypes.map { $0.symbol })
+        
+        for symbol in config.chordTypes {
+            XCTAssertTrue(availableSymbols.contains(symbol),
+                         "Chord symbol '\(symbol)' from seventhChords preset doesn't exist in database")
+        }
+    }
+    
+    func testSeventhChordsPresetGeneratesCorrectChords() {
+        // Start a drill with the 7th chords preset
+        game.startDrill(preset: .seventhChords)
+        
+        // Verify all generated questions use only the specified chord types
+        let expectedSymbols = Set(["7", "maj7", "m7", "m7b5", "dim7"])
+        for question in game.questions {
+            XCTAssertTrue(expectedSymbols.contains(question.chord.chordType.symbol),
+                         "Generated chord '\(question.chord.chordType.symbol)' not in 7th chords preset")
+        }
     }
     
     // MARK: - Starting Drill Tests

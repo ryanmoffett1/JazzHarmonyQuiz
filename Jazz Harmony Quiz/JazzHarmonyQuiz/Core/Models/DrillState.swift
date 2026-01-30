@@ -118,9 +118,9 @@ enum ChordDrillPreset: String, CaseIterable, DrillPreset {
     var description: String {
         switch self {
         case .basicTriads:
-            return "Major, minor, dim, aug"
+            return "Major and minor triads"
         case .seventhChords:
-            return "maj7, min7, dom7, etc."
+            return "7, maj7, m7, m7b5, dim7"
         case .fullWorkout:
             return "All chord types, random keys"
         }

@@ -121,7 +121,7 @@ struct ChordDrillSetup: View {
             HStack(spacing: 12) {
                 ChordQuickStartButton(
                     title: "Basic Triads",
-                    subtitle: "Major, minor, dim, aug",
+                    subtitle: "Major and minor",
                     icon: "music.note",
                     color: ShedTheme.Colors.brass
                 ) {
@@ -131,7 +131,7 @@ struct ChordDrillSetup: View {
                 
                 ChordQuickStartButton(
                     title: "7th Chords",
-                    subtitle: "Dom7, maj7, min7",
+                    subtitle: "7, maj7, m7, etc.",
                     icon: "music.note.list",
                     color: ShedTheme.Colors.brass
                 ) {
