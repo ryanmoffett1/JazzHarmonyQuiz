@@ -462,4 +462,165 @@ final class ScaleDrillViewModelTests: XCTestCase {
         
         XCTAssertTrue(sut.showContinueButton)
     }
+    
+    // MARK: - End-to-End Flow Tests
+    // These tests verify the complete user flow: answer → submit → feedback → next question
+    // They ensure the UI button states are correct at each step
+    
+    func test_flow_allDegrees_answerThenProceed() {
+        // Flow: Select notes → Submit → Feedback shows → Reset
+        let majorType = JazzScaleDatabase.shared.scaleTypes.first { $0.name == "Major" }!
+        let scale = Scale(root: Note.C, scaleType: majorType)
+        let question = ScaleQuestion(
+            scale: scale,
+            questionType: .allDegrees,
+            targetDegree: nil
+        )
+        
+        // Step 1: Initial state
+        XCTAssertFalse(sut.hasSubmitted)
+        XCTAssertFalse(sut.showingFeedback)
+        XCTAssertTrue(sut.selectedNotes.isEmpty)
+        
+        // Step 2: Select notes (scale degrees)
+        for note in question.correctNotes {
+            sut.selectedNotes.insert(note)
+        }
+        XCTAssertFalse(sut.selectedNotes.isEmpty)
+        
+        // Step 3: Submit answer
+        sut.submitAnswer(question: question) { notes in
+            // Check if pitch classes match
+            let selectedPitchClasses = notes.map { $0.pitchClass }
+            let correctPitchClasses = question.correctNotes.map { $0.pitchClass }
+            return Set(selectedPitchClasses) == Set(correctPitchClasses)
+        }
+        
+        XCTAssertTrue(sut.hasSubmitted, "Should be submitted after submitting")
+        XCTAssertTrue(sut.showingFeedback, "Feedback should show after submit")
+        
+        // Step 4: Reset for next question
+        sut.resetForNextQuestion()
+        XCTAssertFalse(sut.hasSubmitted, "hasSubmitted should be false after reset")
+        XCTAssertFalse(sut.showingFeedback, "Feedback should be hidden after reset")
+        XCTAssertTrue(sut.selectedNotes.isEmpty, "Selected notes should be cleared after reset")
+    }
+    
+    func test_flow_earTraining_answerThenProceed() {
+        // Flow: Select scale type → Submit → Feedback shows → Reset
+        let majorType = JazzScaleDatabase.shared.scaleTypes.first { $0.name == "Major" }!
+        let scale = Scale(root: Note.C, scaleType: majorType)
+        let question = ScaleQuestion(
+            scale: scale,
+            questionType: .earTraining,
+            targetDegree: nil
+        )
+        
+        // Step 1: Initial state
+        XCTAssertFalse(sut.hasSubmitted)
+        XCTAssertFalse(sut.showingFeedback)
+        XCTAssertNil(sut.selectedScaleType)
+        
+        // Step 2: Select scale type
+        sut.selectedScaleType = majorType
+        XCTAssertNotNil(sut.selectedScaleType)
+        
+        // Step 3: Submit answer
+        sut.submitEarTrainingAnswer(question: question)
+        
+        XCTAssertTrue(sut.hasSubmitted, "Should be submitted after submitting")
+        XCTAssertTrue(sut.showingFeedback, "Feedback should show after submit")
+        XCTAssertTrue(sut.isCorrect, "Answer should be correct")
+        
+        // Step 4: Reset for next question
+        sut.resetForNextQuestion()
+        XCTAssertFalse(sut.hasSubmitted, "hasSubmitted should be false after reset")
+        XCTAssertFalse(sut.showingFeedback, "Feedback should be hidden after reset")
+        XCTAssertNil(sut.selectedScaleType, "Selected scale type should be cleared after reset")
+    }
+    
+    func test_flow_singleDegree_answerThenProceed() {
+        // Flow: Select single note → Submit → Feedback shows → Reset
+        let majorType = JazzScaleDatabase.shared.scaleTypes.first { $0.name == "Major" }!
+        let scale = Scale(root: Note.C, scaleType: majorType)
+        let question = ScaleQuestion(
+            scale: scale,
+            questionType: .singleDegree,
+            targetDegree: ScaleDegree.third // The third degree
+        )
+        
+        // Step 1: Initial state
+        XCTAssertFalse(sut.hasSubmitted)
+        XCTAssertFalse(sut.showingFeedback)
+        
+        // Step 2: Select a note
+        let selectedNote = Note.E // Third degree of C Major
+        sut.selectedNotes.insert(selectedNote)
+        
+        // Step 3: Submit answer
+        sut.submitAnswer(question: question) { notes in
+            // Simple check for single degree
+            return !notes.isEmpty
+        }
+        
+        XCTAssertTrue(sut.hasSubmitted)
+        XCTAssertTrue(sut.showingFeedback)
+        
+        // Step 4: Reset
+        sut.resetForNextQuestion()
+        XCTAssertFalse(sut.hasSubmitted)
+        XCTAssertFalse(sut.showingFeedback)
+        XCTAssertTrue(sut.selectedNotes.isEmpty)
+    }
+    
+    func test_flow_incorrectAnswer_canProceedAfterFeedback() {
+        // Critical test: After incorrect answer, user must be able to proceed to next question
+        let majorType = JazzScaleDatabase.shared.scaleTypes.first { $0.name == "Major" }!
+        let minorType = JazzScaleDatabase.shared.scaleTypes.first { $0.name == "Natural Minor" }!
+        let scale = Scale(root: Note.C, scaleType: majorType)
+        let question = ScaleQuestion(
+            scale: scale,
+            questionType: .earTraining,
+            targetDegree: nil
+        )
+        
+        // Select wrong scale type
+        sut.selectedScaleType = minorType
+        
+        // Submit wrong answer
+        sut.submitEarTrainingAnswer(question: question)
+        XCTAssertTrue(sut.showingFeedback)
+        XCTAssertFalse(sut.isCorrect, "Answer should be incorrect")
+        
+        // User must be able to proceed (resetForNextQuestion should work)
+        sut.resetForNextQuestion()
+        XCTAssertFalse(sut.showingFeedback, "Must be able to move to next question after incorrect answer")
+        XCTAssertFalse(sut.hasSubmitted, "hasSubmitted must be false after reset")
+    }
+    
+    func test_flow_multipleQuestionsSequence() {
+        // Simulate answering multiple questions in a row
+        let majorType = JazzScaleDatabase.shared.scaleTypes.first { $0.name == "Major" }!
+        
+        for i in 0..<3 {
+            let scale = Scale(root: Note.C, scaleType: majorType)
+            let question = ScaleQuestion(
+                scale: scale,
+                questionType: .earTraining,
+                targetDegree: nil
+            )
+            
+            // Answer
+            sut.selectedScaleType = majorType
+            
+            // Submit
+            sut.submitEarTrainingAnswer(question: question)
+            XCTAssertTrue(sut.showingFeedback, "Question \(i): Feedback should show")
+            
+            // Next
+            sut.resetForNextQuestion()
+            XCTAssertFalse(sut.showingFeedback, "Question \(i): Should be reset for next")
+            XCTAssertNil(sut.selectedScaleType, "Question \(i): Selection should be cleared")
+        }
+    }
 }

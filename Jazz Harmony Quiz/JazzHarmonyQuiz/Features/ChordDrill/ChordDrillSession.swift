@@ -682,6 +682,9 @@ struct ChordDrillSessionView: View {
     }
     
     private func continueToNextQuestion() {
+        // Stop any playing audio immediately
+        AudioManager.shared.stopAllNotes()
+        
         // Submit the answer to QuizGame now (after showing feedback)
         if viewModel.currentQuestionForFeedback != nil {
             // Check if this was a chord type answer or a note answer

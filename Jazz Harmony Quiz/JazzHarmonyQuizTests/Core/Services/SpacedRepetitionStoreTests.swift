@@ -389,3 +389,114 @@ final class SpacedRepetitionStoreTests: XCTestCase {
         XCTAssertEqual(daysUntil, -3, accuracy: 1)
     }
 }
+
+// MARK: - End-to-End Flow Tests
+// These tests verify complete multi-step flows through the spaced repetition system
+// Note: Basic SM-2 algorithm behavior is covered in SpacedRepetitionStoreTests above
+
+final class SpacedRepetitionFlowTests: XCTestCase {
+    
+    var store: SpacedRepetitionStore!
+    
+    // Use unique IDs per test run to ensure isolation from other tests
+    func uniqueItemID(topic: String) -> SRItemID {
+        return SRItemID(mode: .chordDrill, topic: "\(topic)_\(UUID().uuidString.prefix(8))", key: "C")
+    }
+    
+    override func setUp() {
+        super.setUp()
+        store = SpacedRepetitionStore.shared
+        store.resetAll()
+    }
+    
+    override func tearDown() {
+        store.resetAll()
+        super.tearDown()
+    }
+    
+    func test_flow_correctAnswerProgressionToMature() {
+        let testItemID = uniqueItemID(topic: "progressToMature")
+        
+        // Simulate many correct answers to reach mature status
+        for i in 1...10 {
+            store.recordResult(itemID: testItemID, wasCorrect: true)
+            let schedule = store.schedule(for: testItemID)
+            XCTAssertEqual(schedule.repetitions, i, "Repetitions should be \(i) after \(i) correct answers")
+        }
+        
+        let finalSchedule = store.schedule(for: testItemID)
+        XCTAssertGreaterThan(finalSchedule.intervalDays, 21, "After many correct answers, interval should be > 21 days")
+        XCTAssertEqual(finalSchedule.maturityLevel, .mature, "Item should be mature after consistent correct answers")
+    }
+    
+    func test_flow_dueItemsCollection() {
+        let item1 = uniqueItemID(topic: "due1")
+        let item2 = uniqueItemID(topic: "due2")
+        let item3 = uniqueItemID(topic: "notDue")
+        
+        // Access items to register them
+        _ = store.schedule(for: item1)
+        _ = store.schedule(for: item2)
+        _ = store.schedule(for: item3)
+        
+        // Make item3 not due
+        store.recordResult(itemID: item3, wasCorrect: true)
+        store.recordResult(itemID: item3, wasCorrect: true)
+        
+        // Get due items (returns [SRItemID])
+        let dueItems = store.dueItems()
+        
+        XCTAssertTrue(dueItems.contains(item1))
+        XCTAssertTrue(dueItems.contains(item2))
+        XCTAssertFalse(dueItems.contains(item3), "Item with future due date should not be in due list")
+    }
+    
+    func test_flow_resetAllClearsEverything() {
+        // Create multiple items with progress
+        let item1 = uniqueItemID(topic: "reset1")
+        let item2 = SRItemID(mode: .intervalDrill, topic: "reset2_\(UUID().uuidString.prefix(8))")
+        
+        store.recordResult(itemID: item1, wasCorrect: true)
+        store.recordResult(itemID: item1, wasCorrect: true)
+        store.recordResult(itemID: item2, wasCorrect: true)
+        
+        XCTAssertEqual(store.schedule(for: item1).repetitions, 2)
+        XCTAssertEqual(store.schedule(for: item2).repetitions, 1)
+        
+        // Reset all
+        store.resetAll()
+        
+        // Verify everything is reset
+        XCTAssertEqual(store.schedule(for: item1).repetitions, 0)
+        XCTAssertEqual(store.schedule(for: item2).repetitions, 0)
+        XCTAssertTrue(store.schedule(for: item1).isDue())
+        XCTAssertTrue(store.schedule(for: item2).isDue())
+    }
+    
+    func test_flow_easeFactorAdjustment() {
+        let testItemID = uniqueItemID(topic: "easeFactor")
+        
+        // Ease factor should increase with correct answers
+        let initialEase = store.schedule(for: testItemID).easeFactor
+        
+        // Multiple correct answers should increase ease
+        for _ in 0..<5 {
+            store.recordResult(itemID: testItemID, wasCorrect: true)
+        }
+        
+        let afterCorrect = store.schedule(for: testItemID).easeFactor
+        XCTAssertGreaterThanOrEqual(afterCorrect, initialEase, "Ease factor should not decrease with correct answers")
+        
+        // Incorrect answer should decrease ease
+        store.recordResult(itemID: testItemID, wasCorrect: false)
+        let afterIncorrect = store.schedule(for: testItemID).easeFactor
+        XCTAssertLessThan(afterIncorrect, afterCorrect, "Ease factor should decrease after incorrect answer")
+        
+        // But not below minimum
+        for _ in 0..<10 {
+            store.recordResult(itemID: testItemID, wasCorrect: false)
+        }
+        let afterManyFailures = store.schedule(for: testItemID).easeFactor
+        XCTAssertGreaterThanOrEqual(afterManyFailures, 1.3, "Ease factor should not go below minimum (1.3)")
+    }
+}

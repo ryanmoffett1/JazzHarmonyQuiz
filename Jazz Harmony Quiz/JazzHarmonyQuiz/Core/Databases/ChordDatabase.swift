@@ -35,6 +35,50 @@ class JazzChordDatabase {
             ),
             
             ChordType(
+                name: "Diminished Triad",
+                symbol: "dim",
+                chordTones: [
+                    ChordTone.allTones[0], // Root
+                    ChordTone(degree: 3, name: "b3", semitonesFromRoot: 3, isAltered: true), // b3
+                    ChordTone(degree: 5, name: "b5", semitonesFromRoot: 6, isAltered: true)  // b5
+                ],
+                difficulty: .beginner
+            ),
+            
+            ChordType(
+                name: "Augmented Triad",
+                symbol: "aug",
+                chordTones: [
+                    ChordTone.allTones[0], // Root
+                    ChordTone.allTones[2], // 3rd
+                    ChordTone(degree: 5, name: "#5", semitonesFromRoot: 8, isAltered: true)  // #5
+                ],
+                difficulty: .beginner
+            ),
+            
+            ChordType(
+                name: "Suspended 2nd",
+                symbol: "sus2",
+                chordTones: [
+                    ChordTone.allTones[0], // Root
+                    ChordTone(degree: 2, name: "2", semitonesFromRoot: 2, isAltered: false), // 2nd
+                    ChordTone.allTones[4]  // 5th
+                ],
+                difficulty: .beginner
+            ),
+            
+            ChordType(
+                name: "Suspended 4th",
+                symbol: "sus4",
+                chordTones: [
+                    ChordTone.allTones[0], // Root
+                    ChordTone(degree: 4, name: "4", semitonesFromRoot: 5, isAltered: false), // 4th
+                    ChordTone.allTones[4]  // 5th
+                ],
+                difficulty: .beginner
+            ),
+            
+            ChordType(
                 name: "Dominant 7th",
                 symbol: "7",
                 chordTones: [
@@ -542,13 +586,13 @@ class JazzChordDatabase {
         var chordSymbols: [String] {
             switch self {
             case .triads:
-                return ["", "m", "dim", "aug"]
+                return ["", "m", "dim", "aug", "sus2", "sus4"]
             case .sevenths:
-                return ["7", "maj7", "m7", "m7b5", "dim7", "m(maj7)"]
+                return ["7", "maj7", "m7", "m7b5", "dim7", "m(maj7)", "7#5", "maj6", "m6"]
             case .extensions:
-                return ["9", "maj9", "m9", "11", "13", "maj13"]
+                return ["9", "maj9", "m9", "11", "m11", "13", "maj13", "m13"]
             case .altered:
-                return ["7b9", "7#9", "7b5", "7#5", "7#11", "7alt"]
+                return ["7b9", "7#9", "7b5", "7#5", "7#11", "7b13", "7alt"]
             }
         }
     }

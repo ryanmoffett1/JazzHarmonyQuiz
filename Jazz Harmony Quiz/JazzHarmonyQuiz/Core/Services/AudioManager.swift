@@ -181,8 +181,6 @@ class AudioManager: ObservableObject {
     /// Stop all currently playing notes immediately and cancel scheduled playback
     /// Call this before starting any new sound to prevent overlapping
     func stopAllNotes() {
-        guard let unit = samplerUnit else { return }
-        
         // Increment generation to cancel any scheduled chord plays
         generationLock.lock()
         playbackGeneration += 1
@@ -194,17 +192,21 @@ class AudioManager: ObservableObject {
             self.playingChordIndex = -1
         }
         
+        // Stop the MusicPlayer - this is the proper way to stop MusicSequence playback
+        if let player = musicPlayer {
+            MusicPlayerStop(player)
+        }
+        
+        // Clear tracked notes (they're stopped via the player, not direct MIDI)
         notesLock.lock()
-        let notesToStop = activeNotes
         activeNotes.removeAll()
         notesLock.unlock()
         
-        // Send note-off for all tracked notes
-        for midiNote in notesToStop {
-            sendMIDINoteOff(unit: unit, note: midiNote)
-        }
+        // Only send direct note-offs for notes played via direct MIDI (not via MusicSequence)
+        // The MusicPlayer stop handles sequence-based notes
+        guard let unit = samplerUnit else { return }
         
-        // Also send note-off for all possible notes in case any were missed
+        // Send note-off for all notes to ensure clean state
         for midiNote: UInt8 in 0...127 {
             sendMIDINoteOff(unit: unit, note: midiNote)
         }
@@ -267,12 +269,15 @@ class AudioManager: ObservableObject {
         sendMIDINoteOff(unit: unit, note: midiNote)
     }
     
-    /// Play a chord (multiple notes together)
+    /// Play a chord (multiple notes together) using direct MIDI
     func playChord(_ notes: [Note], velocity: UInt8 = 80, duration: TimeInterval = 1.5) {
-        guard isEnabled, !notes.isEmpty else { return }
+        guard isEnabled, !notes.isEmpty, let unit = samplerUnit else { return }
         
         // Stop any currently playing sounds first
         stopAllNotes()
+        
+        // Capture generation for this playback
+        let startGeneration = currentGeneration()
         
         // Normalize notes to middle C octave (MIDI 60-71)
         let normalizedMidiNotes = notes.map { note -> UInt8 in
@@ -280,64 +285,24 @@ class AudioManager: ObservableObject {
             return UInt8(60 + pitchClass)  // Octave 4 (middle C)
         }
         
-        // Use MusicSequence for sample-accurate timing
-        guard let sequence = musicSequence, let player = musicPlayer else { return }
-        
-        var status: OSStatus
-        
-        // Stop any currently playing sequence
-        status = MusicPlayerStop(player)
-        
-        // Clear sequence
-        var trackCount: UInt32 = 0
-        status = MusicSequenceGetTrackCount(sequence, &trackCount)
-        for i in (0..<trackCount).reversed() {
-            var track: MusicTrack?
-            status = MusicSequenceGetIndTrack(sequence, UInt32(i), &track)
-            if let track = track {
-                MusicSequenceDisposeTrack(sequence, track)
-            }
-        }
-        
-        // Create new track
-        var track: MusicTrack?
-        status = MusicSequenceNewTrack(sequence, &track)
-        guard status == noErr, let track = track else { return }
-        
-        // Set track to use our sampler node
-        if samplerNode != -1 {
-            MusicTrackSetDestNode(track, samplerNode)
-        }
-        
-        // Add note events - all start at beat 0 (simultaneous)
+        // Play all notes simultaneously using direct MIDI
         for midiNote in normalizedMidiNotes {
-            var message = MIDINoteMessage(
-                channel: 0,
-                note: midiNote,
-                velocity: velocity,
-                releaseVelocity: 0,
-                duration: Float32(duration)
-            )
-            
-            status = MusicTrackNewMIDINoteEvent(track, 0, &message)
-            guard status == noErr else { continue }
+            trackNoteOn(midiNote)
+            sendMIDINoteOn(unit: unit, note: midiNote, velocity: velocity)
         }
         
-        // Set sequence length
-        var length = MusicTimeStamp(duration)
-        status = MusicTrackSetProperty(track, kSequenceTrackProperty_TrackLength, &length, UInt32(MemoryLayout<MusicTimeStamp>.size))
-        
-        // Configure and play
-        status = MusicPlayerSetSequence(player, sequence)
-        status = MusicPlayerPreroll(player)
-        status = MusicPlayerSetTime(player, 0)
-        status = MusicPlayerStart(player)
-        
-        // Stop player after duration
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.1) { [weak self] in
-            guard let self = self, let player = self.musicPlayer else { return }
-            MusicPlayerStop(player)
-            self.stopAllNotes()
+        // Schedule note-offs after duration (only if playback hasn't been canceled)
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
+            guard let self = self else { return }
+            // Only stop if this is still the current playback (generation hasn't changed)
+            guard self.currentGeneration() == startGeneration else { return }
+            
+            for midiNote in normalizedMidiNotes {
+                self.trackNoteOff(midiNote)
+                if let unit = self.samplerUnit {
+                    self.sendMIDINoteOff(unit: unit, note: midiNote)
+                }
+            }
         }
     }
 

@@ -42,7 +42,9 @@ class QuickPracticeViewModel: ObservableObject {
     }
     
     var canSubmitAnswer: Bool {
-        !showingFeedback && !selectedNotes.isEmpty
+        // When showing feedback, button should always be enabled (for "Next")
+        // When not showing feedback, require at least one note selected
+        showingFeedback || !selectedNotes.isEmpty
     }
     
     // MARK: - Initialization

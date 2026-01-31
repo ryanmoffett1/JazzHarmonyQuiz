@@ -301,8 +301,8 @@ final class DrillStateTests: XCTestCase {
     }
     
     func test_chordDrillPreset_descriptions() {
-        XCTAssertEqual(ChordDrillPreset.basicTriads.description, "Major and minor triads")
-        XCTAssertEqual(ChordDrillPreset.seventhChords.description, "7, maj7, m7, m7b5, dim7")
+        XCTAssertEqual(ChordDrillPreset.basicTriads.description, "All triads: maj, min, dim, aug, sus")
+        XCTAssertEqual(ChordDrillPreset.seventhChords.description, "All 7th chords")
         XCTAssertEqual(ChordDrillPreset.fullWorkout.description, "All chord types, random keys")
     }
     

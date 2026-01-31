@@ -904,3 +904,235 @@ final class IntervalDifficultyTests: XCTestCase {
         XCTAssertEqual(IntervalDifficulty.advanced.rawValue, "Advanced")
     }
 }
+
+// MARK: - End-to-End Flow Tests
+// These tests verify the complete quiz flow: setup → start → answer questions → proceed → complete
+// They ensure state transitions are correct at each step
+
+@MainActor
+final class IntervalGameFlowTests: XCTestCase {
+    
+    var game: IntervalGame!
+    
+    override func setUp() {
+        super.setUp()
+        game = IntervalGame()
+        game.resetQuiz()
+    }
+    
+    override func tearDown() {
+        game = nil
+        super.tearDown()
+    }
+    
+    func test_flow_completeSession_buildInterval() {
+        // Step 1: Verify initial state
+        XCTAssertFalse(game.isQuizActive)
+        XCTAssertNil(game.currentQuestion)
+        XCTAssertEqual(game.questionNumber, 0)
+        
+        // Step 2: Start quiz
+        game.startQuiz(
+            numberOfQuestions: 5,
+            difficulty: .beginner,
+            questionTypes: [.buildInterval],
+            direction: .ascending,
+            keyDifficulty: .easy
+        )
+        
+        XCTAssertTrue(game.isQuizActive)
+        XCTAssertNotNil(game.currentQuestion)
+        XCTAssertEqual(game.questionNumber, 1)
+        XCTAssertEqual(game.totalQuestions, 5)
+        
+        // Step 3: Answer all questions correctly
+        for i in 1...5 {
+            guard let question = game.currentQuestion else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Submit correct answer
+            let isCorrect = game.checkAnswer(selectedNote: question.correctNote)
+            XCTAssertTrue(isCorrect, "Question \(i): Correct note should be marked correct")
+            XCTAssertTrue(game.hasAnswered, "Question \(i): hasAnswered should be true after submit")
+            
+            // Move to next (last nextQuestion will call endQuiz and NOT reset hasAnswered)
+            game.nextQuestion()
+            if i < 5 {
+                XCTAssertFalse(game.hasAnswered, "hasAnswered should be false after nextQuestion for question \(i)")
+            }
+        }
+        
+        // Step 4: Verify completion
+        XCTAssertTrue(game.showingResults)
+        XCTAssertFalse(game.isQuizActive)
+        XCTAssertEqual(game.correctAnswers, 5)
+    }
+    
+    func test_flow_completeSession_identifyInterval() {
+        // Start identify interval quiz
+        game.startQuiz(
+            numberOfQuestions: 3,
+            difficulty: .beginner,
+            questionTypes: [.identifyInterval],
+            direction: .ascending,
+            keyDifficulty: .easy
+        )
+        
+        XCTAssertTrue(game.isQuizActive)
+        
+        for i in 1...3 {
+            guard let question = game.currentQuestion else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Submit correct interval type
+            let isCorrect = game.checkAnswer(selectedInterval: question.interval.intervalType)
+            XCTAssertTrue(isCorrect)
+            XCTAssertTrue(game.hasAnswered)
+            
+            game.nextQuestion()
+        }
+        
+        XCTAssertTrue(game.showingResults)
+        XCTAssertEqual(game.correctAnswers, 3)
+    }
+    
+    func test_flow_mixedCorrectIncorrect() {
+        game.startQuiz(
+            numberOfQuestions: 4,
+            difficulty: .beginner,
+            questionTypes: [.buildInterval],
+            direction: .ascending,
+            keyDifficulty: .easy
+        )
+        
+        var expectedCorrect = 0
+        
+        for i in 1...4 {
+            guard let question = game.currentQuestion else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Alternate correct/incorrect
+            if i % 2 == 1 {
+                _ = game.checkAnswer(selectedNote: question.correctNote)
+                expectedCorrect += 1
+            } else {
+                // Wrong note
+                let wrongNote = Note(name: "X", midiNumber: 0, isSharp: false)
+                _ = game.checkAnswer(selectedNote: wrongNote)
+            }
+            
+            XCTAssertTrue(game.hasAnswered)
+            game.nextQuestion()
+        }
+        
+        XCTAssertTrue(game.showingResults)
+        XCTAssertEqual(game.correctAnswers, expectedCorrect)
+    }
+    
+    func test_flow_resetAndRestart() {
+        // Start and answer one question
+        game.startQuiz(
+            numberOfQuestions: 5,
+            difficulty: .beginner,
+            questionTypes: [.buildInterval],
+            direction: .ascending,
+            keyDifficulty: .easy
+        )
+        
+        if let question = game.currentQuestion {
+            _ = game.checkAnswer(selectedNote: question.correctNote)
+            game.nextQuestion()
+        }
+        
+        XCTAssertEqual(game.questionNumber, 2)
+        XCTAssertEqual(game.correctAnswers, 1)
+        
+        // Reset
+        game.resetQuiz()
+        
+        XCTAssertFalse(game.isQuizActive)
+        XCTAssertNil(game.currentQuestion)
+        XCTAssertEqual(game.questionNumber, 0)
+        XCTAssertEqual(game.correctAnswers, 0)
+        XCTAssertFalse(game.hasAnswered)
+        
+        // Start new quiz
+        game.startQuiz(
+            numberOfQuestions: 3,
+            difficulty: .intermediate,
+            questionTypes: [.identifyInterval],
+            direction: .descending,
+            keyDifficulty: .medium
+        )
+        
+        XCTAssertTrue(game.isQuizActive)
+        XCTAssertEqual(game.totalQuestions, 3)
+        XCTAssertEqual(game.questionNumber, 1)
+    }
+    
+    func test_flow_incorrectAnswerCanProceed() {
+        // Critical test: After incorrect answer, user must be able to proceed
+        game.startQuiz(
+            numberOfQuestions: 3,
+            difficulty: .beginner,
+            questionTypes: [.buildInterval],
+            direction: .ascending,
+            keyDifficulty: .easy
+        )
+        
+        guard game.currentQuestion != nil else {
+            XCTFail("Should have a question")
+            return
+        }
+        
+        // Submit wrong answer
+        let wrongNote = Note(name: "X", midiNumber: 0, isSharp: false)
+        let isCorrect = game.checkAnswer(selectedNote: wrongNote)
+        XCTAssertFalse(isCorrect)
+        XCTAssertTrue(game.hasAnswered)
+        XCTAssertFalse(game.lastAnswerCorrect)
+        
+        // User should be able to proceed
+        game.nextQuestion()
+        XCTAssertFalse(game.hasAnswered, "Must be able to move to next question after incorrect answer")
+        XCTAssertEqual(game.questionNumber, 2, "Should advance to next question")
+    }
+    
+    func test_flow_multipleQuestionTypes() {
+        // Test with multiple question types
+        game.startQuiz(
+            numberOfQuestions: 6,
+            difficulty: .intermediate,
+            questionTypes: [.buildInterval, .identifyInterval],
+            direction: .both,
+            keyDifficulty: .medium
+        )
+        
+        XCTAssertTrue(game.isQuizActive)
+        
+        for i in 1...6 {
+            guard let question = game.currentQuestion else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Answer based on question type
+            if question.questionType == .buildInterval {
+                _ = game.checkAnswer(selectedNote: question.correctNote)
+            } else {
+                _ = game.checkAnswer(selectedInterval: question.interval.intervalType)
+            }
+            
+            XCTAssertTrue(game.hasAnswered)
+            game.nextQuestion()
+        }
+        
+        XCTAssertTrue(game.showingResults)
+    }
+}

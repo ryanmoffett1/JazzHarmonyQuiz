@@ -112,14 +112,14 @@ class ChordDrillViewModel: ObservableObject {
         // Play audio feedback
         if isCorrect {
             if audioEnabled {
-                audioManager.playChord(correctAnswer, duration: 1.0)
+                audioManager.playChord(correctAnswer, duration: 3.0)
             }
         } else {
             // For aural questions, don't auto-play - let user control playback
             // For visual questions, play user's answer
             if audioEnabled && !question.questionType.isAural {
                 if !userAnswer.isEmpty {
-                    audioManager.playChord(userAnswer, duration: 1.0)
+                    audioManager.playChord(userAnswer, duration: 3.0)
                 }
             }
         }
@@ -137,7 +137,7 @@ class ChordDrillViewModel: ObservableObject {
         
         // Play the correct chord
         if audioEnabled {
-            audioManager.playChord(correctAnswerForFeedback, duration: 1.0)
+            audioManager.playChord(correctAnswerForFeedback, duration: 3.0)
         }
     }
     
@@ -189,12 +189,12 @@ class ChordDrillViewModel: ObservableObject {
     func playUserAnswer(question: QuizQuestion) {
         if let selected = selectedChordType {
             let userChord = Chord(root: question.chord.root, chordType: selected)
-            audioManager.playChord(userChord.chordTones, duration: 1.2)
+            audioManager.playChord(userChord.chordTones, duration: 3.0)
         }
     }
     
     func playCorrectAnswerChord() {
-        audioManager.playChord(correctAnswerForFeedback, duration: 1.2)
+        audioManager.playChord(correctAnswerForFeedback, duration: 3.0)
     }
     
     // MARK: - Private Methods

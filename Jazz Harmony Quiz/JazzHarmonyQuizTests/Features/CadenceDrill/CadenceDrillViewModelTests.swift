@@ -387,6 +387,188 @@ final class CadenceDrillViewModelTests: XCTestCase {
         }
     }
     
+    // MARK: - End-to-End Flow Tests
+    // These tests verify the complete user flow: answer → submit → feedback → next question
+    // They ensure the UI button states are correct at each step
+    
+    func test_flow_fullProgression_answerThenProceed() {
+        // Flow: Spell chords → Submit → Feedback shows → Reset
+        let question = createMockCadenceQuestion()
+        let expectedAnswers = question.expectedAnswers
+        
+        // Step 1: Initial state
+        XCTAssertFalse(sut.showingFeedback)
+        XCTAssertEqual(sut.currentChordIndex, 0)
+        XCTAssertTrue(sut.selectedNotes.isEmpty)
+        
+        // Step 2: Spell each chord
+        for i in 0..<expectedAnswers.count {
+            for note in expectedAnswers[i] {
+                sut.selectedNotes.insert(note)
+            }
+            if i < expectedAnswers.count - 1 {
+                sut.moveToNextChord()
+            }
+        }
+        
+        // Step 3: Submit answer
+        sut.submitAnswer(
+            question: question,
+            drillMode: .fullProgression,
+            chordsToSpellCount: expectedAnswers.count,
+            userSelectedCadenceType: nil,
+            checkAnswer: { answer, _ in answer == expectedAnswers }
+        )
+        
+        XCTAssertTrue(sut.showingFeedback, "Feedback should show after submit")
+        XCTAssertTrue(sut.isCorrect, "Answer should be correct")
+        
+        // Step 4: Reset for next question
+        sut.resetForNextQuestion(drillMode: .fullProgression)
+        XCTAssertFalse(sut.showingFeedback, "Feedback should be hidden after reset")
+        XCTAssertEqual(sut.currentChordIndex, 0, "Chord index should reset")
+        XCTAssertTrue(sut.selectedNotes.isEmpty, "Selected notes should be cleared after reset")
+        for spelling in sut.chordSpellings {
+            XCTAssertTrue(spelling.isEmpty, "All chord spellings should be cleared")
+        }
+    }
+    
+    func test_flow_commonTones_answerThenProceed() {
+        // Flow: Select common tone → Submit → Feedback shows → Reset
+        let question = createMockCadenceQuestion()
+        let commonTone = Note(name: "C", midiNumber: 60, isSharp: false)
+        
+        // Step 1: Initial state
+        XCTAssertFalse(sut.showingFeedback)
+        XCTAssertTrue(sut.selectedNotes.isEmpty)
+        
+        // Step 2: Select common tone
+        sut.selectedNotes.insert(commonTone)
+        XCTAssertFalse(sut.selectedNotes.isEmpty)
+        
+        // Step 3: Submit
+        sut.submitAnswer(
+            question: question,
+            drillMode: .commonTones,
+            chordsToSpellCount: 1,
+            userSelectedCadenceType: nil,
+            checkAnswer: { answer, _ in answer.count == 1 && !answer[0].isEmpty }
+        )
+        
+        XCTAssertTrue(sut.showingFeedback, "Feedback should show after submit")
+        
+        // Step 4: Reset
+        sut.resetForNextQuestion(drillMode: .commonTones)
+        XCTAssertFalse(sut.showingFeedback, "Feedback should be hidden after reset")
+        XCTAssertTrue(sut.selectedNotes.isEmpty, "Selected notes should be cleared")
+    }
+    
+    func test_flow_resolutionTargets_answerThenProceed() {
+        // Flow: Select resolution notes → Submit → Feedback shows → Reset
+        let question = createMockCadenceQuestion()
+        let resolutionNote = Note(name: "E", midiNumber: 64, isSharp: false)
+        
+        // Step 1: Initial state
+        XCTAssertFalse(sut.showingFeedback)
+        
+        // Step 2: Select resolution notes
+        sut.selectedNotes.insert(resolutionNote)
+        
+        // Step 3: Submit
+        sut.submitAnswer(
+            question: question,
+            drillMode: .resolutionTargets,
+            chordsToSpellCount: 1,
+            userSelectedCadenceType: nil,
+            checkAnswer: { answer, _ in !answer.isEmpty }
+        )
+        
+        XCTAssertTrue(sut.showingFeedback)
+        
+        // Step 4: Reset
+        sut.resetForNextQuestion(drillMode: .resolutionTargets)
+        XCTAssertFalse(sut.showingFeedback)
+        XCTAssertTrue(sut.selectedNotes.isEmpty)
+    }
+    
+    func test_flow_auralIdentify_answerThenProceed() {
+        // Flow: Select cadence type → Submit → Feedback shows → Reset
+        let question = createMockCadenceQuestion()
+        let correctCadenceType = question.cadence.cadenceType
+        
+        // Step 1: Initial state
+        XCTAssertFalse(sut.showingFeedback)
+        
+        // Step 2: User "selects" cadence type (in real app this is a UI selection)
+        // The VM receives this as a parameter to submitAnswer
+        
+        // Step 3: Submit with selected cadence type
+        sut.submitAnswer(
+            question: question,
+            drillMode: .auralIdentify,
+            chordsToSpellCount: 0,
+            userSelectedCadenceType: correctCadenceType,
+            checkAnswer: { _, _ in true }
+        )
+        
+        XCTAssertTrue(sut.showingFeedback, "Feedback should show after submit")
+        XCTAssertTrue(sut.isCorrect, "Answer should be correct")
+        
+        // Step 4: Reset
+        sut.resetForNextQuestion(drillMode: .auralIdentify)
+        XCTAssertFalse(sut.showingFeedback, "Feedback should be hidden after reset")
+    }
+    
+    func test_flow_incorrectAnswer_canProceedAfterFeedback() {
+        // Critical test: After incorrect answer, user must be able to proceed to next question
+        let question = createMockCadenceQuestion()
+        let wrongNote = Note(name: "F#", midiNumber: 66, isSharp: true)
+        
+        // Select wrong answer
+        sut.selectedNotes.insert(wrongNote)
+        
+        // Submit wrong answer
+        sut.submitAnswer(
+            question: question,
+            drillMode: .fullProgression,
+            chordsToSpellCount: 1,
+            userSelectedCadenceType: nil,
+            checkAnswer: { _, _ in false }
+        )
+        
+        XCTAssertTrue(sut.showingFeedback)
+        XCTAssertFalse(sut.isCorrect, "Answer should be incorrect")
+        
+        // User must be able to proceed (resetForNextQuestion should work)
+        sut.resetForNextQuestion(drillMode: .fullProgression)
+        XCTAssertFalse(sut.showingFeedback, "Must be able to move to next question after incorrect answer")
+    }
+    
+    func test_flow_multipleQuestionsSequence() {
+        // Simulate answering multiple questions in a row
+        for i in 0..<3 {
+            let question = createMockCadenceQuestion()
+            
+            // Answer (just select some notes)
+            sut.selectedNotes.insert(Note(name: "C", midiNumber: 60, isSharp: false))
+            
+            // Submit
+            sut.submitAnswer(
+                question: question,
+                drillMode: .commonTones,
+                chordsToSpellCount: 1,
+                userSelectedCadenceType: nil,
+                checkAnswer: { _, _ in true }
+            )
+            XCTAssertTrue(sut.showingFeedback, "Question \(i): Feedback should show")
+            
+            // Next
+            sut.resetForNextQuestion(drillMode: .commonTones)
+            XCTAssertFalse(sut.showingFeedback, "Question \(i): Should be reset for next")
+            XCTAssertTrue(sut.selectedNotes.isEmpty, "Question \(i): Selection should be cleared")
+        }
+    }
+    
     // MARK: - Helper Methods
     
     private func createMockCadenceQuestion() -> CadenceQuestion {

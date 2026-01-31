@@ -40,7 +40,7 @@ final class ChordDrillGameTests: XCTestCase {
     
     func testBasicTriadsPreset() {
         let config = ChordDrillConfig.fromPreset(.basicTriads)
-        XCTAssertEqual(config.chordTypes, ["", "m"])  // Only major and minor triads exist in database
+        XCTAssertEqual(Set(config.chordTypes), Set(["", "m", "dim", "aug", "sus2", "sus4"]))  // All triads
         XCTAssertEqual(config.keyDifficulty, .easy)
         XCTAssertEqual(config.difficulty, .beginner)
         XCTAssertEqual(config.questionCount, 10)
@@ -48,9 +48,9 @@ final class ChordDrillGameTests: XCTestCase {
     
     func testSeventhChordsPreset() {
         let config = ChordDrillConfig.fromPreset(.seventhChords)
-        XCTAssertEqual(config.chordTypes, ["7", "maj7", "m7", "m7b5", "dim7"])
+        XCTAssertEqual(Set(config.chordTypes), Set(["7", "maj7", "m7", "m7b5", "dim7", "m(maj7)", "7#5", "maj6", "m6"]))  // All 7th/6th chords
         XCTAssertEqual(config.keyDifficulty, .medium)
-        XCTAssertEqual(config.difficulty, .beginner)  // Changed to beginner since 7, maj7, m7 are beginner level
+        XCTAssertEqual(config.difficulty, .intermediate)  // Intermediate since it includes more advanced chords
     }
     
     func testFullWorkoutPreset() {
@@ -91,7 +91,7 @@ final class ChordDrillGameTests: XCTestCase {
         game.startDrill(preset: .seventhChords)
         
         // Verify all generated questions use only the specified chord types
-        let expectedSymbols = Set(["7", "maj7", "m7", "m7b5", "dim7"])
+        let expectedSymbols = Set(["7", "maj7", "m7", "m7b5", "dim7", "m(maj7)", "7#5", "maj6", "m6"])
         for question in game.questions {
             XCTAssertTrue(expectedSymbols.contains(question.chord.chordType.symbol),
                          "Generated chord '\(question.chord.chordType.symbol)' not in 7th chords preset")
@@ -789,5 +789,193 @@ final class ChordDrillSessionTests: XCTestCase {
         XCTAssertEqual(session.correctCount, 1)
         XCTAssertEqual(session.accuracy, 0.5, accuracy: 0.01)
         XCTAssertEqual(session.duration, 60, accuracy: 1)
+    }
+}
+
+// MARK: - End-to-End Flow Tests
+// These tests verify the complete drill flow: setup → start → answer questions → proceed → complete
+// They ensure state transitions are correct at each step
+
+@MainActor
+final class ChordDrillGameFlowTests: XCTestCase {
+    
+    var game: ChordDrillGame!
+    
+    override func setUp() {
+        super.setUp()
+        game = ChordDrillGame()
+    }
+    
+    override func tearDown() {
+        game = nil
+        super.tearDown()
+    }
+    
+    func test_flow_completeSession_basicTriads() {
+        // Step 1: Verify initial state
+        XCTAssertEqual(game.state, .setup)
+        XCTAssertTrue(game.questions.isEmpty)
+        XCTAssertNil(game.currentQuestion)
+        
+        // Step 2: Start drill
+        game.startDrill(preset: .basicTriads)
+        XCTAssertEqual(game.state, .active)
+        XCTAssertFalse(game.questions.isEmpty)
+        XCTAssertNotNil(game.currentQuestion)
+        XCTAssertEqual(game.currentIndex, 0)
+        
+        // Step 3: Answer all questions
+        let totalQuestions = game.questions.count
+        for i in 0..<totalQuestions {
+            guard let question = game.currentQuestion else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Submit answer
+            game.submitAnswer(notes: question.correctAnswer)
+            XCTAssertTrue(game.showingFeedback, "Question \(i): Feedback should show after submit")
+            XCTAssertTrue(game.lastAnswerCorrect, "Question \(i): Correct answer should be marked correct")
+            
+            // Move to next
+            game.nextQuestion()
+            XCTAssertFalse(game.showingFeedback, "Question \(i): Feedback should hide after next")
+        }
+        
+        // Step 4: Verify completion
+        XCTAssertEqual(game.state, .results)
+        XCTAssertNotNil(game.session)
+        XCTAssertEqual(game.session?.correctCount, totalQuestions)
+        XCTAssertEqual(game.session!.accuracy, 1.0, accuracy: 0.01)
+    }
+    
+    func test_flow_mixedCorrectIncorrect() {
+        // Start drill
+        game.startDrill(preset: .basicTriads)
+        
+        let totalQuestions = game.questions.count
+        var expectedCorrect = 0
+        
+        for i in 0..<totalQuestions {
+            guard let question = game.currentQuestion else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Alternate correct/incorrect answers
+            if i % 2 == 0 {
+                game.submitAnswer(notes: question.correctAnswer)
+                expectedCorrect += 1
+            } else {
+                game.submitAnswer(notes: []) // Wrong answer
+            }
+            
+            XCTAssertTrue(game.showingFeedback)
+            game.nextQuestion()
+        }
+        
+        // Verify completion with mixed results
+        XCTAssertEqual(game.state, .results)
+        XCTAssertNotNil(game.session)
+        XCTAssertEqual(game.session?.correctCount, expectedCorrect)
+    }
+    
+    func test_flow_resetAndRestart() {
+        // Complete a session
+        game.startDrill(preset: .basicTriads)
+        _ = game.questions.count
+        
+        // Answer first question
+        if let question = game.currentQuestion {
+            game.submitAnswer(notes: question.correctAnswer)
+            game.nextQuestion()
+        }
+        
+        XCTAssertEqual(game.currentIndex, 1)
+        XCTAssertEqual(game.results.count, 1)
+        
+        // Reset
+        game.reset()
+        XCTAssertEqual(game.state, .setup)
+        XCTAssertTrue(game.questions.isEmpty)
+        XCTAssertEqual(game.currentIndex, 0)
+        XCTAssertTrue(game.results.isEmpty)
+        
+        // Start new session
+        game.startDrill(preset: .seventhChords)
+        XCTAssertEqual(game.state, .active)
+        XCTAssertFalse(game.questions.isEmpty)
+        XCTAssertEqual(game.currentIndex, 0)
+        XCTAssertTrue(game.results.isEmpty)
+    }
+    
+    func test_flow_auralQualitySession() {
+        // Start drill with aural questions
+        let config = ChordDrillConfig(
+            chordTypes: ["maj7", "7", "m7"],
+            keyDifficulty: .easy,
+            questionTypes: [.auralQuality],
+            difficulty: .beginner,
+            questionCount: 5,
+            audioEnabled: false
+        )
+        game.startDrill(config: config)
+        
+        XCTAssertEqual(game.state, .active)
+        
+        // Answer each question with chord type
+        for i in 0..<game.questions.count {
+            guard let question = game.currentQuestion else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Submit chord type answer
+            game.submitAnswer(chordType: question.chord.chordType)
+            XCTAssertTrue(game.showingFeedback)
+            XCTAssertTrue(game.lastAnswerCorrect)
+            
+            game.nextQuestion()
+        }
+        
+        XCTAssertEqual(game.state, .results)
+        XCTAssertEqual(game.session!.accuracy, 1.0, accuracy: 0.01)
+    }
+    
+    func test_flow_incorrectAnswerCanProceed() {
+        // Critical test: After incorrect answer, user must be able to proceed
+        game.startDrill(preset: .basicTriads)
+        
+        guard game.currentQuestion != nil else {
+            XCTFail("Should have a question")
+            return
+        }
+        
+        // Submit wrong answer
+        game.submitAnswer(notes: [])
+        XCTAssertTrue(game.showingFeedback)
+        XCTAssertFalse(game.lastAnswerCorrect)
+        
+        // User should be able to proceed
+        game.nextQuestion()
+        XCTAssertFalse(game.showingFeedback, "Must be able to move to next question after incorrect answer")
+        XCTAssertEqual(game.currentIndex, 1, "Should advance to next question")
+    }
+    
+    func test_flow_progressTracking() {
+        game.startDrill(preset: .basicTriads)
+        
+        XCTAssertEqual(game.progress, 0.0, accuracy: 0.01)
+        
+        let totalQuestions = game.questions.count
+        for i in 0..<totalQuestions {
+            let expectedProgress = Double(i) / Double(totalQuestions)
+            XCTAssertEqual(game.progress, expectedProgress, accuracy: 0.01, "Progress should be \(expectedProgress) at question \(i)")
+            
+            if let question = game.currentQuestion {
+                game.submitAnswer(notes: question.correctAnswer)
+                game.nextQuestion()
+            }
+        }
     }
 }

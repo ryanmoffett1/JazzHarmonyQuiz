@@ -150,7 +150,7 @@ final class QuickPracticeViewModelTests: XCTestCase {
         sut.selectedNotes = [.C, .E, .G]
         sut.showingFeedback = false
         
-        // Then
+        // Then - button should be enabled to submit answer
         XCTAssertTrue(sut.canSubmitAnswer)
     }
     
@@ -159,17 +159,27 @@ final class QuickPracticeViewModelTests: XCTestCase {
         sut.selectedNotes = []
         sut.showingFeedback = false
         
-        // Then
+        // Then - can't submit without selecting notes
         XCTAssertFalse(sut.canSubmitAnswer)
     }
     
-    func test_canSubmitAnswer_whenShowingFeedback_returnsFalse() {
-        // Given
+    func test_canSubmitAnswer_whenShowingFeedback_returnsTrue() {
+        // Given - feedback is showing (button should say "Next")
         sut.selectedNotes = [.C, .E, .G]
         sut.showingFeedback = true
         
-        // Then
-        XCTAssertFalse(sut.canSubmitAnswer)
+        // Then - button must be enabled for "Next" action
+        // This is critical: user must be able to proceed after seeing feedback
+        XCTAssertTrue(sut.canSubmitAnswer)
+    }
+    
+    func test_canSubmitAnswer_whenShowingFeedbackWithNoNotes_returnsTrue() {
+        // Given - feedback showing, notes were cleared (edge case)
+        sut.selectedNotes = []
+        sut.showingFeedback = true
+        
+        // Then - button should still be enabled for "Next"
+        XCTAssertTrue(sut.canSubmitAnswer)
     }
     
     // MARK: - Chord Validation Tests
@@ -583,5 +593,90 @@ class MockAudioManager {
     
     func playChord(_ notes: [Note]) {
         playedChords.append(notes)
+    }
+}
+
+// MARK: - Integration Tests (User Flow)
+
+extension QuickPracticeViewModelTests {
+    
+    /// Test the complete user flow: select notes → submit → see feedback → tap next
+    /// This test was added to catch the bug where the "Next" button was disabled after showing feedback
+    func test_completeUserFlow_canProgressAfterCorrectAnswer() {
+        // Given - a session with questions
+        let items = createMockItems(count: 5)
+        mockGenerator.itemsToReturn = items
+        sut.startSession()
+        
+        // Initial state - no notes selected, can't submit
+        XCTAssertFalse(sut.canSubmitAnswer, "Should not be able to submit without notes selected")
+        
+        // When - user selects correct notes
+        sut.selectedNotes = Set(items[0].correctNotes)
+        
+        // Then - can submit
+        XCTAssertTrue(sut.canSubmitAnswer, "Should be able to submit after selecting notes")
+        
+        // When - user submits answer
+        sut.checkAnswer()
+        
+        // Then - showing feedback, and MUST still be able to proceed (tap "Next")
+        XCTAssertTrue(sut.showingFeedback, "Should be showing feedback after checking answer")
+        XCTAssertTrue(sut.isCorrect, "Answer should be correct")
+        XCTAssertTrue(sut.canSubmitAnswer, "CRITICAL: Button must be enabled to tap 'Next' after seeing feedback")
+        
+        // When - user taps Next
+        sut.nextQuestion()
+        
+        // Then - moved to next question
+        XCTAssertEqual(sut.currentIndex, 1, "Should have moved to question 2")
+        XCTAssertFalse(sut.showingFeedback, "Feedback should be hidden")
+        XCTAssertTrue(sut.selectedNotes.isEmpty, "Notes should be cleared")
+    }
+    
+    func test_completeUserFlow_canProgressAfterIncorrectAnswer() {
+        // Given
+        let items = createMockItems(count: 5)
+        mockGenerator.itemsToReturn = items
+        sut.startSession()
+        
+        // When - user selects wrong notes
+        sut.selectedNotes = [.C]  // Incomplete chord
+        sut.checkAnswer()
+        
+        // Then - showing feedback for incorrect answer, MUST still be able to proceed
+        XCTAssertTrue(sut.showingFeedback)
+        XCTAssertFalse(sut.isCorrect)
+        XCTAssertTrue(sut.canSubmitAnswer, "CRITICAL: Button must be enabled to tap 'Next' even after wrong answer")
+        
+        // When - user taps Next
+        sut.nextQuestion()
+        
+        // Then - moved to next question
+        XCTAssertEqual(sut.currentIndex, 1)
+    }
+    
+    func test_completeUserFlow_canCompleteEntireSession() {
+        // Given - session with 3 questions
+        let items = createMockItems(count: 3)
+        mockGenerator.itemsToReturn = items
+        sut.startSession()
+        
+        // Complete all 3 questions
+        for i in 0..<3 {
+            // Select correct notes
+            sut.selectedNotes = Set(items[i].correctNotes)
+            
+            // Submit
+            sut.checkAnswer()
+            XCTAssertTrue(sut.canSubmitAnswer, "Must be able to tap Next on question \(i + 1)")
+            
+            // Next
+            sut.nextQuestion()
+        }
+        
+        // Then - session completed
+        XCTAssertTrue(sut.sessionComplete, "Session should be complete after all questions")
+        XCTAssertEqual(sut.correctCount, 3, "Should have 3 correct answers")
     }
 }

@@ -1074,3 +1074,198 @@ final class ScaleQuestionTypeTests: XCTestCase {
         XCTAssertFalse(ScaleQuestionType.earTraining.icon.isEmpty)
     }
 }
+
+// MARK: - End-to-End Flow Tests
+// These tests verify the complete quiz flow: setup → start → answer questions → proceed → complete
+// They ensure state transitions are correct at each step
+
+@MainActor
+final class ScaleGameFlowTests: XCTestCase {
+    
+    var game: ScaleGame!
+    
+    override func setUp() {
+        super.setUp()
+        game = ScaleGame()
+        game.resetQuizState()
+    }
+    
+    override func tearDown() {
+        game = nil
+        super.tearDown()
+    }
+    
+    func test_flow_completeSession_allDegrees() {
+        // Step 1: Verify initial state
+        XCTAssertFalse(game.isQuizActive)
+        XCTAssertNil(game.currentQuestion)
+        XCTAssertTrue(game.questions.isEmpty)
+        
+        // Step 2: Start quiz
+        game.startNewQuiz(
+            numberOfQuestions: 5,
+            difficulty: .beginner,
+            questionTypes: [.allDegrees]
+        )
+        
+        XCTAssertTrue(game.isQuizActive)
+        XCTAssertFalse(game.isQuizCompleted)
+        XCTAssertNotNil(game.currentQuestion)
+        XCTAssertEqual(game.questions.count, 5)
+        XCTAssertEqual(game.currentQuestionIndex, 0)
+        
+        // Step 3: Answer all questions correctly
+        for i in 0..<5 {
+            guard let question = game.currentQuestion else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Submit correct answer (convert to Set)
+            let isCorrect = game.submitAnswer(Set(question.correctNotes))
+            XCTAssertTrue(isCorrect, "Question \(i): Correct notes should be marked correct")
+            
+            // Move to next
+            game.moveToNextQuestion()
+        }
+        
+        // Step 4: Verify completion
+        XCTAssertTrue(game.isQuizCompleted)
+        XCTAssertFalse(game.isQuizActive)
+    }
+    
+    func test_flow_completeSession_earTraining() {
+        game.startNewQuiz(
+            numberOfQuestions: 3,
+            difficulty: .beginner,
+            questionTypes: [.earTraining]
+        )
+        
+        XCTAssertTrue(game.isQuizActive)
+        
+        for i in 0..<3 {
+            guard game.currentQuestion != nil else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Record correct answer for ear training
+            game.recordEarTrainingAnswer(correct: true)
+            
+            game.moveToNextQuestion()
+        }
+        
+        XCTAssertTrue(game.isQuizCompleted)
+    }
+    
+    func test_flow_mixedCorrectIncorrect() {
+        game.startNewQuiz(
+            numberOfQuestions: 4,
+            difficulty: .beginner,
+            questionTypes: [.allDegrees]
+        )
+        
+        for i in 0..<4 {
+            guard let question = game.currentQuestion else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Alternate correct/incorrect
+            if i % 2 == 0 {
+                _ = game.submitAnswer(Set(question.correctNotes))
+            } else {
+                _ = game.submitAnswer(Set<Note>()) // Wrong answer
+            }
+            
+            game.moveToNextQuestion()
+        }
+        
+        XCTAssertTrue(game.isQuizCompleted)
+    }
+    
+    func test_flow_resetAndRestart() {
+        // Start and answer one question
+        game.startNewQuiz(
+            numberOfQuestions: 5,
+            difficulty: .beginner,
+            questionTypes: [.allDegrees]
+        )
+        
+        if let question = game.currentQuestion {
+            _ = game.submitAnswer(Set(question.correctNotes))
+            game.moveToNextQuestion()
+        }
+        
+        XCTAssertEqual(game.currentQuestionIndex, 1)
+        
+        // Reset
+        game.resetQuizState()
+        
+        XCTAssertFalse(game.isQuizActive)
+        XCTAssertFalse(game.isQuizCompleted)
+        XCTAssertNil(game.currentQuestion)
+        XCTAssertTrue(game.questions.isEmpty)
+        XCTAssertEqual(game.currentQuestionIndex, 0)
+        
+        // Start new quiz
+        game.startNewQuiz(
+            numberOfQuestions: 3,
+            difficulty: .intermediate,
+            questionTypes: [.earTraining]
+        )
+        
+        XCTAssertTrue(game.isQuizActive)
+        XCTAssertEqual(game.questions.count, 3)
+        XCTAssertEqual(game.currentQuestionIndex, 0)
+    }
+    
+    func test_flow_incorrectAnswerCanProceed() {
+        // Critical test: After incorrect answer, user must be able to proceed
+        game.startNewQuiz(
+            numberOfQuestions: 3,
+            difficulty: .beginner,
+            questionTypes: [.allDegrees]
+        )
+        
+        guard game.currentQuestion != nil else {
+            XCTFail("Should have a question")
+            return
+        }
+        
+        // Submit wrong answer
+        let isCorrect = game.submitAnswer(Set<Note>())
+        XCTAssertFalse(isCorrect)
+        
+        // User should be able to proceed
+        let previousIndex = game.currentQuestionIndex
+        game.moveToNextQuestion()
+        XCTAssertEqual(game.currentQuestionIndex, previousIndex + 1, "Must be able to move to next question after incorrect answer")
+    }
+    
+    func test_flow_singleDegreeQuestions() {
+        game.startNewQuiz(
+            numberOfQuestions: 5,
+            difficulty: .beginner,
+            questionTypes: [.singleDegree]
+        )
+        
+        XCTAssertTrue(game.isQuizActive)
+        
+        for i in 0..<5 {
+            guard let question = game.currentQuestion else {
+                XCTFail("Question \(i) should exist")
+                return
+            }
+            
+            // Single degree questions need a target degree
+            XCTAssertEqual(question.questionType, .singleDegree)
+            
+            // Submit answer (convert to Set)
+            _ = game.submitAnswer(Set(question.correctNotes))
+            game.moveToNextQuestion()
+        }
+        
+        XCTAssertTrue(game.isQuizCompleted)
+    }
+}

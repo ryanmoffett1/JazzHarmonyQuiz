@@ -290,8 +290,8 @@ final class ChordDatabaseTests: XCTestCase {
     // MARK: - Preset Compatibility Tests
     
     func test_basicTriadsPreset_onlyIncludesExistingChords() {
-        // From ChordDrillGame preset
-        let basicTriadSymbols: Set<String> = ["", "m"]
+        // From ChordDrillGame preset - all triads
+        let basicTriadSymbols: Set<String> = ["", "m", "dim", "aug", "sus2", "sus4"]
         
         for symbol in basicTriadSymbols {
             let chord = sut.chordTypes.first { $0.symbol == symbol }
@@ -300,8 +300,8 @@ final class ChordDatabaseTests: XCTestCase {
     }
     
     func test_seventhChordsPreset_onlyIncludesExistingChords() {
-        // From ChordDrillGame preset
-        let seventhSymbols: Set<String> = ["7", "maj7", "m7", "m7b5", "dim7"]
+        // From ChordDrillGame preset - all 7th/6th chords
+        let seventhSymbols: Set<String> = ["7", "maj7", "m7", "m7b5", "dim7", "m(maj7)", "7#5", "maj6", "m6"]
         
         for symbol in seventhSymbols {
             let chord = sut.chordTypes.first { $0.symbol == symbol }
@@ -309,14 +309,14 @@ final class ChordDatabaseTests: XCTestCase {
         }
     }
     
-    func test_seventhChordsPreset_allAreBeginner() {
-        // Per ChordDrillGame preset fix - 7th chords should all be beginner level
-        let seventhSymbols: Set<String> = ["7", "maj7", "m7"]
+    func test_basicTriadsPreset_allAreBeginner() {
+        // All triads should be beginner level
+        let triadSymbols: Set<String> = ["", "m", "dim", "aug", "sus2", "sus4"]
         
-        for symbol in seventhSymbols {
+        for symbol in triadSymbols {
             if let chord = sut.chordTypes.first(where: { $0.symbol == symbol }) {
                 XCTAssertEqual(chord.difficulty, .beginner, 
-                             "\(symbol) should be beginner difficulty for 7th chords preset")
+                             "\(symbol) should be beginner difficulty for triads preset")
             }
         }
     }

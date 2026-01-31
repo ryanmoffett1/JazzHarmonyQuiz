@@ -25,7 +25,7 @@ struct ChordDrillConfig: Equatable {
         switch preset {
         case .basicTriads:
             return ChordDrillConfig(
-                chordTypes: ["", "m"],  // Major and minor triads only (dim/aug triads don't exist in database)
+                chordTypes: ["", "m", "dim", "aug", "sus2", "sus4"],  // All triads
                 keyDifficulty: .easy,
                 questionTypes: [.allTones],
                 difficulty: .beginner,
@@ -34,10 +34,10 @@ struct ChordDrillConfig: Equatable {
             )
         case .seventhChords:
             return ChordDrillConfig(
-                chordTypes: ["7", "maj7", "m7", "m7b5", "dim7"],
+                chordTypes: ["7", "maj7", "m7", "m7b5", "dim7", "m(maj7)", "7#5", "maj6", "m6"],  // All 7th/6th chords
                 keyDifficulty: .medium,
                 questionTypes: [.allTones],
-                difficulty: .beginner,  // Changed to .beginner since 7, maj7, m7 are beginner level
+                difficulty: .intermediate,
                 questionCount: 10,
                 audioEnabled: true
             )

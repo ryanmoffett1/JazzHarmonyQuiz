@@ -456,4 +456,141 @@ final class ChordDrillViewModelTests: XCTestCase {
             targetTone: nil
         )
     }
+    
+    // MARK: - End-to-End Flow Tests
+    // These tests verify the complete user flow: answer → submit → feedback → next question
+    // They ensure the UI button states are correct at each step
+    
+    func test_flow_answerThenProceed_allTones() {
+        // Flow: Select notes → Submit → Feedback shows → Can still interact → Reset
+        let question = createAllTonesQuestion()
+        let correctNotes = question.correctAnswer
+        
+        // Step 1: Initial state - can't submit without selection
+        XCTAssertFalse(sut.canSubmit(for: question), "Should NOT be able to submit without selection")
+        
+        // Step 2: Select notes - can now submit
+        for note in correctNotes {
+            sut.selectedNotes.insert(note)
+        }
+        XCTAssertTrue(sut.canSubmit(for: question), "Should be able to submit with notes selected")
+        
+        // Step 3: Submit answer - feedback is shown
+        sut.submitAnswer(question: question, audioEnabled: false)
+        XCTAssertTrue(sut.showingFeedback, "Feedback should be shown after submit")
+        XCTAssertTrue(sut.isCorrect, "Answer should be correct")
+        
+        // Step 4: Reset for next - state is clean
+        sut.resetForNextQuestion()
+        XCTAssertFalse(sut.showingFeedback, "Feedback should be hidden after reset")
+        XCTAssertTrue(sut.selectedNotes.isEmpty, "Selected notes should be cleared after reset")
+        XCTAssertFalse(sut.canSubmit(for: question), "Should NOT be able to submit after reset")
+    }
+    
+    func test_flow_answerThenProceed_singleTone() {
+        // Flow: Select single note → Submit → Feedback shows → Reset
+        let question = createSingleToneQuestion()
+        let correctNote = question.correctAnswer.first!
+        
+        // Step 1: Initial state
+        XCTAssertFalse(sut.canSubmit(for: question))
+        
+        // Step 2: Select note
+        sut.selectedNotes.insert(correctNote)
+        XCTAssertTrue(sut.canSubmit(for: question))
+        
+        // Step 3: Submit
+        sut.submitAnswer(question: question, audioEnabled: false)
+        XCTAssertTrue(sut.showingFeedback)
+        
+        // Step 4: Reset
+        sut.resetForNextQuestion()
+        XCTAssertFalse(sut.showingFeedback)
+        XCTAssertTrue(sut.selectedNotes.isEmpty)
+    }
+    
+    func test_flow_answerThenProceed_auralQuality() {
+        // Flow: Select chord type → Submit → Feedback shows → Reset
+        let question = createAuralQualityQuestion()
+        
+        // Step 1: Initial state
+        XCTAssertFalse(sut.canSubmit(for: question))
+        
+        // Step 2: Select chord type
+        sut.selectedChordType = question.chord.chordType
+        XCTAssertTrue(sut.canSubmit(for: question))
+        
+        // Step 3: Submit
+        sut.submitAnswer(question: question, audioEnabled: false)
+        XCTAssertTrue(sut.showingFeedback)
+        XCTAssertTrue(sut.isCorrect)
+        
+        // Step 4: Reset
+        sut.resetForNextQuestion()
+        XCTAssertFalse(sut.showingFeedback)
+        XCTAssertNil(sut.selectedChordType)
+    }
+    
+    func test_flow_answerThenProceed_auralSpelling() {
+        // Flow: Select notes → Submit → Feedback shows → Reset
+        let question = createAuralSpellingQuestion()
+        let correctNotes = question.correctAnswer
+        
+        // Step 1: Initial state
+        XCTAssertFalse(sut.canSubmit(for: question))
+        
+        // Step 2: Select notes
+        for note in correctNotes {
+            sut.selectedNotes.insert(note)
+        }
+        XCTAssertTrue(sut.canSubmit(for: question))
+        
+        // Step 3: Submit
+        sut.submitAnswer(question: question, audioEnabled: false)
+        XCTAssertTrue(sut.showingFeedback)
+        
+        // Step 4: Reset
+        sut.resetForNextQuestion()
+        XCTAssertFalse(sut.showingFeedback)
+        XCTAssertTrue(sut.selectedNotes.isEmpty)
+    }
+    
+    func test_flow_incorrectAnswer_canProceedAfterFeedback() {
+        // Critical test: After incorrect answer, user must be able to proceed to next question
+        let question = createAllTonesQuestion()
+        
+        // Select wrong note
+        sut.selectedNotes.insert(Note(name: "F#", midiNumber: 66, isSharp: true))
+        XCTAssertTrue(sut.canSubmit(for: question))
+        
+        // Submit wrong answer
+        sut.submitAnswer(question: question, audioEnabled: false)
+        XCTAssertTrue(sut.showingFeedback)
+        XCTAssertFalse(sut.isCorrect, "Answer should be incorrect")
+        
+        // User should be able to proceed (resetForNextQuestion should be callable)
+        sut.resetForNextQuestion()
+        XCTAssertFalse(sut.showingFeedback, "Must be able to move to next question after incorrect answer")
+    }
+    
+    func test_flow_multipleQuestionsSequence() {
+        // Simulate answering multiple questions in a row
+        for i in 0..<3 {
+            let question = createAllTonesQuestion()
+            
+            // Answer
+            for note in question.correctAnswer {
+                sut.selectedNotes.insert(note)
+            }
+            
+            // Submit
+            sut.submitAnswer(question: question, audioEnabled: false)
+            XCTAssertTrue(sut.showingFeedback, "Question \(i): Feedback should show")
+            
+            // Next
+            sut.resetForNextQuestion()
+            XCTAssertFalse(sut.showingFeedback, "Question \(i): Should be reset for next")
+            XCTAssertTrue(sut.selectedNotes.isEmpty, "Question \(i): Selection should be cleared")
+        }
+    }
 }
