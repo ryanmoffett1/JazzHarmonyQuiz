@@ -30,7 +30,7 @@ class CadenceDrillViewModel: ObservableObject {
     
     func clearSelection() {
         selectedNotes.removeAll()
-        HapticFeedback.light()
+        CadenceDrillHaptics.light()
     }
     
     func moveToNextChord() {
@@ -38,7 +38,7 @@ class CadenceDrillViewModel: ObservableObject {
         currentChordIndex += 1
         selectedNotes.removeAll()
         currentHintText = nil
-        HapticFeedback.medium()
+        CadenceDrillHaptics.medium()
     }
     
     // MARK: - Answer Submission
@@ -78,12 +78,12 @@ class CadenceDrillViewModel: ObservableObject {
         
         // Haptic and audio feedback
         if isCorrect {
-            HapticFeedback.success()
+            CadenceDrillHaptics.success()
             if settings.playChordOnCorrect && settings.audioEnabled {
                 audioManager.playCadenceProgression(answerToSubmit, bpm: 90, beatsPerChord: 2)
             }
         } else {
-            HapticFeedback.error()
+            CadenceDrillHaptics.error()
             if settings.audioEnabled {
                 Task {
                     try? await Task.sleep(nanoseconds: 300_000_000)
@@ -110,9 +110,9 @@ class CadenceDrillViewModel: ObservableObject {
         isCorrect = userSelectedCadenceType == question.cadence.cadenceType
         
         if isCorrect {
-            HapticFeedback.success()
+            CadenceDrillHaptics.success()
         } else {
-            HapticFeedback.error()
+            CadenceDrillHaptics.error()
         }
         
         if settings.audioEnabled {
@@ -191,7 +191,7 @@ class CadenceDrillViewModel: ObservableObject {
 
 // MARK: - Haptic Feedback
 
-enum HapticFeedback {
+enum CadenceDrillHaptics {
     static func success() {
         #if os(iOS)
         let generator = UINotificationFeedbackGenerator()

@@ -8,21 +8,9 @@ struct CadenceDrillSession: View {
     @EnvironmentObject var cadenceGame: CadenceGame
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
+    @StateObject private var viewModel = CadenceDrillViewModel()
     @Binding var viewState: DrillState
     @Binding var userSelectedCadenceType: CadenceType?  // For ear training answers
-    @State private var currentChordIndex = 0 // Which chord we're currently spelling
-    @State private var chordSpellings: [[Note]] = [[], [], [], [], []] // Spellings for up to 5 chords (Bird Changes)
-    @State private var selectedNotes: Set<Note> = []
-    @State private var showingFeedback = false
-    @State private var isCorrect = false
-    @State private var correctAnswerForFeedback: [[Note]] = []
-    @State private var currentHintText: String? = nil
-    @State private var pendingAnswerToSubmit: [[Note]] = []  // Store the validated answer to submit
-    
-    // Ear training feedback state - capture before question advances
-    @State private var feedbackCorrectCadenceType: CadenceType? = nil
-    @State private var feedbackUserSelectedType: CadenceType? = nil
-    @State private var currentQuestionCadenceChords: [[Note]] = []  // For audio playback
 
     /// Number of chords to spell based on drill mode
     private var chordsToSpellCount: Int {
@@ -52,7 +40,7 @@ struct CadenceDrillSession: View {
 
     /// Whether we can submit ear training answer
     private var canSubmitEarTraining: Bool {
-        if showingFeedback {
+        if viewModel.showingFeedback {
             return true
         }
         return userSelectedCadenceType != nil
@@ -77,7 +65,7 @@ struct CadenceDrillSession: View {
                 // Piano Keyboard (only for non-ear training modes)
                 if !isEarTrainingMode {
                     PianoKeyboard(
-                        selectedNotes: $selectedNotes,
+                        selectedNotes: $viewModel.selectedNotes,
                         octaveRange: 4...4,
                         showNoteNames: false,
                         allowMultipleSelection: true
@@ -87,7 +75,7 @@ struct CadenceDrillSession: View {
                 }
 
                 // Selected Notes Display (only for non-ear training modes)
-                if !isEarTrainingMode && !selectedNotes.isEmpty {
+                if !isEarTrainingMode && !viewModel.selectedNotes.isEmpty {
                     selectedNotesDisplay
                 }
 
@@ -98,36 +86,28 @@ struct CadenceDrillSession: View {
             }
         }
         .padding()
-        .alert("Answer Feedback", isPresented: $showingFeedback) {
+        .alert("Answer Feedback", isPresented: $viewModel.showingFeedback) {
             Button("Continue") {
                 continueToNextQuestion()
             }
         } message: {
-            if isCorrect {
+            if viewModel.isCorrect {
                 Text("Correct! 🎉\n\n\(formatFeedback())")
             } else {
                 Text("Incorrect.\n\n\(formatFeedback())")
             }
         }
         .onChange(of: cadenceGame.currentQuestionIndex) { _, _ in
-            // Store current question's cadence for playback (only if not showing feedback)
-            // If showing feedback, we want to keep the previous question's chords
-            if !showingFeedback, let question = cadenceGame.currentQuestion {
-                currentQuestionCadenceChords = question.cadence.chords.map { $0.chordTones }
-            }
+            // Auto-play handled by viewModel
             
             // Auto-play for ear training questions
-            if isEarTrainingMode && settings.autoPlayCadences && !showingFeedback {
+            if isEarTrainingMode && settings.autoPlayCadences && !viewModel.showingFeedback {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     playCurrentCadence()
                 }
             }
         }
         .onAppear {
-            // Store current question's cadence for playback
-            if let question = cadenceGame.currentQuestion {
-                currentQuestionCadenceChords = question.cadence.chords.map { $0.chordTones }
-            }
             
             // Play on initial appear if ear training question
             if isEarTrainingMode && settings.autoPlayCadences {
@@ -190,8 +170,8 @@ struct CadenceDrillSession: View {
             
             CadenceTypePicker(
                 selectedCadenceType: $userSelectedCadenceType,
-                correctCadenceType: showingFeedback ? feedbackCorrectCadenceType : nil,
-                disabled: showingFeedback,
+                correctCadenceType: viewModel.showingFeedback ? viewModel.feedbackCorrectCadenceType : nil,
+                disabled: viewModel.showingFeedback,
                 availableTypes: availableTypes
             )
             .padding(.horizontal)
@@ -220,7 +200,7 @@ struct CadenceDrillSession: View {
             questionTextView(chordsToSpell: chordsToSpell)
             
             // Hint display
-            if let hint = currentHintText {
+            if let hint = viewModel.currentHintText {
                 Text(hint)
                     .font(.subheadline)
                     .foregroundColor(ShedTheme.Colors.warning)
@@ -254,7 +234,7 @@ struct CadenceDrillSession: View {
                 .font(.headline)
                 .foregroundColor(settings.primaryAccent(for: colorScheme))
         } else if isGuideTonesMode {
-            Text("Spell: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName) (3rd & 7th only)")
+            Text("Spell: \(chordsToSpell[min(viewModel.currentChordIndex, chordsToSpell.count - 1)].displayName) (3rd & 7th only)")
                 .font(.headline)
                 .foregroundColor(settings.primaryAccent(for: colorScheme))
         } else if isResolutionTargetsMode {
@@ -262,7 +242,7 @@ struct CadenceDrillSession: View {
                 .font(.headline)
                 .foregroundColor(settings.primaryAccent(for: colorScheme))
         } else {
-            Text("Spell: \(chordsToSpell[min(currentChordIndex, chordsToSpell.count - 1)].displayName)")
+            Text("Spell: \(chordsToSpell[min(viewModel.currentChordIndex, chordsToSpell.count - 1)].displayName)")
                 .font(.headline)
                 .foregroundColor(settings.primaryAccent(for: colorScheme))
         }
@@ -285,8 +265,8 @@ struct CadenceDrillSession: View {
                     chordDisplayCard(
                         chord: chordsToSpell[index],
                         index: index,
-                        isActive: index == currentChordIndex,
-                        isCompleted: !chordSpellings[index].isEmpty && index < currentChordIndex
+                        isActive: index == viewModel.currentChordIndex,
+                        isCompleted: !viewModel.chordSpellings[index].isEmpty && index < viewModel.currentChordIndex
                     )
                 }
             }
@@ -339,18 +319,18 @@ struct CadenceDrillSession: View {
                         Text(chordsToSpell[index].displayName)
                             .font(.title3)
                             .fontWeight(.bold)
-                            .foregroundColor(index == currentChordIndex ? .blue : .secondary)
+                            .foregroundColor(index == viewModel.currentChordIndex ? .blue : .secondary)
                         
                         Text("3rd & 7th")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                     .padding()
-                    .background(index == currentChordIndex ? ShedTheme.Colors.brass.opacity(0.1) : Color.gray.opacity(0.1))
+                    .background(index == viewModel.currentChordIndex ? ShedTheme.Colors.brass.opacity(0.1) : Color.gray.opacity(0.1))
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(index == currentChordIndex ? ShedTheme.Colors.brass : Color.clear, lineWidth: 2)
+                            .stroke(index == viewModel.currentChordIndex ? ShedTheme.Colors.brass : Color.clear, lineWidth: 2)
                     )
                 }
             }
@@ -406,7 +386,7 @@ struct CadenceDrillSession: View {
                         .cornerRadius(12)
                     }
                     
-                    if showingFeedback, let targetNote = pair.targetNote {
+                    if viewModel.showingFeedback, let targetNote = pair.targetNote {
                         Text("Answer: \(targetNote.name)")
                             .font(.headline)
                             .foregroundColor(ShedTheme.Colors.success)
@@ -502,12 +482,12 @@ struct CadenceDrillSession: View {
                 .foregroundColor(settings.secondaryText(for: colorScheme))
 
             FlowLayout(spacing: 8) {
-                ForEach(Array(selectedNotes.sorted(by: { $0.midiNumber < $1.midiNumber })), id: \.midiNumber) { note in
+                ForEach(Array(viewModel.selectedNotes.sorted(by: { $0.midiNumber < $1.midiNumber })), id: \.midiNumber) { note in
                     Text(note.name)
-                        .font(settings.chordDisplayFont(size: selectedNotes.count > 5 ? 18 : 22, weight: .semibold))
+                        .font(settings.chordDisplayFont(size: viewModel.selectedNotes.count > 5 ? 18 : 22, weight: .semibold))
                         .foregroundColor(.white)
-                        .padding(.horizontal, selectedNotes.count > 5 ? 12 : 16)
-                        .padding(.vertical, selectedNotes.count > 5 ? 8 : 10)
+                        .padding(.horizontal, viewModel.selectedNotes.count > 5 ? 12 : 16)
+                        .padding(.vertical, viewModel.selectedNotes.count > 5 ? 8 : 10)
                         .background(settings.selectedNoteBackground(for: colorScheme))
                         .cornerRadius(8)
                 }
@@ -538,7 +518,7 @@ struct CadenceDrillSession: View {
             if isEarTrainingMode {
                 // Ear training mode - submit cadence type selection
                 Button(action: submitAnswer) {
-                    Text(showingFeedback ? "Next Question →" : "Submit Answer")
+                    Text(viewModel.showingFeedback ? "Next Question →" : "Submit Answer")
                         .font(.headline)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -546,7 +526,7 @@ struct CadenceDrillSession: View {
                         .background(canSubmitEarTraining ? settings.successColor(for: colorScheme) : Color.gray)
                         .cornerRadius(12)
                 }
-                .disabled(!canSubmitEarTraining && !showingFeedback)
+                .disabled(!canSubmitEarTraining && !viewModel.showingFeedback)
             } else if isCommonTonesMode {
                 // Common tones mode - single submit
                 Button(action: submitAnswer) {
@@ -555,10 +535,10 @@ struct CadenceDrillSession: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
+                        .background(viewModel.selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
                         .cornerRadius(12)
                 }
-                .disabled(selectedNotes.isEmpty)
+                .disabled(viewModel.selectedNotes.isEmpty)
             } else if isResolutionTargetsMode {
                 // Resolution targets mode - single note submit
                 Button(action: submitAnswer) {
@@ -567,23 +547,23 @@ struct CadenceDrillSession: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
+                        .background(viewModel.selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
                         .cornerRadius(12)
                 }
-                .disabled(selectedNotes.isEmpty)
+                .disabled(viewModel.selectedNotes.isEmpty)
             } else if isGuideTonesMode {
                 // Guide tones mode - multi-chord submit
-                if currentChordIndex < chordsToSpellCount - 1 {
+                if viewModel.currentChordIndex < chordsToSpellCount - 1 {
                     Button(action: moveToNextChord) {
                         Text("Next Chord →")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(selectedNotes.isEmpty ? Color.gray : ShedTheme.Colors.brass)
+                            .background(viewModel.selectedNotes.isEmpty ? Color.gray : ShedTheme.Colors.brass)
                             .cornerRadius(12)
                     }
-                    .disabled(selectedNotes.isEmpty)
+                    .disabled(viewModel.selectedNotes.isEmpty)
                 } else {
                     Button(action: submitAnswer) {
                         Text("Submit Answer")
@@ -591,22 +571,22 @@ struct CadenceDrillSession: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
+                            .background(viewModel.selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
                             .cornerRadius(12)
                     }
-                    .disabled(selectedNotes.isEmpty)
+                    .disabled(viewModel.selectedNotes.isEmpty)
                 }
-            } else if currentChordIndex < chordsToSpellCount - 1 {
+            } else if viewModel.currentChordIndex < chordsToSpellCount - 1 {
                 Button(action: moveToNextChord) {
                     Text("Next Chord →")
                         .font(.headline)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(selectedNotes.isEmpty ? Color.gray : ShedTheme.Colors.brass)
+                        .background(viewModel.selectedNotes.isEmpty ? Color.gray : ShedTheme.Colors.brass)
                         .cornerRadius(12)
                 }
-                .disabled(selectedNotes.isEmpty)
+                .disabled(viewModel.selectedNotes.isEmpty)
             } else {
                 Button(action: submitAnswer) {
                     Text("Submit Answer")
@@ -614,10 +594,10 @@ struct CadenceDrillSession: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
+                        .background(viewModel.selectedNotes.isEmpty ? Color.gray : settings.successColor(for: colorScheme))
                         .cornerRadius(12)
                 }
-                .disabled(selectedNotes.isEmpty)
+                .disabled(viewModel.selectedNotes.isEmpty)
             }
         }
         .padding(.horizontal)
@@ -626,26 +606,16 @@ struct CadenceDrillSession: View {
     // MARK: - Actions
 
     private func clearSelection() {
-        selectedNotes.removeAll()
-        HapticFeedback.light()
+        viewModel.clearSelection()
     }
 
     private func moveToNextChord() {
-        // Save current chord spelling
-        chordSpellings[currentChordIndex] = Array(selectedNotes)
-
-        // Move to next chord
-        currentChordIndex += 1
-        selectedNotes.removeAll()
-        currentHintText = nil  // Clear hint for new chord
-        
-        // Haptic feedback
-        HapticFeedback.medium()
+        viewModel.moveToNextChord()
     }
     
     private func requestHint() {
-        if let hint = cadenceGame.requestHint(for: currentChordIndex) {
-            currentHintText = hint
+        viewModel.requestHint { index in
+            cadenceGame.requestHint(for: index)
         }
     }
 
@@ -653,175 +623,48 @@ struct CadenceDrillSession: View {
         guard let question = cadenceGame.currentQuestion else { return }
 
         // Handle ear training mode
-        if isEarTrainingMode {
-            // If already showing feedback, move to next question
-            if showingFeedback {
-                continueToNextQuestion()
-                return
-            }
-
-            // Capture feedback data BEFORE submitting (which advances the question)
-            feedbackCorrectCadenceType = question.cadence.cadenceType
-            feedbackUserSelectedType = userSelectedCadenceType
-            currentQuestionCadenceChords = question.cadence.chords.map { $0.chordTones }
-            
-            // Check if selected cadence type matches
-            isCorrect = userSelectedCadenceType == question.cadence.cadenceType
-
-            // Haptic feedback
-            if isCorrect {
-                HapticFeedback.success()
-            } else {
-                HapticFeedback.error()
-            }
-
-            // Play the correct progression for feedback (using stored chords - same key)
-            if settings.audioEnabled {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    self.playCurrentCadence()
-                }
-            }
-
-            // Submit dummy answer (game expects chord spellings)
-            cadenceGame.submitAnswer(question.expectedAnswers)
-            showingFeedback = true
+        if isEarTrainingMode && viewModel.showingFeedback {
+            continueToNextQuestion()
             return
         }
 
-        // Save the last chord spelling
-        chordSpellings[currentChordIndex] = Array(selectedNotes)
-
-        // Prepare the answer based on mode
-        let answerToSubmit: [[Note]]
-        if isCommonTonesMode || isResolutionTargetsMode {
-            // Common tones and resolution targets submit just one set of notes
-            answerToSubmit = [Array(selectedNotes)]
-        } else if isGuideTonesMode {
-            // Guide tones submits all chords
-            let numChords = chordsToSpellCount
-            answerToSubmit = Array(chordSpellings.prefix(numChords))
-        } else {
-            // Full progression - submit all chord spellings
-            let numChords = chordsToSpellCount
-            answerToSubmit = Array(chordSpellings.prefix(numChords))
-        }
+        viewModel.submitAnswer(
+            question: question,
+            drillMode: cadenceGame.selectedDrillMode,
+            chordsToSpellCount: chordsToSpellCount,
+            userSelectedCadenceType: userSelectedCadenceType,
+            checkAnswer: { answer, question in
+                cadenceGame.isAnswerCorrect(userAnswer: answer, question: question)
+            }
+        )
         
-        // Store the answer to submit later (when user presses Continue)
-        // This ensures we submit exactly what we validated
-        pendingAnswerToSubmit = answerToSubmit
-
-        // Store correct answer for feedback
-        correctAnswerForFeedback = question.expectedAnswers
-
-        // Check if answer is correct
-        isCorrect = cadenceGame.isAnswerCorrect(userAnswer: answerToSubmit, question: question)
-
-        // Haptic feedback based on result
-        if isCorrect {
-            HapticFeedback.success()
-
-            // Play the user's entered chords as a cadence progression if enabled
-            // This lets them hear their specific voicing/inversion
-            if settings.playChordOnCorrect && settings.audioEnabled {
-                // Use the user's entered notes (their inversions) for playback
-                AudioManager.shared.playCadenceProgression(answerToSubmit, bpm: 90, beatsPerChord: 2)
-            }
-        } else {
-            HapticFeedback.error()
-            
-            // Play the CORRECT answer so the user can hear what they should have spelled
-            if settings.audioEnabled {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    AudioManager.shared.playCadenceProgression(
-                        question.expectedAnswers,
-                        bpm: 90,
-                        beatsPerChord: 2
-                    )
-                }
-            }
+        // For ear training, submit dummy answer
+        if isEarTrainingMode {
+            cadenceGame.submitAnswer(question.expectedAnswers)
         }
-
-        // Show feedback
-        showingFeedback = true
     }
 
     private func continueToNextQuestion() {
-        // For ear training mode, we already submitted in submitAnswer()
-        // Just reset state and let the game continue
-        if isEarTrainingMode {
-            // Reset state for next question
-            currentChordIndex = 0
-            chordSpellings = [[], [], [], [], []]
-            selectedNotes.removeAll()
-            currentHintText = nil
-            userSelectedCadenceType = nil
-            feedbackCorrectCadenceType = nil
-            feedbackUserSelectedType = nil
-            showingFeedback = false
-            
-            // Store the new question's cadence chords and auto-play
-            if let question = cadenceGame.currentQuestion {
-                currentQuestionCadenceChords = question.cadence.chords.map { $0.chordTones }
-                
-                // Auto-play the new question
-                if settings.autoPlayCadences {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        self.playCurrentCadence()
-                    }
-                }
-            }
-            return
+        // For non-ear-training modes, submit the pending answer
+        if !isEarTrainingMode {
+            guard !viewModel.pendingAnswerToSubmit.isEmpty else { return }
+            cadenceGame.submitAnswer(viewModel.pendingAnswerToSubmit)
         }
         
-        // For non-ear-training modes, use the pending answer that was validated in submitAnswer()
-        // This ensures consistency between what we showed as "Correct" and what we record
-        guard !pendingAnswerToSubmit.isEmpty else { return }
+        // Reset ViewModel state for next question
+        viewModel.resetForNextQuestion(
+            drillMode: cadenceGame.selectedDrillMode,
+            currentQuestion: cadenceGame.currentQuestion
+        )
         
-        // Submit the validated answer
-        cadenceGame.submitAnswer(pendingAnswerToSubmit)
-
-        // Reset state for next question
-        currentChordIndex = 0
-        chordSpellings = [[], [], [], [], []]  // Reset for up to 5 chords
-        selectedNotes.removeAll()
-        pendingAnswerToSubmit = []  // Clear the pending answer
-        currentHintText = nil
-        userSelectedCadenceType = nil  // Clear ear training selection
-        feedbackCorrectCadenceType = nil  // Clear ear training feedback
-        feedbackUserSelectedType = nil
-        currentQuestionCadenceChords = []  // Clear stored cadence
-        showingFeedback = false
+        // Clear ear training selection
+        userSelectedCadenceType = nil
     }
 
     private func playCurrentCadence() {
-        // For ear training mode, ALWAYS use stored cadence chords to ensure same voicing/key
-        // This is critical - never fall back to currentQuestion in ear training mode
-        if isEarTrainingMode {
-            guard !currentQuestionCadenceChords.isEmpty else {
-                print("Warning: No stored cadence chords for ear training playback")
-                return
-            }
-            let bpm = settings.cadenceBPM
-            let beatsPerChord = settings.cadenceBeatsPerChord
-            AudioManager.shared.playCadenceProgression(
-                currentQuestionCadenceChords,
-                bpm: bpm,
-                beatsPerChord: beatsPerChord
-            )
-            return
-        }
-        
-        // For other modes, use current question
-        guard let question = cadenceGame.currentQuestion else { return }
-        let chords = question.cadence.chords.map { $0.chordTones }
-        
-        let bpm = settings.cadenceBPM
-        let beatsPerChord = settings.cadenceBeatsPerChord
-
-        AudioManager.shared.playCadenceProgression(
-            chords,
-            bpm: bpm,
-            beatsPerChord: beatsPerChord
+        viewModel.playCurrentCadence(
+            drillMode: cadenceGame.selectedDrillMode,
+            currentQuestion: cadenceGame.currentQuestion
         )
     }
 
@@ -831,8 +674,8 @@ struct CadenceDrillSession: View {
         // Handle ear training mode differently
         if isEarTrainingMode {
             // Use captured feedback data (not current question which has advanced)
-            guard let correctType = feedbackCorrectCadenceType else { return "" }
-            let userType = feedbackUserSelectedType
+            guard let correctType = viewModel.feedbackCorrectCadenceType else { return "" }
+            let userType = viewModel.feedbackUserSelectedType
             
             var feedback = ""
             feedback += "Correct Cadence: \(correctType.rawValue)\n"
@@ -857,16 +700,16 @@ struct CadenceDrillSession: View {
         }
 
         for i in 0..<chordsToSpell.count {
-            guard i < chordSpellings.count, i < expectedAnswers.count else { continue }
+            guard i < viewModel.chordSpellings.count, i < expectedAnswers.count else { continue }
             
             let chordName = chordsToSpell[i].displayName
-            let userNotes = chordSpellings[i].map { $0.name }.joined(separator: ", ")
+            let userNotes = viewModel.chordSpellings[i].map { $0.name }.joined(separator: ", ")
             let correctNotes = expectedAnswers[i].map { $0.name }.joined(separator: ", ")
 
             feedback += "Chord \(i + 1) (\(chordName)):\n"
             feedback += "Your answer: \(userNotes.isEmpty ? "None" : userNotes)\n"
 
-            if !isCorrect {
+            if !viewModel.isCorrect {
                 feedback += "Correct: \(correctNotes)\n"
             }
 
