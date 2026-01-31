@@ -64,7 +64,6 @@
 		94C941B42F2D7FCB00632327 /* ChordDrillViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941B32F2D7FCB00632327 /* ChordDrillViewModel.swift */; };
 		94C941B62F2D7FE700632327 /* ChordDrillViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941B52F2D7FE700632327 /* ChordDrillViewModelTests.swift */; };
 		94C941B92F2D853100632327 /* ScaleDrillViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941B82F2D853100632327 /* ScaleDrillViewModel.swift */; };
-		94C941BA2F2D853100632327 /* ScaleDrillSession.swift.bak in Resources */ = {isa = PBXBuildFile; fileRef = 94C941B72F2D853100632327 /* ScaleDrillSession.swift.bak */; };
 		94C941BC2F2D854100632327 /* ScaleDrillViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941BB2F2D854100632327 /* ScaleDrillViewModelTests.swift */; };
 		94C941BE2F2D989F00632327 /* IntervalDrillViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941BD2F2D989F00632327 /* IntervalDrillViewModel.swift */; };
 		94C941C02F2D98AA00632327 /* IntervalDrillViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941BF2F2D98AA00632327 /* IntervalDrillViewModelTests.swift */; };
@@ -184,7 +183,6 @@
 		94C941B02F2D7BA500632327 /* QuickPracticeViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeViewModelTests.swift; sourceTree = "<group>"; };
 		94C941B32F2D7FCB00632327 /* ChordDrillViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillViewModel.swift; sourceTree = "<group>"; };
 		94C941B52F2D7FE700632327 /* ChordDrillViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillViewModelTests.swift; sourceTree = "<group>"; };
-		94C941B72F2D853100632327 /* ScaleDrillSession.swift.bak */ = {isa = PBXFileReference; lastKnownFileType = text; path = ScaleDrillSession.swift.bak; sourceTree = "<group>"; };
 		94C941B82F2D853100632327 /* ScaleDrillViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillViewModel.swift; sourceTree = "<group>"; };
 		94C941BB2F2D854100632327 /* ScaleDrillViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillViewModelTests.swift; sourceTree = "<group>"; };
 		94C941BD2F2D989F00632327 /* IntervalDrillViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillViewModel.swift; sourceTree = "<group>"; };
@@ -539,7 +537,6 @@
 		94SCALE092F2A000000000009 /* ScaleDrill */ = {
 			isa = PBXGroup;
 			children = (
-				94C941B72F2D853100632327 /* ScaleDrillSession.swift.bak */,
 				94C941B82F2D853100632327 /* ScaleDrillViewModel.swift */,
 				94SCALE022F2A000000000002 /* ScaleDrillView.swift */,
 				94SCALE042F2A000000000004 /* ScaleDrillSetup.swift */,
@@ -739,7 +736,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				94ED7A932F285A860063C123 /* Piano.sf2 in Resources */,
-				94C941BA2F2D853100632327 /* ScaleDrillSession.swift.bak in Resources */,
 				A1234567890ABCDEF008 /* Preview Assets.xcassets in Resources */,
 				A1234567890ABCDEF005 /* Assets.xcassets in Resources */,
 			);
