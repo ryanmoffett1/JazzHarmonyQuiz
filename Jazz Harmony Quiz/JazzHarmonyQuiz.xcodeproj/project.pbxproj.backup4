@@ -1,0 +1,1134 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5A634891227C479190B2BAC9 /* PracticeDueCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */; };
+		9400DEB42F2515E100BDBF25 /* ProgressionDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB32F2515E100BDBF25 /* ProgressionDrillView.swift */; };
+		9400DEB82F2516A900BDBF25 /* ProgressionProgression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB72F2516A900BDBF25 /* ProgressionProgression.swift */; };
+		9400DEB92F2516A900BDBF25 /* ProgressionGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB62F2516A900BDBF25 /* ProgressionGame.swift */; };
+		9400DEC02F256F8800BDBF25 /* CurriculumModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEBE2F256F8800BDBF25 /* CurriculumModule.swift */; };
+		9400DEC22F256F8800BDBF25 /* ConceptualExplanations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEBB2F256F8800BDBF25 /* ConceptualExplanations.swift */; };
+		9434133B2F1EDD1D009235D1 /* PlayerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9434133A2F1EDD1C009235D1 /* PlayerProfile.swift */; };
+		9434133D2F1EDD74009235D1 /* PlayerProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9434133C2F1EDD74009235D1 /* PlayerProfileView.swift */; };
+		944280252F12A0230035FE8B /* CadenceGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944280242F12A0230035FE8B /* CadenceGame.swift */; };
+		94629FCC2F1BD9CB0029B7F7 /* QuizGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */; };
+		9463520A2F26727A00ABD609 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352032F26727A00ABD609 /* Buttons.swift */; };
+		9463520B2F26727A00ABD609 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352062F26727A00ABD609 /* FlowLayout.swift */; };
+		9463520C2F26727A00ABD609 /* PianoKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352072F26727A00ABD609 /* PianoKeyboard.swift */; };
+		9463520D2F26727A00ABD609 /* Cards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352042F26727A00ABD609 /* Cards.swift */; };
+		9463520E2F26727A00ABD609 /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352082F26727A00ABD609 /* Progress.swift */; };
+		9463520F2F26727A00ABD609 /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352052F26727A00ABD609 /* Feedback.swift */; };
+		946352132F26752C00ABD609 /* ShedProApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352112F26752C00ABD609 /* ShedProApp.swift */; };
+		946352142F26752C00ABD609 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352102F26752C00ABD609 /* ContentView.swift */; };
+		946352212F26786500ABD609 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352172F26786500ABD609 /* HomeView.swift */; };
+		946352222F26786500ABD609 /* WeeklyStreakView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463521A2F26786500ABD609 /* WeeklyStreakView.swift */; };
+		946352232F26786500ABD609 /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463521C2F26786500ABD609 /* PracticeView.swift */; };
+		946352242F26786500ABD609 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463521E2F26786500ABD609 /* ProgressView.swift */; };
+		946352252F26786500ABD609 /* QuickStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352192F26786500ABD609 /* QuickStatsView.swift */; };
+		946352262F26786500ABD609 /* ContinueLearningCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352152F26786500ABD609 /* ContinueLearningCard.swift */; };
+		946352272F26786500ABD609 /* DailyFocusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352162F26786500ABD609 /* DailyFocusCard.swift */; };
+		946352282F26786500ABD609 /* QuickPracticeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352182F26786500ABD609 /* QuickPracticeCard.swift */; };
+		9463523D2F26789900ABD609 /* ChordType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352312F26789900ABD609 /* ChordType.swift */; };
+		9463523E2F26789900ABD609 /* SpacedRepetitionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463523B2F26789900ABD609 /* SpacedRepetitionStore.swift */; };
+		9463523F2F26789900ABD609 /* PlayerLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352342F26789900ABD609 /* PlayerLevel.swift */; };
+		946352402F26789900ABD609 /* QuickPracticeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352392F26789900ABD609 /* QuickPracticeGenerator.swift */; };
+		946352412F26789900ABD609 /* Chord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463522F2F26789900ABD609 /* Chord.swift */; };
+		946352422F26789900ABD609 /* Scale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352352F26789900ABD609 /* Scale.swift */; };
+		946352432F26789900ABD609 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352372F26789900ABD609 /* AudioManager.swift */; };
+		946352442F26789900ABD609 /* CurriculumManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352382F26789900ABD609 /* CurriculumManager.swift */; };
+		946352452F26789900ABD609 /* ChordTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352302F26789900ABD609 /* ChordTone.swift */; };
+		946352462F26789900ABD609 /* ChordDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463522A2F26789900ABD609 /* ChordDatabase.swift */; };
+		946352472F26789900ABD609 /* ScaleDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463522D2F26789900ABD609 /* ScaleDatabase.swift */; };
+		946352482F26789900ABD609 /* CadenceDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352292F26789900ABD609 /* CadenceDatabase.swift */; };
+		946352492F26789900ABD609 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352332F26789900ABD609 /* Note.swift */; };
+		9463524A2F26789900ABD609 /* CurriculumDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463522B2F26789900ABD609 /* CurriculumDatabase.swift */; };
+		9463524B2F26789900ABD609 /* Interval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352322F26789900ABD609 /* Interval.swift */; };
+		9463524C2F26789900ABD609 /* IntervalDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463522C2F26789900ABD609 /* IntervalDatabase.swift */; };
+		9463524D2F26789900ABD609 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463523A2F26789900ABD609 /* SettingsManager.swift */; };
+		946352592F26792600ABD609 /* SettingsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352552F26792600ABD609 /* SettingsManagerTests.swift */; };
+		9463525A2F26792600ABD609 /* ChordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463524E2F26792600ABD609 /* ChordTests.swift */; };
+		9463525B2F26792600ABD609 /* SpacedRepetitionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352562F26792600ABD609 /* SpacedRepetitionStoreTests.swift */; };
+		9463525C2F26792600ABD609 /* NoteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352502F26792600ABD609 /* NoteTests.swift */; };
+		9463525D2F26792600ABD609 /* IntervalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9463524F2F26792600ABD609 /* IntervalTests.swift */; };
+		9463525E2F26792600ABD609 /* QuickPracticeGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352542F26792600ABD609 /* QuickPracticeGeneratorTests.swift */; };
+		9463525F2F26792600ABD609 /* PlayerLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352512F26792600ABD609 /* PlayerLevelTests.swift */; };
+		946352602F26792600ABD609 /* ScaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352522F26792600ABD609 /* ScaleTests.swift */; };
+		94ADBD0B2F1C01E900AD5DC0 /* ChordSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */; };
+		94C941AE2F2D7B7500632327 /* QuickPracticeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941AD2F2D7B7500632327 /* QuickPracticeViewModel.swift */; };
+		94C941B22F2D7BA500632327 /* QuickPracticeViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941B02F2D7BA500632327 /* QuickPracticeViewModelTests.swift */; };
+		94C941B42F2D7FCB00632327 /* ChordDrillViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941B32F2D7FCB00632327 /* ChordDrillViewModel.swift */; };
+		94C941B62F2D7FE700632327 /* ChordDrillViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941B52F2D7FE700632327 /* ChordDrillViewModelTests.swift */; };
+		94C941B92F2D853100632327 /* ScaleDrillViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941B82F2D853100632327 /* ScaleDrillViewModel.swift */; };
+		94C941BA2F2D853100632327 /* ScaleDrillSession.swift.bak in Resources */ = {isa = PBXBuildFile; fileRef = 94C941B72F2D853100632327 /* ScaleDrillSession.swift.bak */; };
+		94C941BC2F2D854100632327 /* ScaleDrillViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941BB2F2D854100632327 /* ScaleDrillViewModelTests.swift */; };
+		94C941BE2F2D989F00632327 /* IntervalDrillViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941BD2F2D989F00632327 /* IntervalDrillViewModel.swift */; };
+		94C941C02F2D98AA00632327 /* IntervalDrillViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941BF2F2D98AA00632327 /* IntervalDrillViewModelTests.swift */; };
+		94C941C22F2D9F0600632327 /* CadenceDrillViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941C12F2D9F0600632327 /* CadenceDrillViewModel.swift */; };
+		94CADGT012F29100000000001 /* CadenceGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADGT022F29100000000002 /* CadenceGameTests.swift */; };
+		94CADNC012F29000000000001 /* CadenceDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC022F29000000000002 /* CadenceDrillView.swift */; };
+		94CADNC032F29000000000003 /* CadenceDrillSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC042F29000000000004 /* CadenceDrillSetup.swift */; };
+		94CADNC052F29000000000005 /* CadenceDrillSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC062F29000000000006 /* CadenceDrillSession.swift */; };
+		94CADNC072F29000000000007 /* CadenceDrillResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC082F29000000000008 /* CadenceDrillResults.swift */; };
+		94CADNC092F29000000000009 /* CadenceDrillComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC0A2F2900000000000A /* CadenceDrillComponents.swift */; };
+		94CURRV52F2E000000000005 /* CurriculumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CURRV12F2E000000000001 /* CurriculumView.swift */; };
+		94CURRV62F2E000000000006 /* PathwaySelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CURRV22F2E000000000002 /* PathwaySelector.swift */; };
+		94CURRV72F2E000000000007 /* ModuleCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CURRV32F2E000000000003 /* ModuleCard.swift */; };
+		94CURRV82F2E000000000008 /* ModuleDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CURRV42F2E000000000004 /* ModuleDetailView.swift */; };
+		94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */; };
+		94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */; };
+		94DRILL012F27000000000001 /* ChordDrillGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILL022F27000000000002 /* ChordDrillGame.swift */; };
+		94DRILL032F27000000000003 /* DrillState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILL042F27000000000004 /* DrillState.swift */; };
+		94DRILL052F27000000000005 /* ChordDrillGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILL062F27000000000006 /* ChordDrillGameTests.swift */; };
+		94DRILL0E2F28000000000005 /* ChordDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILL0A2F28000000000001 /* ChordDrillView.swift */; };
+		94DRILL0F2F28000000000006 /* ChordDrillSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILL0B2F28000000000002 /* ChordDrillSetup.swift */; };
+		94DRILL102F28000000000007 /* ChordDrillSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILL0C2F28000000000003 /* ChordDrillSession.swift */; };
+		94DRILL112F28000000000008 /* ChordDrillResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILL0D2F28000000000004 /* ChordDrillResults.swift */; };
+		94DRILLR12F2D00000000001 /* DrillResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILLR22F2D00000000002 /* DrillResults.swift */; };
+		94DRILLS12F2D00000000003 /* DrillSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94DRILLS22F2D00000000004 /* DrillSetup.swift */; };
+		94E4E7952F149D7E009754EE /* IntervalGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E4E7942F149D7E009754EE /* IntervalGame.swift */; };
+		94E4E7972F149D9C009754EE /* IntervalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E4E7962F149D9C009754EE /* IntervalModel.swift */; };
+		94ED7A932F285A860063C123 /* Piano.sf2 in Resources */ = {isa = PBXBuildFile; fileRef = 94ED7A922F285A860063C123 /* Piano.sf2 */; };
+		94INTRVL012F2C00000000001 /* IntervalDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94INTRVL022F2C00000000002 /* IntervalDrillView.swift */; };
+		94INTRVL032F2C00000000003 /* IntervalDrillSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94INTRVL042F2C00000000004 /* IntervalDrillSetup.swift */; };
+		94INTRVL052F2C00000000005 /* IntervalDrillSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94INTRVL062F2C00000000006 /* IntervalDrillSession.swift */; };
+		94INTRVL072F2C00000000007 /* IntervalDrillResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94INTRVL082F2C00000000008 /* IntervalDrillResults.swift */; };
+		94INTRVLGT2F2C00000000001 /* IntervalGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94INTRVLGT2F2C00000000002 /* IntervalGameTests.swift */; };
+		94PROGRV42F2E00000000004 /* StatsOverview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94PROGRV12F2E00000000001 /* StatsOverview.swift */; };
+		94PROGRV52F2E00000000005 /* CategoryBreakdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94PROGRV22F2E00000000002 /* CategoryBreakdown.swift */; };
+		94PROGRV62F2E00000000006 /* AchievementsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94PROGRV32F2E00000000003 /* AchievementsList.swift */; };
+		94QKPRS12F30000000000003 /* QuickPracticeSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94QKPRS22F30000000000004 /* QuickPracticeSession.swift */; };
+		94QKPRV12F30000000000001 /* QuickPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94QKPRV22F30000000000002 /* QuickPracticeView.swift */; };
+		94SCALE012F2A000000000001 /* ScaleDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94SCALE022F2A000000000002 /* ScaleDrillView.swift */; };
+		94SCALE032F2A000000000003 /* ScaleDrillSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94SCALE042F2A000000000004 /* ScaleDrillSetup.swift */; };
+		94SCALE052F2A000000000005 /* ScaleDrillSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94SCALE062F2A000000000006 /* ScaleDrillSession.swift */; };
+		94SCALE072F2A000000000007 /* ScaleDrillResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94SCALE082F2A000000000008 /* ScaleDrillResults.swift */; };
+		94SCALEGT12F2B000000000001 /* ScaleGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94SCALEGT22F2B000000000002 /* ScaleGameTests.swift */; };
+		94SETNG12F2F000000000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94SETNG22F2F000000000002 /* SettingsView.swift */; };
+		94SHEDCP22F31000000000002 /* ShedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94SHEDCP12F31000000000001 /* ShedComponents.swift */; };
+		94SHEDTH22F31000000000002 /* ShedTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94SHEDTH12F31000000000001 /* ShedTheme.swift */; };
+		A1234567890ABCDEF005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF004 /* Assets.xcassets */; };
+		A1234567890ABCDEF008 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF007 /* Preview Assets.xcassets */; };
+		A1234567890ABCDEF010 /* ChordModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF009 /* ChordModel.swift */; };
+		A1234567890ABCDEF018 /* ResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF017 /* ResultsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		94TEST0001000000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1234567890ABCDEF035 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1234567890ABCDEF031;
+			remoteInfo = JazzHarmonyQuiz;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeDueCard.swift; sourceTree = "<group>"; };
+		9400DEB32F2515E100BDBF25 /* ProgressionDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionDrillView.swift; sourceTree = "<group>"; };
+		9400DEB62F2516A900BDBF25 /* ProgressionGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionGame.swift; sourceTree = "<group>"; };
+		9400DEB72F2516A900BDBF25 /* ProgressionProgression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionProgression.swift; sourceTree = "<group>"; };
+		9400DEBB2F256F8800BDBF25 /* ConceptualExplanations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptualExplanations.swift; sourceTree = "<group>"; };
+		9400DEBE2F256F8800BDBF25 /* CurriculumModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumModule.swift; sourceTree = "<group>"; };
+		9434133A2F1EDD1C009235D1 /* PlayerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfile.swift; sourceTree = "<group>"; };
+		9434133C2F1EDD74009235D1 /* PlayerProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerProfileView.swift; sourceTree = "<group>"; };
+		944280242F12A0230035FE8B /* CadenceGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceGame.swift; sourceTree = "<group>"; };
+		94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizGame.swift; sourceTree = "<group>"; };
+		946352032F26727A00ABD609 /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
+		946352042F26727A00ABD609 /* Cards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cards.swift; sourceTree = "<group>"; };
+		946352052F26727A00ABD609 /* Feedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
+		946352062F26727A00ABD609 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
+		946352072F26727A00ABD609 /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
+		946352082F26727A00ABD609 /* Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progress.swift; sourceTree = "<group>"; };
+		946352102F26752C00ABD609 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		946352112F26752C00ABD609 /* ShedProApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShedProApp.swift; sourceTree = "<group>"; };
+		946352152F26786500ABD609 /* ContinueLearningCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueLearningCard.swift; sourceTree = "<group>"; };
+		946352162F26786500ABD609 /* DailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyFocusCard.swift; sourceTree = "<group>"; };
+		946352172F26786500ABD609 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		946352182F26786500ABD609 /* QuickPracticeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeCard.swift; sourceTree = "<group>"; };
+		946352192F26786500ABD609 /* QuickStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickStatsView.swift; sourceTree = "<group>"; };
+		9463521A2F26786500ABD609 /* WeeklyStreakView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyStreakView.swift; sourceTree = "<group>"; };
+		9463521C2F26786500ABD609 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
+		9463521E2F26786500ABD609 /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
+		946352292F26789900ABD609 /* CadenceDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDatabase.swift; sourceTree = "<group>"; };
+		9463522A2F26789900ABD609 /* ChordDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDatabase.swift; sourceTree = "<group>"; };
+		9463522B2F26789900ABD609 /* CurriculumDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumDatabase.swift; sourceTree = "<group>"; };
+		9463522C2F26789900ABD609 /* IntervalDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDatabase.swift; sourceTree = "<group>"; };
+		9463522D2F26789900ABD609 /* ScaleDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDatabase.swift; sourceTree = "<group>"; };
+		9463522F2F26789900ABD609 /* Chord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chord.swift; sourceTree = "<group>"; };
+		946352302F26789900ABD609 /* ChordTone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordTone.swift; sourceTree = "<group>"; };
+		946352312F26789900ABD609 /* ChordType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordType.swift; sourceTree = "<group>"; };
+		946352322F26789900ABD609 /* Interval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Interval.swift; sourceTree = "<group>"; };
+		946352332F26789900ABD609 /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		946352342F26789900ABD609 /* PlayerLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerLevel.swift; sourceTree = "<group>"; };
+		946352352F26789900ABD609 /* Scale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scale.swift; sourceTree = "<group>"; };
+		946352372F26789900ABD609 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		946352382F26789900ABD609 /* CurriculumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumManager.swift; sourceTree = "<group>"; };
+		946352392F26789900ABD609 /* QuickPracticeGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeGenerator.swift; sourceTree = "<group>"; };
+		9463523A2F26789900ABD609 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
+		9463523B2F26789900ABD609 /* SpacedRepetitionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacedRepetitionStore.swift; sourceTree = "<group>"; };
+		9463524E2F26792600ABD609 /* ChordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordTests.swift; sourceTree = "<group>"; };
+		9463524F2F26792600ABD609 /* IntervalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalTests.swift; sourceTree = "<group>"; };
+		946352502F26792600ABD609 /* NoteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteTests.swift; sourceTree = "<group>"; };
+		946352512F26792600ABD609 /* PlayerLevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerLevelTests.swift; sourceTree = "<group>"; };
+		946352522F26792600ABD609 /* ScaleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleTests.swift; sourceTree = "<group>"; };
+		946352542F26792600ABD609 /* QuickPracticeGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeGeneratorTests.swift; sourceTree = "<group>"; };
+		946352552F26792600ABD609 /* SettingsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManagerTests.swift; sourceTree = "<group>"; };
+		946352562F26792600ABD609 /* SpacedRepetitionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacedRepetitionStoreTests.swift; sourceTree = "<group>"; };
+		94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
+		94C941AD2F2D7B7500632327 /* QuickPracticeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeViewModel.swift; sourceTree = "<group>"; };
+		94C941B02F2D7BA500632327 /* QuickPracticeViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeViewModelTests.swift; sourceTree = "<group>"; };
+		94C941B32F2D7FCB00632327 /* ChordDrillViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillViewModel.swift; sourceTree = "<group>"; };
+		94C941B52F2D7FE700632327 /* ChordDrillViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillViewModelTests.swift; sourceTree = "<group>"; };
+		94C941B72F2D853100632327 /* ScaleDrillSession.swift.bak */ = {isa = PBXFileReference; lastKnownFileType = text; path = ScaleDrillSession.swift.bak; sourceTree = "<group>"; };
+		94C941B82F2D853100632327 /* ScaleDrillViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillViewModel.swift; sourceTree = "<group>"; };
+		94C941BB2F2D854100632327 /* ScaleDrillViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillViewModelTests.swift; sourceTree = "<group>"; };
+		94C941BD2F2D989F00632327 /* IntervalDrillViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillViewModel.swift; sourceTree = "<group>"; };
+		94C941BF2F2D98AA00632327 /* IntervalDrillViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillViewModelTests.swift; sourceTree = "<group>"; };
+		94C941C12F2D9F0600632327 /* CadenceDrillViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillViewModel.swift; sourceTree = "<group>"; };
+		94CADGT022F29100000000002 /* CadenceGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceGameTests.swift; sourceTree = "<group>"; };
+		94CADNC022F29000000000002 /* CadenceDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillView.swift; sourceTree = "<group>"; };
+		94CADNC042F29000000000004 /* CadenceDrillSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillSetup.swift; sourceTree = "<group>"; };
+		94CADNC062F29000000000006 /* CadenceDrillSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillSession.swift; sourceTree = "<group>"; };
+		94CADNC082F29000000000008 /* CadenceDrillResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillResults.swift; sourceTree = "<group>"; };
+		94CADNC0A2F2900000000000A /* CadenceDrillComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillComponents.swift; sourceTree = "<group>"; };
+		94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
+		94CURRGT12F2E000000000001 /* CurriculumTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumTests.swift; sourceTree = "<group>"; };
+		94CURRV12F2E000000000001 /* CurriculumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumView.swift; sourceTree = "<group>"; };
+		94CURRV22F2E000000000002 /* PathwaySelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathwaySelector.swift; sourceTree = "<group>"; };
+		94CURRV32F2E000000000003 /* ModuleCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleCard.swift; sourceTree = "<group>"; };
+		94CURRV42F2E000000000004 /* ModuleDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleDetailView.swift; sourceTree = "<group>"; };
+		94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
+		94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleModel.swift; sourceTree = "<group>"; };
+		94DRILL022F27000000000002 /* ChordDrillGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillGame.swift; sourceTree = "<group>"; };
+		94DRILL042F27000000000004 /* DrillState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillState.swift; sourceTree = "<group>"; };
+		94DRILL062F27000000000006 /* ChordDrillGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillGameTests.swift; sourceTree = "<group>"; };
+		94DRILL0A2F28000000000001 /* ChordDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillView.swift; sourceTree = "<group>"; };
+		94DRILL0B2F28000000000002 /* ChordDrillSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillSetup.swift; sourceTree = "<group>"; };
+		94DRILL0C2F28000000000003 /* ChordDrillSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillSession.swift; sourceTree = "<group>"; };
+		94DRILL0D2F28000000000004 /* ChordDrillResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillResults.swift; sourceTree = "<group>"; };
+		94DRILLR22F2D00000000002 /* DrillResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillResults.swift; sourceTree = "<group>"; };
+		94DRILLS22F2D00000000004 /* DrillSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillSetup.swift; sourceTree = "<group>"; };
+		94E4E7942F149D7E009754EE /* IntervalGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalGame.swift; sourceTree = "<group>"; };
+		94E4E7962F149D9C009754EE /* IntervalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalModel.swift; sourceTree = "<group>"; };
+		94ED7A922F285A860063C123 /* Piano.sf2 */ = {isa = PBXFileReference; lastKnownFileType = file; name = Piano.sf2; path = Resources/Piano.sf2; sourceTree = "<group>"; };
+		94INTRVL022F2C00000000002 /* IntervalDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillView.swift; sourceTree = "<group>"; };
+		94INTRVL042F2C00000000004 /* IntervalDrillSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillSetup.swift; sourceTree = "<group>"; };
+		94INTRVL062F2C00000000006 /* IntervalDrillSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillSession.swift; sourceTree = "<group>"; };
+		94INTRVL082F2C00000000008 /* IntervalDrillResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillResults.swift; sourceTree = "<group>"; };
+		94INTRVLGT2F2C00000000002 /* IntervalGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalGameTests.swift; sourceTree = "<group>"; };
+		94PROGRV12F2E00000000001 /* StatsOverview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsOverview.swift; sourceTree = "<group>"; };
+		94PROGRV22F2E00000000002 /* CategoryBreakdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryBreakdown.swift; sourceTree = "<group>"; };
+		94PROGRV32F2E00000000003 /* AchievementsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsList.swift; sourceTree = "<group>"; };
+		94QKPRS22F30000000000004 /* QuickPracticeSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeSession.swift; sourceTree = "<group>"; };
+		94QKPRV22F30000000000002 /* QuickPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeView.swift; sourceTree = "<group>"; };
+		94SCALE022F2A000000000002 /* ScaleDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillView.swift; sourceTree = "<group>"; };
+		94SCALE042F2A000000000004 /* ScaleDrillSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillSetup.swift; sourceTree = "<group>"; };
+		94SCALE062F2A000000000006 /* ScaleDrillSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillSession.swift; sourceTree = "<group>"; };
+		94SCALE082F2A000000000008 /* ScaleDrillResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleDrillResults.swift; sourceTree = "<group>"; };
+		94SCALEGT22F2B000000000002 /* ScaleGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGameTests.swift; sourceTree = "<group>"; };
+		94SETNG22F2F000000000002 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		94SHEDCP12F31000000000001 /* ShedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShedComponents.swift; sourceTree = "<group>"; };
+		94SHEDTH12F31000000000001 /* ShedTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShedTheme.swift; sourceTree = "<group>"; };
+		94TEST0001000000000004 /* JazzHarmonyQuizTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JazzHarmonyQuizTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1234567890ABCDEF004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1234567890ABCDEF007 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A1234567890ABCDEF009 /* ChordModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordModel.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF017 /* ResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF023 /* JazzHarmonyQuiz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JazzHarmonyQuiz.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		94TEST0001000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1234567890ABCDEF024 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9420C4D02F1BFD3600C9D1F8 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				94CHORD012F186B14001C0BC2 /* ChordSelectorView.swift */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		9442802E2F12A19E0035FE8B /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		946351E72F2665C300ABD609 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				9463522E2F26789900ABD609 /* Databases */,
+				946352362F26789900ABD609 /* Models */,
+				9463523C2F26789900ABD609 /* Services */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		946352092F26727A00ABD609 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				946352032F26727A00ABD609 /* Buttons.swift */,
+				946352042F26727A00ABD609 /* Cards.swift */,
+				94DRILLR22F2D00000000002 /* DrillResults.swift */,
+				94DRILLS22F2D00000000004 /* DrillSetup.swift */,
+				946352052F26727A00ABD609 /* Feedback.swift */,
+				946352062F26727A00ABD609 /* FlowLayout.swift */,
+				946352072F26727A00ABD609 /* PianoKeyboard.swift */,
+				946352082F26727A00ABD609 /* Progress.swift */,
+				94SHEDCP12F31000000000001 /* ShedComponents.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		946352122F26752C00ABD609 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				946352102F26752C00ABD609 /* ContentView.swift */,
+				946352112F26752C00ABD609 /* ShedProApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		9463521B2F26786500ABD609 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				94C941AD2F2D7B7500632327 /* QuickPracticeViewModel.swift */,
+				946352152F26786500ABD609 /* ContinueLearningCard.swift */,
+				946352162F26786500ABD609 /* DailyFocusCard.swift */,
+				946352172F26786500ABD609 /* HomeView.swift */,
+				946352182F26786500ABD609 /* QuickPracticeCard.swift */,
+				94QKPRS22F30000000000004 /* QuickPracticeSession.swift */,
+				94QKPRV22F30000000000002 /* QuickPracticeView.swift */,
+				946352192F26786500ABD609 /* QuickStatsView.swift */,
+				9463521A2F26786500ABD609 /* WeeklyStreakView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		9463521D2F26786500ABD609 /* Practice */ = {
+			isa = PBXGroup;
+			children = (
+				9463521C2F26786500ABD609 /* PracticeView.swift */,
+			);
+			path = Practice;
+			sourceTree = "<group>";
+		};
+		9463521F2F26786500ABD609 /* Progress */ = {
+			isa = PBXGroup;
+			children = (
+				9463521E2F26786500ABD609 /* ProgressView.swift */,
+				94PROGRV12F2E00000000001 /* StatsOverview.swift */,
+				94PROGRV22F2E00000000002 /* CategoryBreakdown.swift */,
+				94PROGRV32F2E00000000003 /* AchievementsList.swift */,
+			);
+			path = Progress;
+			sourceTree = "<group>";
+		};
+		946352202F26786500ABD609 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				94CADNC0B2F2900000000000B /* CadenceDrill */,
+				94DRILL072F27000000000007 /* ChordDrill */,
+				94CURRV92F2E000000000009 /* Curriculum */,
+				9463521B2F26786500ABD609 /* Home */,
+				94INTRVL092F2C00000000009 /* IntervalDrill */,
+				9463521D2F26786500ABD609 /* Practice */,
+				9463521F2F26786500ABD609 /* Progress */,
+				94SCALE092F2A000000000009 /* ScaleDrill */,
+				94SETNG32F2F000000000003 /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		9463522E2F26789900ABD609 /* Databases */ = {
+			isa = PBXGroup;
+			children = (
+				946352292F26789900ABD609 /* CadenceDatabase.swift */,
+				9463522A2F26789900ABD609 /* ChordDatabase.swift */,
+				9463522B2F26789900ABD609 /* CurriculumDatabase.swift */,
+				9463522C2F26789900ABD609 /* IntervalDatabase.swift */,
+				9463522D2F26789900ABD609 /* ScaleDatabase.swift */,
+			);
+			path = Databases;
+			sourceTree = "<group>";
+		};
+		946352362F26789900ABD609 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				9463522F2F26789900ABD609 /* Chord.swift */,
+				946352302F26789900ABD609 /* ChordTone.swift */,
+				946352312F26789900ABD609 /* ChordType.swift */,
+				94DRILL042F27000000000004 /* DrillState.swift */,
+				946352322F26789900ABD609 /* Interval.swift */,
+				946352332F26789900ABD609 /* Note.swift */,
+				946352342F26789900ABD609 /* PlayerLevel.swift */,
+				946352352F26789900ABD609 /* Scale.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		9463523C2F26789900ABD609 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				946352372F26789900ABD609 /* AudioManager.swift */,
+				946352382F26789900ABD609 /* CurriculumManager.swift */,
+				946352392F26789900ABD609 /* QuickPracticeGenerator.swift */,
+				9463523A2F26789900ABD609 /* SettingsManager.swift */,
+				94SHEDTH12F31000000000001 /* ShedTheme.swift */,
+				9463523B2F26789900ABD609 /* SpacedRepetitionStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		946352532F26792600ABD609 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				9463524E2F26792600ABD609 /* ChordTests.swift */,
+				9463524F2F26792600ABD609 /* IntervalTests.swift */,
+				946352502F26792600ABD609 /* NoteTests.swift */,
+				946352512F26792600ABD609 /* PlayerLevelTests.swift */,
+				946352522F26792600ABD609 /* ScaleTests.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		946352572F26792600ABD609 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				946352542F26792600ABD609 /* QuickPracticeGeneratorTests.swift */,
+				946352552F26792600ABD609 /* SettingsManagerTests.swift */,
+				946352562F26792600ABD609 /* SpacedRepetitionStoreTests.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		946352582F26792600ABD609 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				946352532F26792600ABD609 /* Models */,
+				946352572F26792600ABD609 /* Services */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		94C941B12F2D7BA500632327 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				94C941B02F2D7BA500632327 /* QuickPracticeViewModelTests.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		94CADGT032F29100000000003 /* CadenceDrill */ = {
+			isa = PBXGroup;
+			children = (
+				94CADGT022F29100000000002 /* CadenceGameTests.swift */,
+			);
+			path = CadenceDrill;
+			sourceTree = "<group>";
+		};
+		94CADNC0B2F2900000000000B /* CadenceDrill */ = {
+			isa = PBXGroup;
+			children = (
+				94C941C12F2D9F0600632327 /* CadenceDrillViewModel.swift */,
+				94CADNC022F29000000000002 /* CadenceDrillView.swift */,
+				94CADNC042F29000000000004 /* CadenceDrillSetup.swift */,
+				94CADNC062F29000000000006 /* CadenceDrillSession.swift */,
+				94CADNC082F29000000000008 /* CadenceDrillResults.swift */,
+				94CADNC0A2F2900000000000A /* CadenceDrillComponents.swift */,
+			);
+			path = CadenceDrill;
+			sourceTree = "<group>";
+		};
+		94CURRGT32F2E000000000003 /* Curriculum */ = {
+			isa = PBXGroup;
+			children = (
+				94CURRGT12F2E000000000001 /* CurriculumTests.swift */,
+			);
+			path = Curriculum;
+			sourceTree = "<group>";
+		};
+		94CURRV92F2E000000000009 /* Curriculum */ = {
+			isa = PBXGroup;
+			children = (
+				94CURRV12F2E000000000001 /* CurriculumView.swift */,
+				94CURRV22F2E000000000002 /* PathwaySelector.swift */,
+				94CURRV32F2E000000000003 /* ModuleCard.swift */,
+				94CURRV42F2E000000000004 /* ModuleDetailView.swift */,
+			);
+			path = Curriculum;
+			sourceTree = "<group>";
+		};
+		94DRILL072F27000000000007 /* ChordDrill */ = {
+			isa = PBXGroup;
+			children = (
+				94C941B32F2D7FCB00632327 /* ChordDrillViewModel.swift */,
+				94DRILL022F27000000000002 /* ChordDrillGame.swift */,
+				94DRILL0A2F28000000000001 /* ChordDrillView.swift */,
+				94DRILL0B2F28000000000002 /* ChordDrillSetup.swift */,
+				94DRILL0C2F28000000000003 /* ChordDrillSession.swift */,
+				94DRILL0D2F28000000000004 /* ChordDrillResults.swift */,
+			);
+			path = ChordDrill;
+			sourceTree = "<group>";
+		};
+		94DRILL082F27000000000008 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				94C941B12F2D7BA500632327 /* Home */,
+				94CADGT032F29100000000003 /* CadenceDrill */,
+				94DRILL092F27000000000009 /* ChordDrill */,
+				94CURRGT32F2E000000000003 /* Curriculum */,
+				94INTRVLGT2F2C00000000003 /* IntervalDrill */,
+				94SCALEGT32F2B000000000003 /* ScaleDrill */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		94DRILL092F27000000000009 /* ChordDrill */ = {
+			isa = PBXGroup;
+			children = (
+				94C941B52F2D7FE700632327 /* ChordDrillViewModelTests.swift */,
+				94DRILL062F27000000000006 /* ChordDrillGameTests.swift */,
+			);
+			path = ChordDrill;
+			sourceTree = "<group>";
+		};
+		94INTRVL092F2C00000000009 /* IntervalDrill */ = {
+			isa = PBXGroup;
+			children = (
+				94C941BD2F2D989F00632327 /* IntervalDrillViewModel.swift */,
+				94INTRVL022F2C00000000002 /* IntervalDrillView.swift */,
+				94INTRVL042F2C00000000004 /* IntervalDrillSetup.swift */,
+				94INTRVL062F2C00000000006 /* IntervalDrillSession.swift */,
+				94INTRVL082F2C00000000008 /* IntervalDrillResults.swift */,
+			);
+			path = IntervalDrill;
+			sourceTree = "<group>";
+		};
+		94INTRVLGT2F2C00000000003 /* IntervalDrill */ = {
+			isa = PBXGroup;
+			children = (
+				94C941BF2F2D98AA00632327 /* IntervalDrillViewModelTests.swift */,
+				94INTRVLGT2F2C00000000002 /* IntervalGameTests.swift */,
+			);
+			path = IntervalDrill;
+			sourceTree = "<group>";
+		};
+		94SCALE092F2A000000000009 /* ScaleDrill */ = {
+			isa = PBXGroup;
+			children = (
+				94C941B72F2D853100632327 /* ScaleDrillSession.swift.bak */,
+				94C941B82F2D853100632327 /* ScaleDrillViewModel.swift */,
+				94SCALE022F2A000000000002 /* ScaleDrillView.swift */,
+				94SCALE042F2A000000000004 /* ScaleDrillSetup.swift */,
+				94SCALE062F2A000000000006 /* ScaleDrillSession.swift */,
+				94SCALE082F2A000000000008 /* ScaleDrillResults.swift */,
+			);
+			path = ScaleDrill;
+			sourceTree = "<group>";
+		};
+		94SCALEGT32F2B000000000003 /* ScaleDrill */ = {
+			isa = PBXGroup;
+			children = (
+				94C941BB2F2D854100632327 /* ScaleDrillViewModelTests.swift */,
+				94SCALEGT22F2B000000000002 /* ScaleGameTests.swift */,
+			);
+			path = ScaleDrill;
+			sourceTree = "<group>";
+		};
+		94SETNG32F2F000000000003 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				94SETNG22F2F000000000002 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		94TEST0001000000000006 /* JazzHarmonyQuizTests */ = {
+			isa = PBXGroup;
+			children = (
+				946352582F26792600ABD609 /* Core */,
+				94DRILL082F27000000000008 /* Features */,
+			);
+			path = JazzHarmonyQuizTests;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF025 = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF026 /* JazzHarmonyQuiz */,
+				94TEST0001000000000006 /* JazzHarmonyQuizTests */,
+				A1234567890ABCDEF027 /* Products */,
+				9420C4D02F1BFD3600C9D1F8 /* Recovered References */,
+			);
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF026 /* JazzHarmonyQuiz */ = {
+			isa = PBXGroup;
+			children = (
+				94ED7A922F285A860063C123 /* Piano.sf2 */,
+				946352202F26786500ABD609 /* Features */,
+				946352122F26752C00ABD609 /* App */,
+				946352092F26727A00ABD609 /* Components */,
+				946351E72F2665C300ABD609 /* Core */,
+				A1234567890ABCDEF028 /* Models */,
+				A1234567890ABCDEF029 /* Views */,
+				A1234567890ABCDEF004 /* Assets.xcassets */,
+				A1234567890ABCDEF030 /* Preview Content */,
+				9442802E2F12A19E0035FE8B /* Helpers */,
+			);
+			path = JazzHarmonyQuiz;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF027 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF023 /* JazzHarmonyQuiz.app */,
+				94TEST0001000000000004 /* JazzHarmonyQuizTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF028 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				944280242F12A0230035FE8B /* CadenceGame.swift */,
+				A1234567890ABCDEF009 /* ChordModel.swift */,
+				9400DEBB2F256F8800BDBF25 /* ConceptualExplanations.swift */,
+				9400DEBE2F256F8800BDBF25 /* CurriculumModule.swift */,
+				94E4E7942F149D7E009754EE /* IntervalGame.swift */,
+				94E4E7962F149D9C009754EE /* IntervalModel.swift */,
+				9434133A2F1EDD1C009235D1 /* PlayerProfile.swift */,
+				9400DEB62F2516A900BDBF25 /* ProgressionGame.swift */,
+				9400DEB72F2516A900BDBF25 /* ProgressionProgression.swift */,
+				94629FCB2F1BD9CB0029B7F7 /* QuizGame.swift */,
+				94DFCCDA2F13E08F00FBC0C2 /* ScaleGame.swift */,
+				94DFCCDC2F13E09B00FBC0C2 /* ScaleModel.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF029 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */,
+				9434133C2F1EDD74009235D1 /* PlayerProfileView.swift */,
+				0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */,
+				9400DEB32F2515E100BDBF25 /* ProgressionDrillView.swift */,
+				A1234567890ABCDEF017 /* ResultsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF030 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF007 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		94TEST0001000000000008 /* JazzHarmonyQuizTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 94TEST0001000000000009 /* Build configuration list for PBXNativeTarget "JazzHarmonyQuizTests" */;
+			buildPhases = (
+				94TEST0001000000000010 /* Sources */,
+				94TEST0001000000000005 /* Frameworks */,
+				94TEST0001000000000011 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				94TEST0001000000000007 /* PBXTargetDependency */,
+			);
+			name = JazzHarmonyQuizTests;
+			productName = JazzHarmonyQuizTests;
+			productReference = 94TEST0001000000000004 /* JazzHarmonyQuizTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A1234567890ABCDEF031 /* JazzHarmonyQuiz */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1234567890ABCDEF032 /* Build configuration list for PBXNativeTarget "JazzHarmonyQuiz" */;
+			buildPhases = (
+				A1234567890ABCDEF033 /* Sources */,
+				A1234567890ABCDEF024 /* Frameworks */,
+				A1234567890ABCDEF034 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = JazzHarmonyQuiz;
+			productName = JazzHarmonyQuiz;
+			productReference = A1234567890ABCDEF023 /* JazzHarmonyQuiz.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1234567890ABCDEF035 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					94TEST0001000000000008 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = A1234567890ABCDEF031;
+					};
+					A1234567890ABCDEF031 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = A1234567890ABCDEF036 /* Build configuration list for PBXProject "JazzHarmonyQuiz" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A1234567890ABCDEF025;
+			productRefGroup = A1234567890ABCDEF027 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1234567890ABCDEF031 /* JazzHarmonyQuiz */,
+				94TEST0001000000000008 /* JazzHarmonyQuizTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		94TEST0001000000000011 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1234567890ABCDEF034 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				94ED7A932F285A860063C123 /* Piano.sf2 in Resources */,
+				94C941BA2F2D853100632327 /* ScaleDrillSession.swift.bak in Resources */,
+				A1234567890ABCDEF008 /* Preview Assets.xcassets in Resources */,
+				A1234567890ABCDEF005 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		94TEST0001000000000010 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				946352592F26792600ABD609 /* SettingsManagerTests.swift in Sources */,
+				9463525A2F26792600ABD609 /* ChordTests.swift in Sources */,
+				9463525B2F26792600ABD609 /* SpacedRepetitionStoreTests.swift in Sources */,
+				9463525C2F26792600ABD609 /* NoteTests.swift in Sources */,
+				9463525D2F26792600ABD609 /* IntervalTests.swift in Sources */,
+				94C941C02F2D98AA00632327 /* IntervalDrillViewModelTests.swift in Sources */,
+				9463525E2F26792600ABD609 /* QuickPracticeGeneratorTests.swift in Sources */,
+				9463525F2F26792600ABD609 /* PlayerLevelTests.swift in Sources */,
+				94C941BC2F2D854100632327 /* ScaleDrillViewModelTests.swift in Sources */,
+				946352602F26792600ABD609 /* ScaleTests.swift in Sources */,
+				94DRILL052F27000000000005 /* ChordDrillGameTests.swift in Sources */,
+				94CADGT012F29100000000001 /* CadenceGameTests.swift in Sources */,
+				94SCALEGT12F2B000000000001 /* ScaleGameTests.swift in Sources */,
+				94INTRVLGT2F2C00000000001 /* IntervalGameTests.swift in Sources */,
+				94C941B22F2D7BA500632327 /* QuickPracticeViewModelTests.swift in Sources */,
+				94C941B62F2D7FE700632327 /* ChordDrillViewModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1234567890ABCDEF033 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				94SHEDTH22F31000000000002 /* ShedTheme.swift in Sources */,
+				94SHEDCP22F31000000000002 /* ShedComponents.swift in Sources */,
+				9463520A2F26727A00ABD609 /* Buttons.swift in Sources */,
+				94C941B92F2D853100632327 /* ScaleDrillViewModel.swift in Sources */,
+				9463520B2F26727A00ABD609 /* FlowLayout.swift in Sources */,
+				9463520C2F26727A00ABD609 /* PianoKeyboard.swift in Sources */,
+				9463520D2F26727A00ABD609 /* Cards.swift in Sources */,
+				9463520E2F26727A00ABD609 /* Progress.swift in Sources */,
+				9463520F2F26727A00ABD609 /* Feedback.swift in Sources */,
+				94DRILLR12F2D00000000001 /* DrillResults.swift in Sources */,
+				94DRILLS12F2D00000000003 /* DrillSetup.swift in Sources */,
+				9400DEB82F2516A900BDBF25 /* ProgressionProgression.swift in Sources */,
+				9400DEB92F2516A900BDBF25 /* ProgressionGame.swift in Sources */,
+				9434133D2F1EDD74009235D1 /* PlayerProfileView.swift in Sources */,
+				A1234567890ABCDEF010 /* ChordModel.swift in Sources */,
+				94SCALE012F2A000000000001 /* ScaleDrillView.swift in Sources */,
+				94SCALE032F2A000000000003 /* ScaleDrillSetup.swift in Sources */,
+				94SCALE052F2A000000000005 /* ScaleDrillSession.swift in Sources */,
+				94SCALE072F2A000000000007 /* ScaleDrillResults.swift in Sources */,
+				94629FCC2F1BD9CB0029B7F7 /* QuizGame.swift in Sources */,
+				9434133B2F1EDD1D009235D1 /* PlayerProfile.swift in Sources */,
+				944280252F12A0230035FE8B /* CadenceGame.swift in Sources */,
+				94DRILL0E2F28000000000005 /* ChordDrillView.swift in Sources */,
+				94DRILL0F2F28000000000006 /* ChordDrillSetup.swift in Sources */,
+				94DRILL102F28000000000007 /* ChordDrillSession.swift in Sources */,
+				94DRILL112F28000000000008 /* ChordDrillResults.swift in Sources */,
+				94DRILL012F27000000000001 /* ChordDrillGame.swift in Sources */,
+				94DRILL032F27000000000003 /* DrillState.swift in Sources */,
+				9400DEC02F256F8800BDBF25 /* CurriculumModule.swift in Sources */,
+				9400DEC22F256F8800BDBF25 /* ConceptualExplanations.swift in Sources */,
+				946352212F26786500ABD609 /* HomeView.swift in Sources */,
+				946352222F26786500ABD609 /* WeeklyStreakView.swift in Sources */,
+				946352232F26786500ABD609 /* PracticeView.swift in Sources */,
+				946352242F26786500ABD609 /* ProgressView.swift in Sources */,
+				946352252F26786500ABD609 /* QuickStatsView.swift in Sources */,
+				946352262F26786500ABD609 /* ContinueLearningCard.swift in Sources */,
+				94C941C22F2D9F0600632327 /* CadenceDrillViewModel.swift in Sources */,
+				946352272F26786500ABD609 /* DailyFocusCard.swift in Sources */,
+				94C941B42F2D7FCB00632327 /* ChordDrillViewModel.swift in Sources */,
+				946352282F26786500ABD609 /* QuickPracticeCard.swift in Sources */,
+				94QKPRV12F30000000000001 /* QuickPracticeView.swift in Sources */,
+				94QKPRS12F30000000000003 /* QuickPracticeSession.swift in Sources */,
+				9400DEB42F2515E100BDBF25 /* ProgressionDrillView.swift in Sources */,
+				9463523D2F26789900ABD609 /* ChordType.swift in Sources */,
+				9463523E2F26789900ABD609 /* SpacedRepetitionStore.swift in Sources */,
+				9463523F2F26789900ABD609 /* PlayerLevel.swift in Sources */,
+				946352402F26789900ABD609 /* QuickPracticeGenerator.swift in Sources */,
+				946352412F26789900ABD609 /* Chord.swift in Sources */,
+				946352422F26789900ABD609 /* Scale.swift in Sources */,
+				946352432F26789900ABD609 /* AudioManager.swift in Sources */,
+				946352442F26789900ABD609 /* CurriculumManager.swift in Sources */,
+				946352452F26789900ABD609 /* ChordTone.swift in Sources */,
+				946352462F26789900ABD609 /* ChordDatabase.swift in Sources */,
+				946352472F26789900ABD609 /* ScaleDatabase.swift in Sources */,
+				946352482F26789900ABD609 /* CadenceDatabase.swift in Sources */,
+				946352492F26789900ABD609 /* Note.swift in Sources */,
+				9463524A2F26789900ABD609 /* CurriculumDatabase.swift in Sources */,
+				94C941BE2F2D989F00632327 /* IntervalDrillViewModel.swift in Sources */,
+				9463524B2F26789900ABD609 /* Interval.swift in Sources */,
+				9463524C2F26789900ABD609 /* IntervalDatabase.swift in Sources */,
+				9463524D2F26789900ABD609 /* SettingsManager.swift in Sources */,
+				94INTRVL012F2C00000000001 /* IntervalDrillView.swift in Sources */,
+				94INTRVL032F2C00000000003 /* IntervalDrillSetup.swift in Sources */,
+				94INTRVL052F2C00000000005 /* IntervalDrillSession.swift in Sources */,
+				94INTRVL072F2C00000000007 /* IntervalDrillResults.swift in Sources */,
+				946352132F26752C00ABD609 /* ShedProApp.swift in Sources */,
+				946352142F26752C00ABD609 /* ContentView.swift in Sources */,
+				94E4E7952F149D7E009754EE /* IntervalGame.swift in Sources */,
+				A1234567890ABCDEF018 /* ResultsView.swift in Sources */,
+				94SETNG12F2F000000000001 /* SettingsView.swift in Sources */,
+				94DFCCDB2F13E08F00FBC0C2 /* ScaleGame.swift in Sources */,
+				94CADNC012F29000000000001 /* CadenceDrillView.swift in Sources */,
+				94CADNC032F29000000000003 /* CadenceDrillSetup.swift in Sources */,
+				94CADNC052F29000000000005 /* CadenceDrillSession.swift in Sources */,
+				94CADNC072F29000000000007 /* CadenceDrillResults.swift in Sources */,
+				94CADNC092F29000000000009 /* CadenceDrillComponents.swift in Sources */,
+				94DFCCDD2F13E09B00FBC0C2 /* ScaleModel.swift in Sources */,
+				94E4E7972F149D9C009754EE /* IntervalModel.swift in Sources */,
+				94ADBD0B2F1C01E900AD5DC0 /* ChordSelectorView.swift in Sources */,
+				5A634891227C479190B2BAC9 /* PracticeDueCard.swift in Sources */,
+				94CURRV52F2E000000000005 /* CurriculumView.swift in Sources */,
+				94CURRV62F2E000000000006 /* PathwaySelector.swift in Sources */,
+				94CURRV72F2E000000000007 /* ModuleCard.swift in Sources */,
+				94CURRV82F2E000000000008 /* ModuleDetailView.swift in Sources */,
+				94PROGRV42F2E00000000004 /* StatsOverview.swift in Sources */,
+				94PROGRV52F2E00000000005 /* CategoryBreakdown.swift in Sources */,
+				94PROGRV62F2E00000000006 /* AchievementsList.swift in Sources */,
+				94C941AE2F2D7B7500632327 /* QuickPracticeViewModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		94TEST0001000000000007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1234567890ABCDEF031 /* JazzHarmonyQuiz */;
+			targetProxy = 94TEST0001000000000003 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		94TEST0001000000000012 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U62N9UMNG7;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jazzharmony.quiz.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JazzHarmonyQuiz.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JazzHarmonyQuiz";
+			};
+			name = Debug;
+		};
+		94TEST0001000000000013 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U62N9UMNG7;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jazzharmony.quiz.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JazzHarmonyQuiz.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JazzHarmonyQuiz";
+			};
+			name = Release;
+		};
+		A1234567890ABCDEF037 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A1234567890ABCDEF038 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A1234567890ABCDEF039 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"JazzHarmonyQuiz/Preview Content\"";
+				DEVELOPMENT_TEAM = U62N9UMNG7;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ShedPro;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_DISPLAY_NAME = "Shed Pro";
+				PRODUCT_BUNDLE_IDENTIFIER = com.jazzharmony.quiz;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1234567890ABCDEF040 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"JazzHarmonyQuiz/Preview Content\"";
+				DEVELOPMENT_TEAM = U62N9UMNG7;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ShedPro;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_DISPLAY_NAME = "Shed Pro";
+				PRODUCT_BUNDLE_IDENTIFIER = com.jazzharmony.quiz;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		94TEST0001000000000009 /* Build configuration list for PBXNativeTarget "JazzHarmonyQuizTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94TEST0001000000000012 /* Debug */,
+				94TEST0001000000000013 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1234567890ABCDEF032 /* Build configuration list for PBXNativeTarget "JazzHarmonyQuiz" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1234567890ABCDEF039 /* Debug */,
+				A1234567890ABCDEF040 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1234567890ABCDEF036 /* Build configuration list for PBXProject "JazzHarmonyQuiz" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1234567890ABCDEF037 /* Debug */,
+				A1234567890ABCDEF038 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1234567890ABCDEF035 /* Project object */;
+}

@@ -257,6 +257,136 @@ final class CadenceDrillViewModelTests: XCTestCase {
         XCTAssertFalse(sut.currentQuestionCadenceChords.isEmpty)
     }
     
+    // MARK: - Guide Tones Mode Tests
+    
+    func test_submitAnswer_guideTones_correct() {
+        let question = createMockCadenceQuestion()
+        let chord = question.chordsToSpell.first!
+        let guideTones = chord.guideTones
+        
+        sut.selectedNotes = Set(guideTones)
+        sut.chordSpellings[0] = Set(guideTones.map { $0.midiNumber })
+        
+        let result = { (chordIndex: Int) -> Bool in
+            let expected = Set(question.expectedAnswers[chordIndex].map { $0.midiNumber })
+            return self.sut.chordSpellings[chordIndex] == expected
+        }
+        
+        sut.submitAnswer(
+            drillMode: .guideTones,
+            currentQuestion: question,
+            checkAnswer: result
+        )
+        
+        XCTAssertTrue(sut.showingFeedback)
+    }
+    
+    // MARK: - Multi-Chord Progression Tests
+    
+    func test_moveToNextChord_forThreeChords() {
+        let note1 = Note(name: "C", midiNumber: 60, isSharp: false)
+        let note2 = Note(name: "E", midiNumber: 64, isSharp: false)
+        sut.selectedNotes = [note1, note2]
+        
+        XCTAssertEqual(sut.currentChordIndex, 0)
+        
+        sut.moveToNextChord()
+        
+        XCTAssertEqual(sut.currentChordIndex, 1)
+        XCTAssertTrue(sut.selectedNotes.isEmpty)
+        XCTAssertTrue(sut.chordSpellings[0].contains(60))
+        XCTAssertTrue(sut.chordSpellings[0].contains(64))
+    }
+    
+    func test_moveToNextChord_preservesPreviousChords() {
+        let note1 = Note(name: "C", midiNumber: 60, isSharp: false)
+        sut.selectedNotes = [note1]
+        sut.moveToNextChord()
+        
+        XCTAssertFalse(sut.chordSpellings[0].isEmpty)
+        
+        let note2 = Note(name: "D", midiNumber: 62, isSharp: false)
+        sut.selectedNotes = [note2]
+        sut.moveToNextChord()
+        
+        XCTAssertFalse(sut.chordSpellings[0].isEmpty)
+        XCTAssertFalse(sut.chordSpellings[1].isEmpty)
+    }
+    
+    // MARK: - Edge Case Tests
+    
+    func test_clearSelection_whenAlreadyEmpty() {
+        XCTAssertTrue(sut.selectedNotes.isEmpty)
+        
+        sut.clearSelection()
+        
+        XCTAssertTrue(sut.selectedNotes.isEmpty)
+    }
+    
+    func test_requestHint_multipleTimes() {
+        let question = createMockCadenceQuestion()
+        var hintCount = 0
+        
+        sut.requestHint(currentQuestion: question, getHint: {
+            hintCount += 1
+            return "Hint \(hintCount)"
+        })
+        
+        XCTAssertEqual(sut.currentHintText, "Hint 1")
+        
+        sut.requestHint(currentQuestion: question, getHint: {
+            hintCount += 1
+            return "Hint \(hintCount)"
+        })
+        
+        XCTAssertEqual(sut.currentHintText, "Hint 2")
+    }
+    
+    func test_submitAnswer_commonTones_withEmptySelection() {
+        let question = createMockCadenceQuestion()
+        
+        sut.submitAnswer(
+            drillMode: .commonTones,
+            currentQuestion: question,
+            checkAnswer: { _ in false }
+        )
+        
+        XCTAssertTrue(sut.showingFeedback)
+        XCTAssertFalse(sut.isCorrect)
+    }
+    
+    func test_resetForNextQuestion_resetsHint() {
+        let question = createMockCadenceQuestion()
+        
+        sut.requestHint(currentQuestion: question, getHint: { "Test hint" })
+        XCTAssertNotNil(sut.currentHintText)
+        
+        sut.resetForNextQuestion(drillMode: .fullProgression)
+        
+        XCTAssertNil(sut.currentHintText)
+    }
+    
+    func test_resetForNextQuestion_resetsChordIndex() {
+        sut.currentChordIndex = 2
+        
+        sut.resetForNextQuestion(drillMode: .fullProgression)
+        
+        XCTAssertEqual(sut.currentChordIndex, 0)
+    }
+    
+    func test_resetForNextQuestion_resetsAllChordSpellings() {
+        let note = Note(name: "C", midiNumber: 60, isSharp: false)
+        sut.selectedNotes = [note]
+        sut.moveToNextChord()
+        XCTAssertFalse(sut.chordSpellings[0].isEmpty)
+        
+        sut.resetForNextQuestion(drillMode: .fullProgression)
+        
+        for spelling in sut.chordSpellings {
+            XCTAssertTrue(spelling.isEmpty)
+        }
+    }
+    
     // MARK: - Helper Methods
     
     private func createMockCadenceQuestion() -> CadenceQuestion {
