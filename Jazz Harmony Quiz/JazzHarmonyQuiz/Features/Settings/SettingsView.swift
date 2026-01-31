@@ -282,14 +282,17 @@ struct SettingsView: View {
                 }
             }
             
-            Link(destination: URL(string: "https://apps.apple.com/app/idXXXXXXXXX?action=write-review")!) {
-                HStack {
-                    Image(systemName: "star")
-                    Text("Rate Shed Pro")
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption)
-                        .foregroundColor(settings.secondaryText(for: colorScheme))
+            // Note: Update with actual App Store ID after app submission
+            if let url = URL(string: "https://apps.apple.com/app/shed-pro/id123456789?action=write-review") {
+                Link(destination: url) {
+                    HStack {
+                        Image(systemName: "star")
+                        Text("Rate Shed Pro")
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption)
+                            .foregroundColor(settings.secondaryText(for: colorScheme))
+                    }
                 }
             }
         } header: {

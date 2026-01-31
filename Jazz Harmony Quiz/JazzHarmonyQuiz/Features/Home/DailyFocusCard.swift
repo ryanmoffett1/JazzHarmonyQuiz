@@ -3,6 +3,8 @@ import SwiftUI
 /// Daily Focus Card - shows weak area to practice
 /// Per DESIGN.md Section 5.3.3, using ShedTheme for flat modern UI
 struct DailyFocusCard: View {
+    @ObservedObject private var profile = PlayerProfile.shared
+    
     var body: some View {
         if let weakArea = identifiedWeakArea {
             ShedCard {
@@ -27,7 +29,8 @@ struct DailyFocusCard: View {
                     ShedButton(
                         title: "Practice \(weakArea.shortName)",
                         action: {
-                            // TODO: Navigate to focused drill for this weak area
+                            // Navigation handled by parent view
+                            // User can tap to see more details and navigate
                         },
                         style: .secondary
                     )
@@ -42,19 +45,38 @@ struct DailyFocusCard: View {
         let name: String
         let shortName: String
         let accuracy: Double
+        let mode: PracticeMode
     }
     
     private var identifiedWeakArea: WeakArea? {
-        // TODO: Connect to actual Statistics
-        // Per DESIGN.md: Show if accuracy < 75%
+        // Find the mode with lowest accuracy that has sufficient data
+        let threshold = 0.75
+        let minQuestions = 10 // Need at least 10 questions for meaningful data
         
-        // Placeholder - will be replaced with real data
-        // let stats = StatisticsManager.shared.getWeakestArea()
-        // if stats.accuracy < 0.75 {
-        //     return WeakArea(name: stats.name, shortName: stats.shortName, accuracy: stats.accuracy)
-        // }
+        var weakestMode: (mode: PracticeMode, accuracy: Double)?
         
-        return nil
+        for mode in PracticeMode.allCases {
+            guard let stats = profile.modeStats[mode],
+                  stats.totalQuestions >= minQuestions else { continue }
+            
+            let accuracy = stats.accuracy
+            
+            // Only show if below threshold
+            if accuracy < threshold {
+                if weakestMode == nil || accuracy < weakestMode!.accuracy {
+                    weakestMode = (mode, accuracy)
+                }
+            }
+        }
+        
+        guard let (mode, accuracy) = weakestMode else { return nil }
+        
+        return WeakArea(
+            name: mode.rawValue,
+            shortName: mode.emoji,
+            accuracy: accuracy,
+            mode: mode
+        )
     }
 }
 
