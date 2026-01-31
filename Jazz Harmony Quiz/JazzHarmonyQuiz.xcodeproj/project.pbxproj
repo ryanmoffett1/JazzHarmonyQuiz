@@ -59,6 +59,8 @@
 		9463525F2F26792600ABD609 /* PlayerLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352512F26792600ABD609 /* PlayerLevelTests.swift */; };
 		946352602F26792600ABD609 /* ScaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946352522F26792600ABD609 /* ScaleTests.swift */; };
 		94ADBD0B2F1C01E900AD5DC0 /* ChordSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */; };
+		94C941AE2F2D7B7500632327 /* QuickPracticeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941AD2F2D7B7500632327 /* QuickPracticeViewModel.swift */; };
+		94C941B22F2D7BA500632327 /* QuickPracticeViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941B02F2D7BA500632327 /* QuickPracticeViewModelTests.swift */; };
 		94CADGT012F29100000000001 /* CadenceGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADGT022F29100000000002 /* CadenceGameTests.swift */; };
 		94CADNC012F29000000000001 /* CadenceDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC022F29000000000002 /* CadenceDrillView.swift */; };
 		94CADNC032F29000000000003 /* CadenceDrillSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC042F29000000000004 /* CadenceDrillSetup.swift */; };
@@ -170,6 +172,8 @@
 		946352552F26792600ABD609 /* SettingsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManagerTests.swift; sourceTree = "<group>"; };
 		946352562F26792600ABD609 /* SpacedRepetitionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacedRepetitionStoreTests.swift; sourceTree = "<group>"; };
 		94ADBD0A2F1C01E900AD5DC0 /* ChordSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordSelectorView.swift; sourceTree = "<group>"; };
+		94C941AD2F2D7B7500632327 /* QuickPracticeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeViewModel.swift; sourceTree = "<group>"; };
+		94C941B02F2D7BA500632327 /* QuickPracticeViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeViewModelTests.swift; sourceTree = "<group>"; };
 		94CADGT022F29100000000002 /* CadenceGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceGameTests.swift; sourceTree = "<group>"; };
 		94CADNC022F29000000000002 /* CadenceDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillView.swift; sourceTree = "<group>"; };
 		94CADNC042F29000000000004 /* CadenceDrillSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillSetup.swift; sourceTree = "<group>"; };
@@ -293,6 +297,7 @@
 		9463521B2F26786500ABD609 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				94C941AD2F2D7B7500632327 /* QuickPracticeViewModel.swift */,
 				946352152F26786500ABD609 /* ContinueLearningCard.swift */,
 				946352162F26786500ABD609 /* DailyFocusCard.swift */,
 				946352172F26786500ABD609 /* HomeView.swift */,
@@ -411,6 +416,14 @@
 			path = Core;
 			sourceTree = "<group>";
 		};
+		94C941B12F2D7BA500632327 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				94C941B02F2D7BA500632327 /* QuickPracticeViewModelTests.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
 		94CADGT032F29100000000003 /* CadenceDrill */ = {
 			isa = PBXGroup;
 			children = (
@@ -465,6 +478,7 @@
 		94DRILL082F27000000000008 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				94C941B12F2D7BA500632327 /* Home */,
 				94CADGT032F29100000000003 /* CadenceDrill */,
 				94DRILL092F27000000000009 /* ChordDrill */,
 				94CURRGT32F2E000000000003 /* Curriculum */,
@@ -725,6 +739,7 @@
 				94CADGT012F29100000000001 /* CadenceGameTests.swift in Sources */,
 				94SCALEGT12F2B000000000001 /* ScaleGameTests.swift in Sources */,
 				94INTRVLGT2F2C00000000001 /* IntervalGameTests.swift in Sources */,
+				94C941B22F2D7BA500632327 /* QuickPracticeViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -815,6 +830,7 @@
 				94PROGRV42F2E00000000004 /* StatsOverview.swift in Sources */,
 				94PROGRV52F2E00000000005 /* CategoryBreakdown.swift in Sources */,
 				94PROGRV62F2E00000000006 /* AchievementsList.swift in Sources */,
+				94C941AE2F2D7B7500632327 /* QuickPracticeViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

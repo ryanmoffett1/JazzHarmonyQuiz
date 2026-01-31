@@ -6,40 +6,18 @@ struct QuickPracticeSession: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.dismiss) private var dismiss
     
-    // MARK: - State
+    // MARK: - ViewModel
     
-    @State private var items: [QuickPracticeItem] = []
-    @State private var currentIndex = 0
-    @State private var selectedNotes: Set<Note> = []
-    @State private var showingFeedback = false
-    @State private var isCorrect = false
-    @State private var sessionStartTime = Date()
-    @State private var correctCount = 0
-    @State private var missedItems: [MissedItem] = []
-    @State private var sessionComplete = false
-    
-    private let generator = QuickPracticeGenerator.shared
-    
-    // MARK: - Computed Properties
-    
-    private var currentItem: QuickPracticeItem? {
-        guard currentIndex < items.count else { return nil }
-        return items[currentIndex]
-    }
-    
-    private var progress: Double {
-        guard !items.isEmpty else { return 0 }
-        return Double(currentIndex) / Double(items.count)
-    }
+    @StateObject private var viewModel = QuickPracticeViewModel()
     
     // MARK: - Body
     
     var body: some View {
         NavigationStack {
             Group {
-                if sessionComplete {
+                if viewModel.sessionComplete {
                     resultsView
-                } else if let item = currentItem {
+                } else if let item = viewModel.currentItem {
                     questionView(for: item)
                 } else {
                     loadingView
@@ -56,7 +34,7 @@ struct QuickPracticeSession: View {
             }
         }
         .onAppear {
-            startSession()
+            viewModel.startSession()
         }
     }
     
@@ -90,7 +68,7 @@ struct QuickPracticeSession: View {
                     }
                     
                     // Feedback overlay
-                    if showingFeedback {
+                    if viewModel.showingFeedback {
                         feedbackView(for: item)
                     }
                     
@@ -107,11 +85,11 @@ struct QuickPracticeSession: View {
     private var progressBar: some View {
         VStack(spacing: 4) {
             HStack {
-                Text("Question \(currentIndex + 1) of \(items.count)")
+                Text("Question \(viewModel.currentIndex + 1) of \(viewModel.items.count)")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Spacer()
-                Text("\(correctCount) correct")
+                Text("\(viewModel.correctCount) correct")
                     .font(.caption)
                     .foregroundColor(ShedTheme.Colors.success)
             }
@@ -125,7 +103,7 @@ struct QuickPracticeSession: View {
                     
                     Rectangle()
                         .fill(Color("BrassAccent"))
-                        .frame(width: geometry.size.width * progress, height: 4)
+                        .frame(width: geometry.size.width * viewModel.progress, height: 4)
                 }
             }
             .frame(height: 4)
@@ -157,19 +135,19 @@ struct QuickPracticeSession: View {
     private var pianoSection: some View {
         VStack(spacing: 16) {
             // Selected notes display using styled chips (like ChordDrillSession)
-            if !selectedNotes.isEmpty {
+            if !viewModel.selectedNotes.isEmpty {
                 VStack(spacing: 8) {
                     Text("Selected Notes:")
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
                     FlowLayout(spacing: 8) {
-                        ForEach(Array(selectedNotes.sorted(by: { $0.midiNumber < $1.midiNumber })), id: \.midiNumber) { note in
+                        ForEach(Array(viewModel.selectedNotes.sorted(by: { $0.midiNumber < $1.midiNumber })), id: \.midiNumber) { note in
                             Text(note.name)
-                                .font(.system(size: selectedNotes.count > 5 ? 18 : 22, weight: .semibold))
+                                .font(.system(size: viewModel.selectedNotes.count > 5 ? 18 : 22, weight: .semibold))
                                 .foregroundColor(.white)
-                                .padding(.horizontal, selectedNotes.count > 5 ? 12 : 16)
-                                .padding(.vertical, selectedNotes.count > 5 ? 8 : 10)
+                                .padding(.horizontal, viewModel.selectedNotes.count > 5 ? 12 : 16)
+                                .padding(.vertical, viewModel.selectedNotes.count > 5 ? 8 : 10)
                                 .background(Color("BrassAccent"))
                                 .cornerRadius(8)
                         }
@@ -182,18 +160,18 @@ struct QuickPracticeSession: View {
             
             // Piano keyboard - consistent with other drills (no note names by default)
             PianoKeyboard(
-                selectedNotes: $selectedNotes,
+                selectedNotes: $viewModel.selectedNotes,
                 octaveRange: 4...4,
                 showNoteNames: false,
                 allowMultipleSelection: true
             )
             .frame(height: 180)
             .padding(.horizontal)
-            .disabled(showingFeedback)
-            .onChange(of: selectedNotes) { oldValue, newValue in
+            .disabled(viewModel.showingFeedback)
+            .onChange(of: viewModel.selectedNotes) { oldValue, newValue in
                 // Play audio when notes are selected
                 if let newNote = newValue.subtracting(oldValue).first {
-                    AudioManager.shared.playNote(UInt8(newNote.midiNumber))
+                    viewModel.playNote(newNote)
                 }
             }
         }
@@ -203,16 +181,16 @@ struct QuickPracticeSession: View {
         VStack(spacing: 12) {
             // Result indicator
             HStack {
-                Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                Image(systemName: viewModel.isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
                     .font(.title)
-                Text(isCorrect ? "Correct!" : "Incorrect")
+                Text(viewModel.isCorrect ? "Correct!" : "Incorrect")
                     .font(.title2)
                     .fontWeight(.semibold)
             }
-            .foregroundColor(isCorrect ? .green : .red)
+            .foregroundColor(viewModel.isCorrect ? .green : .red)
             
             // Correct answer
-            if !isCorrect {
+            if !viewModel.isCorrect {
                 VStack(spacing: 4) {
                     Text("Correct answer:")
                         .font(.caption)
@@ -225,19 +203,23 @@ struct QuickPracticeSession: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill((isCorrect ? ShedTheme.Colors.success : ShedTheme.Colors.danger).opacity(0.1))
+                .fill((viewModel.isCorrect ? ShedTheme.Colors.success : ShedTheme.Colors.danger).opacity(0.1))
         )
     }
     
     private var actionButton: some View {
         Button {
-            if showingFeedback {
-                nextQuestion()
+            if viewModel.showingFeedback {
+                viewModel.nextQuestion()
             } else {
-                checkAnswer()
+                viewModel.checkAnswer()
+                if settings.hapticFeedback {
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(viewModel.isCorrect ? .success : .error)
+                }
             }
         } label: {
-            Text(showingFeedback ? "Next" : "Check Answer")
+            Text(viewModel.showingFeedback ? "Next" : "Check Answer")
                 .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
@@ -245,8 +227,8 @@ struct QuickPracticeSession: View {
                 .background(Color("BrassAccent"))
                 .cornerRadius(12)
         }
-        .disabled(!showingFeedback && selectedNotes.isEmpty)
-        .opacity(!showingFeedback && selectedNotes.isEmpty ? 0.5 : 1)
+        .disabled(!viewModel.canSubmitAnswer)
+        .opacity(!viewModel.canSubmitAnswer ? 0.5 : 1)
         .padding(.horizontal)
         .padding(.bottom, 20)
     }
@@ -262,31 +244,30 @@ struct QuickPracticeSession: View {
                         .font(.largeTitle)
                         .fontWeight(.bold)
                     
-                    let accuracy = items.isEmpty ? 0 : Int((Double(correctCount) / Double(items.count)) * 100)
-                    Text("\(accuracy)% Accuracy")
+                    Text("\(viewModel.accuracy)% Accuracy")
                         .font(.title2)
-                        .foregroundColor(accuracy >= 80 ? .green : (accuracy >= 60 ? .orange : .red))
+                        .foregroundColor(viewModel.accuracy >= 80 ? .green : (viewModel.accuracy >= 60 ? .orange : .red))
                 }
                 .padding(.top, 20)
                 
                 // Stats
                 HStack(spacing: 40) {
-                    statItem(value: "\(correctCount)", label: "Correct")
-                    statItem(value: "\(items.count - correctCount)", label: "Missed")
-                    statItem(value: formatDuration(), label: "Time")
+                    statItem(value: "\(viewModel.correctCount)", label: "Correct")
+                    statItem(value: "\(viewModel.items.count - viewModel.correctCount)", label: "Missed")
+                    statItem(value: viewModel.formatDuration(), label: "Time")
                 }
                 
                 Divider()
                 
                 // Missed items review
-                if !missedItems.isEmpty {
+                if !viewModel.missedItems.isEmpty {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("REVIEW MISSED")
                             .font(.caption)
                             .fontWeight(.semibold)
                             .foregroundColor(.secondary)
                         
-                        ForEach(missedItems) { item in
+                        ForEach(viewModel.missedItems) { item in
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(item.question)
@@ -313,7 +294,7 @@ struct QuickPracticeSession: View {
                 // Action buttons
                 VStack(spacing: 12) {
                     Button {
-                        restartSession()
+                        viewModel.restartSession()
                     } label: {
                         Text("Practice Again")
                             .font(.headline)
@@ -350,128 +331,6 @@ struct QuickPracticeSession: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
-    }
-    
-    // MARK: - Actions
-    
-    private func startSession() {
-        items = generator.generateSession()
-        currentIndex = 0
-        correctCount = 0
-        missedItems = []
-        selectedNotes = []
-        showingFeedback = false
-        sessionComplete = false
-        sessionStartTime = Date()
-    }
-    
-    private func checkAnswer() {
-        guard let item = currentItem else { return }
-        
-        // Validate answer based on item type
-        switch item.type {
-        case .chordSpelling:
-            isCorrect = validateChordAnswer(item: item)
-        case .intervalBuilding:
-            isCorrect = validateIntervalAnswer(item: item)
-        case .scaleSpelling:
-            isCorrect = validateScaleAnswer(item: item)
-        case .cadenceProgression:
-            isCorrect = false  // Not yet implemented
-        }
-        
-        if isCorrect {
-            correctCount += 1
-            if settings.hapticFeedback {
-                let generator = UINotificationFeedbackGenerator()
-                generator.notificationOccurred(.success)
-            }
-            // Play correct chord/interval as audio feedback
-            if !item.correctNotes.isEmpty {
-                playCorrectAnswer(item.correctNotes)
-            }
-        } else {
-            // Record missed item
-            missedItems.append(MissedItem(
-                question: item.question,
-                userAnswer: selectedNotes.map { $0.name }.joined(separator: ", "),
-                correctAnswer: item.correctNotes.map { $0.name }.joined(separator: ", "),
-                category: item.category
-            ))
-            if settings.hapticFeedback {
-                let generator = UINotificationFeedbackGenerator()
-                generator.notificationOccurred(.error)
-            }
-            // Play correct answer so user can hear it
-            if !item.correctNotes.isEmpty {
-                playCorrectAnswer(item.correctNotes)
-            }
-        }
-        
-        showingFeedback = true
-    }
-    
-    private func validateChordAnswer(item: QuickPracticeItem) -> Bool {
-        // Compare pitch classes (ignore octave)
-        let selectedPitchClasses = Set(selectedNotes.map { $0.midiNumber % 12 })
-        let correctPitchClasses = Set(item.correctNotes.map { $0.midiNumber % 12 })
-        return selectedPitchClasses == correctPitchClasses
-    }
-    
-    private func validateIntervalAnswer(item: QuickPracticeItem) -> Bool {
-        // For intervals, we need the correct number of semitones
-        let sortedSelected = selectedNotes.sorted { $0.midiNumber < $1.midiNumber }
-        guard sortedSelected.count == 2, item.correctNotes.count == 2 else {
-            return false
-        }
-        let selectedInterval = abs(sortedSelected[1].midiNumber - sortedSelected[0].midiNumber) % 12
-        let correctInterval = abs(item.correctNotes[1].midiNumber - item.correctNotes[0].midiNumber) % 12
-        return selectedInterval == correctInterval
-    }
-    
-    private func validateScaleAnswer(item: QuickPracticeItem) -> Bool {
-        // Scale validation - compare pitch classes
-        guard selectedNotes.count == item.correctNotes.count else {
-            return false
-        }
-        let selectedPitchClasses = Set(selectedNotes.map { $0.midiNumber % 12 })
-        let correctPitchClasses = Set(item.correctNotes.map { $0.midiNumber % 12 })
-        return selectedPitchClasses == correctPitchClasses
-    }
-    
-    private func nextQuestion() {
-        selectedNotes = []
-        showingFeedback = false
-        
-        if currentIndex < items.count - 1 {
-            currentIndex += 1
-        } else {
-            sessionComplete = true
-            recordSessionResults()
-        }
-    }
-    
-    private func restartSession() {
-        startSession()
-    }
-    
-    private func recordSessionResults() {
-        // Record to spaced repetition
-        // Record to statistics
-        // (Integration with existing systems)
-    }
-    
-    private func formatDuration() -> String {
-        let duration = Date().timeIntervalSince(sessionStartTime)
-        let minutes = Int(duration) / 60
-        let seconds = Int(duration) % 60
-        return String(format: "%d:%02d", minutes, seconds)
-    }
-    
-    /// Plays the correct answer notes as audio feedback
-    private func playCorrectAnswer(_ notes: [Note]) {
-        // Play notes as a chord (simultaneously)
-        AudioManager.shared.playChord(notes)
     }
 }
 
