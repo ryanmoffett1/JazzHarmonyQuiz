@@ -13,14 +13,12 @@ import UIKit
 struct ScaleDrillView: View {
     @EnvironmentObject var scaleGame: ScaleGame
     @EnvironmentObject var settings: SettingsManager
-    @State private var selectedNotes: Set<Note> = []
     @State private var viewState: DrillState = .setup
     @State private var numberOfQuestions: Int = 10
     @State private var selectedDifficulty: ScaleType.ScaleDifficulty = .beginner
     @State private var selectedQuestionTypes: Set<ScaleQuestionType> = [.allDegrees]
     @State private var selectedKeyDifficulty: KeyDifficulty = .all
     @State private var selectedScaleSymbols: Set<String> = []
-    @State private var showingFeedback = false
     
     /// The launch mode determines UI behavior and config locking
     let launchMode: DrillLaunchMode
@@ -62,8 +60,6 @@ struct ScaleDrillView: View {
                     }
                     
                     ScaleDrillSession(
-                        selectedNotes: $selectedNotes,
-                        showingFeedback: $showingFeedback,
                         viewState: $viewState
                     )
                 }
@@ -71,8 +67,6 @@ struct ScaleDrillView: View {
                 ScaleDrillResults(onNewQuiz: {
                     scaleGame.resetQuizState()
                     viewState = .setup
-                    selectedNotes = []
-                    showingFeedback = false
                 })
             }
         }
@@ -240,8 +234,6 @@ struct ScaleDrillView: View {
     // MARK: - Actions
     
     private func startQuiz() {
-        selectedNotes = []
-        showingFeedback = false
         viewState = .active
         
         scaleGame.selectedKeyDifficulty = selectedKeyDifficulty
@@ -257,8 +249,6 @@ struct ScaleDrillView: View {
     private func quitQuiz() {
         viewState = .setup
         scaleGame.resetQuizState()
-        selectedNotes = []
-        showingFeedback = false
     }
 }
 

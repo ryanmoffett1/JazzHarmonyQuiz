@@ -10,6 +10,7 @@ import SwiftUI
 struct IntervalDrillView: View {
     @EnvironmentObject var intervalGame: IntervalGame
     @EnvironmentObject var settings: SettingsManager
+    @StateObject private var viewModel = IntervalDrillViewModel()
     @State private var viewState: DrillState = .setup
     
     // Setup configuration
@@ -18,12 +19,6 @@ struct IntervalDrillView: View {
     @State private var selectedQuestionTypes: Set<IntervalQuestionType> = [.buildInterval]
     @State private var selectedDirection: IntervalDirection = .ascending
     @State private var selectedKeyDifficulty: KeyDifficulty = .easy
-    
-    // Session state
-    @State private var selectedNote: Note?
-    @State private var selectedInterval: IntervalType?
-    @State private var showingFeedback = false
-    @State private var hasSubmitted = false
     
     /// The launch mode determines UI behavior and config locking
     let launchMode: DrillLaunchMode
@@ -65,10 +60,10 @@ struct IntervalDrillView: View {
                     }
                     
                     IntervalDrillSession(
-                        selectedNote: $selectedNote,
-                        selectedInterval: $selectedInterval,
-                        showingFeedback: $showingFeedback,
-                        hasSubmitted: $hasSubmitted,
+                        selectedNote: $viewModel.selectedNote,
+                        selectedInterval: $viewModel.selectedInterval,
+                        showingFeedback: $viewModel.showingFeedback,
+                        hasSubmitted: $viewModel.hasSubmitted,
                         onSubmit: submitAnswer,
                         onNext: nextQuestion
                     )
@@ -262,107 +257,28 @@ struct IntervalDrillView: View {
             direction: selectedDirection,
             keyDifficulty: selectedKeyDifficulty
         )
-        selectedNote = nil
-        selectedInterval = nil
-        hasSubmitted = false
+        viewModel.clearSelection()
+        viewModel.hasSubmitted = false
         viewState = .active
     }
     
     private func submitAnswer() {
         guard let question = intervalGame.currentQuestion else { return }
-        hasSubmitted = true
         
-        var isCorrect = false
-        
-        switch question.questionType {
-        case .buildInterval:
-            if let note = selectedNote {
-                isCorrect = intervalGame.checkAnswer(selectedNote: note)
+        viewModel.submitAnswer(
+            question: question,
+            checkBuildAnswer: { note in
+                intervalGame.checkAnswer(selectedNote: note)
+            },
+            checkIdentifyAnswer: { interval in
+                intervalGame.checkAnswer(selectedInterval: interval)
             }
-        case .identifyInterval, .auralIdentify:
-            if let interval = selectedInterval {
-                isCorrect = intervalGame.checkAnswer(selectedInterval: interval)
-            }
-        }
-        
-        // Haptic feedback and audio
-        if isCorrect {
-            IntervalDrillHaptics.success()
-            if settings.playChordOnCorrect {
-                AudioManager.shared.playInterval(
-                    rootNote: question.interval.rootNote,
-                    targetNote: question.interval.targetNote,
-                    style: settings.defaultIntervalStyle,
-                    tempo: settings.intervalTempo
-                )
-            }
-        } else {
-            IntervalDrillHaptics.error()
-            if settings.playChordOnCorrect {
-                playIncorrectFeedback(question: question)
-            }
-        }
-        
-        showingFeedback = true
+        )
     }
     
-    private func playIncorrectFeedback(question: IntervalQuestion) {
-        switch question.questionType {
-        case .buildInterval:
-            if let userNote = selectedNote {
-                let userInterval = Interval(
-                    rootNote: question.interval.rootNote,
-                    intervalType: IntervalDatabase.shared.interval(forSemitones: abs(userNote.midiNumber - question.interval.rootNote.midiNumber)) ?? question.interval.intervalType,
-                    direction: question.interval.direction
-                )
-                AudioManager.shared.playInterval(
-                    rootNote: userInterval.rootNote,
-                    targetNote: userInterval.targetNote,
-                    style: settings.defaultIntervalStyle,
-                    tempo: settings.intervalTempo
-                )
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    AudioManager.shared.playInterval(
-                        rootNote: question.interval.rootNote,
-                        targetNote: question.interval.targetNote,
-                        style: settings.defaultIntervalStyle,
-                        tempo: settings.intervalTempo
-                    )
-                }
-            }
-            
-        case .identifyInterval, .auralIdentify:
-            if let userIntervalType = selectedInterval {
-                let userInterval = Interval(
-                    rootNote: question.interval.rootNote,
-                    intervalType: userIntervalType,
-                    direction: question.interval.direction
-                )
-                AudioManager.shared.playInterval(
-                    rootNote: userInterval.rootNote,
-                    targetNote: userInterval.targetNote,
-                    style: settings.defaultIntervalStyle,
-                    tempo: settings.intervalTempo
-                )
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    AudioManager.shared.playInterval(
-                        rootNote: question.interval.rootNote,
-                        targetNote: question.interval.targetNote,
-                        style: settings.defaultIntervalStyle,
-                        tempo: settings.intervalTempo
-                    )
-                }
-            }
-        }
-    }
     
     private func nextQuestion() {
-        selectedNote = nil
-        selectedInterval = nil
-        hasSubmitted = false
-        showingFeedback = false
+        viewModel.resetForNextQuestion()
         intervalGame.nextQuestion()
     }
     
@@ -379,25 +295,6 @@ struct IntervalDrillView: View {
     private func quitQuiz() {
         intervalGame.resetQuiz()
         viewState = .setup
-    }
-}
-
-// MARK: - Haptic Feedback Helper
-
-enum IntervalDrillHaptics {
-    static func success() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
-    }
-    
-    static func error() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.error)
-    }
-    
-    static func light() {
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.impactOccurred()
     }
 }
 

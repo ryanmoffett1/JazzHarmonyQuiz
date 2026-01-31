@@ -29,26 +29,8 @@ struct ScaleDrillSession: View {
     @EnvironmentObject var settings: SettingsManager
     @Environment(\.colorScheme) var colorScheme
     
-    @Binding var selectedNotes: Set<Note>
-    @Binding var showingFeedback: Bool
     @Binding var viewState: DrillState
-    
-    @State private var feedbackMessage: String = ""
-    @State private var isCorrect: Bool = false
-    @State private var hasSubmitted: Bool = false
-    @State private var feedbackPhase: FeedbackPhase = .showingUserAnswer
-    @State private var userAnswerNotes: [Note] = []
-    @State private var highlightedNoteIndex: Int? = nil
-    @State private var showContinueButton: Bool = false
-    @State private var showMaxNotesWarning: Bool = false
-    @State private var selectedScaleType: ScaleType? = nil  // For ear training
-    
-    private let audioManager = AudioManager.shared
-    
-    enum FeedbackPhase {
-        case showingUserAnswer
-        case showingCorrectAnswer
-    }
+    @StateObject private var viewModel = ScaleDrillViewModel()
     
     var body: some View {
         VStack(spacing: 16) {
@@ -62,9 +44,9 @@ struct ScaleDrillSession: View {
                 
                 // Selected Notes Display or Feedback (for visual questions)
                 if question.questionType != .earTraining {
-                    if showingFeedback {
+                    if viewModel.showingFeedback {
                         feedbackNotesView(question: question)
-                    } else if !selectedNotes.isEmpty {
+                    } else if !viewModel.selectedNotes.isEmpty {
                         selectedNotesDisplay(question: question)
                     } else {
                         Text("Tap keys to select notes")
@@ -77,7 +59,7 @@ struct ScaleDrillSession: View {
                 Spacer()
                 
                 // Max notes warning (visual questions only)
-                if question.questionType != .earTraining && showMaxNotesWarning {
+                if question.questionType != .earTraining && viewModel.showMaxNotesWarning {
                     maxNotesWarningView(question: question)
                 }
                 
@@ -86,21 +68,21 @@ struct ScaleDrillSession: View {
                     PianoKeyboard(selectedNotes: limitedSelectedNotes(maxNotes: question.correctNotes.count))
                         .frame(height: 180)
                         .padding(.horizontal, 8)
-                        .disabled(hasSubmitted)
+                        .disabled(viewModel.hasSubmitted)
                 }
                 
                 // Action Buttons
                 actionButtonsView(question: question)
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: showingFeedback)
+        .animation(.easeInOut(duration: 0.3), value: viewModel.showingFeedback)
         .onChange(of: scaleGame.currentQuestionIndex) { _, _ in
             // Auto-play scale for ear training questions (only if quiz is still active)
             if scaleGame.isQuizActive,
                let question = scaleGame.currentQuestion,
                question.questionType == .earTraining {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    playCurrentScale()
+                    viewModel.playCurrentScale(question: question)
                 }
             }
         }
@@ -109,7 +91,7 @@ struct ScaleDrillSession: View {
             if let question = scaleGame.currentQuestion,
                question.questionType == .earTraining {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    playCurrentScale()
+                    viewModel.playCurrentScale(question: question)
                 }
             }
         }
@@ -141,7 +123,9 @@ struct ScaleDrillSession: View {
             .padding(.horizontal)
             
             // Play Scale Button
-            Button(action: playCurrentScale) {
+            Button(action: {
+                viewModel.playCurrentScale(question: question)
+            }) {
                 HStack {
                     Image(systemName: "speaker.wave.2.fill")
                     Text("Play Scale")
@@ -179,13 +163,13 @@ struct ScaleDrillSession: View {
     
     @ViewBuilder
     private func earTrainingChoiceButton(scaleType: ScaleType, question: ScaleQuestion) -> some View {
-        let isSelected = selectedScaleType?.id == scaleType.id
-        let isCorrectChoice = showingFeedback && scaleType.id == question.scale.scaleType.id
-        let isWrongChoice = showingFeedback && isSelected && scaleType.id != question.scale.scaleType.id
+        let isSelected = viewModel.selectedScaleType?.id == scaleType.id
+        let isCorrectChoice = viewModel.showingFeedback && scaleType.id == question.scale.scaleType.id
+        let isWrongChoice = viewModel.showingFeedback && isSelected && scaleType.id != question.scale.scaleType.id
         
         Button(action: {
-            if !showingFeedback {
-                selectedScaleType = scaleType
+            if !viewModel.showingFeedback {
+                viewModel.selectedScaleType = scaleType
                 ScaleDrillHaptics.light()
             }
         }) {
@@ -201,7 +185,7 @@ struct ScaleDrillSession: View {
                 }
                 Spacer()
                 
-                if showingFeedback {
+                if viewModel.showingFeedback {
                     if isCorrectChoice {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(ShedTheme.Colors.success)
@@ -216,7 +200,7 @@ struct ScaleDrillSession: View {
             }
             .padding()
             .background(
-                showingFeedback ?
+                viewModel.showingFeedback ?
                     (isCorrectChoice ? ShedTheme.Colors.success.opacity(0.2) :
                      isWrongChoice ? ShedTheme.Colors.danger.opacity(0.2) :
                      Color(.systemGray6)) :
@@ -224,7 +208,7 @@ struct ScaleDrillSession: View {
             )
             .cornerRadius(10)
         }
-        .disabled(showingFeedback)
+        .disabled(viewModel.showingFeedback)
     }
     
     // MARK: - Visual Scale Display
@@ -271,8 +255,8 @@ struct ScaleDrillSession: View {
     private func selectedNotesDisplay(question: ScaleQuestion) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(Array(selectedNotes).sorted { $0.midiNumber < $1.midiNumber }, id: \.midiNumber) { note in
-                    Text(displayNoteName(note, for: question.scale))
+                ForEach(Array(viewModel.selectedNotes).sorted { $0.midiNumber < $1.midiNumber }, id: \.midiNumber) { note in
+                    Text(viewModel.displayNoteName(note, for: question.scale))
                         .font(.headline)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
@@ -302,16 +286,6 @@ struct ScaleDrillSession: View {
     
     // MARK: - Play Scale
     
-    private func playCurrentScale() {
-        print("🎹 playCurrentScale called")
-        guard let question = scaleGame.currentQuestion else {
-            print("❌ No current question")
-            return
-        }
-        print("🎹 Calling audioManager.playScaleObject")
-        audioManager.playScaleObject(question.scale, bpm: 140)
-    }
-    
     // MARK: - Feedback View
     
     @ViewBuilder
@@ -319,7 +293,7 @@ struct ScaleDrillSession: View {
         VStack(spacing: 16) {
             // For single degree questions, use simpler display
             if question.questionType == .singleDegree {
-                if isCorrect {
+                if viewModel.isCorrect {
                     // Simple confirmation for correct answer
                     VStack(spacing: 12) {
                         HStack {
@@ -331,8 +305,8 @@ struct ScaleDrillSession: View {
                         }
                         .foregroundColor(.green)
                         
-                        if let userNote = userAnswerNotes.first {
-                            Text(displayNoteName(userNote, for: question.scale))
+                        if let userNote = viewModel.userAnswerNotes.first {
+                            Text(viewModel.displayNoteName(userNote, for: question.scale))
                                 .font(.title)
                                 .fontWeight(.bold)
                                 .padding(.horizontal, 20)
@@ -353,8 +327,8 @@ struct ScaleDrillSession: View {
                         }
                         .foregroundColor(.red)
                         
-                        if let userNote = userAnswerNotes.first {
-                            Text(displayNoteName(userNote, for: question.scale))
+                        if let userNote = viewModel.userAnswerNotes.first {
+                            Text(viewModel.displayNoteName(userNote, for: question.scale))
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .padding(.horizontal, 16)
@@ -378,7 +352,7 @@ struct ScaleDrillSession: View {
                         .foregroundColor(.green)
                         
                         if let correctNote = question.correctNotes.first {
-                            Text(displayNoteName(correctNote, for: question.scale))
+                            Text(viewModel.displayNoteName(correctNote, for: question.scale))
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .padding(.horizontal, 16)
@@ -392,23 +366,25 @@ struct ScaleDrillSession: View {
             } else {
                 // Original display for other question types
                 HStack {
-                    Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    Image(systemName: viewModel.isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
                         .font(.title)
-                    Text(isCorrect ? "Correct!" : (feedbackPhase == .showingUserAnswer ? "Your answer:" : "Correct answer:"))
+                    Text(viewModel.isCorrect ? "Correct!" : (viewModel.feedbackPhase == .showingUserAnswer ? "Your answer:" : "Correct answer:"))
                         .font(.headline)
                 }
-                .foregroundColor(isCorrect ? .green : (feedbackPhase == .showingCorrectAnswer ? .green : .red))
+                .foregroundColor(viewModel.isCorrect ? .green : (viewModel.feedbackPhase == .showingCorrectAnswer ? .green : .red))
                 
                 // Notes display
-                if isCorrect || feedbackPhase == .showingCorrectAnswer {
+                if viewModel.isCorrect || viewModel.feedbackPhase == .showingCorrectAnswer {
                     correctNotesDisplay(question: question)
                 } else {
                     userNotesDisplay(question: question)
                 }
                 
                 // Continue button for wrong answers in phase 1 (not for single degree)
-                if !isCorrect && feedbackPhase == .showingUserAnswer && showContinueButton && question.questionType != .singleDegree {
-                    Button(action: showCorrectAnswer) {
+                if !viewModel.isCorrect && viewModel.feedbackPhase == .showingUserAnswer && viewModel.showContinueButton && question.questionType != .singleDegree {
+                    Button(action: {
+                        viewModel.showCorrectAnswer(question: question)
+                    }) {
                         Text("See Correct Answer")
                             .font(.headline)
                             .foregroundColor(.white)
@@ -423,7 +399,7 @@ struct ScaleDrillSession: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(isCorrect ? ShedTheme.Colors.success.opacity(0.1) : ShedTheme.Colors.danger.opacity(0.1))
+                .fill(viewModel.isCorrect ? ShedTheme.Colors.success.opacity(0.1) : ShedTheme.Colors.danger.opacity(0.1))
         )
         .padding(.horizontal)
     }
@@ -431,14 +407,14 @@ struct ScaleDrillSession: View {
     @ViewBuilder
     private func userNotesDisplay(question: ScaleQuestion) -> some View {
         let rootPitchClass = question.scale.root.pitchClass
-        let sortedNotes = sortNotesForScale(userAnswerNotes, rootPitchClass: rootPitchClass)
+        let sortedNotes = viewModel.sortNotesForScale(viewModel.userAnswerNotes, rootPitchClass: rootPitchClass)
         let correctPitchClasses = Set(question.correctNotes.map { $0.pitchClass })
         
         // Use FlowLayout for wrapping on smaller screens
         FlowLayout(spacing: 6) {
             ForEach(Array(sortedNotes.enumerated()), id: \.offset) { index, note in
                 let isNoteCorrect = correctPitchClasses.contains(note.pitchClass)
-                let isHighlighted = highlightedNoteIndex == index
+                let isHighlighted = viewModel.highlightedNoteIndex == index
                 
                 // Check if this is an octave duplicate
                 let isOctaveNote = note.midiNumber >= 72 && sortedNotes.contains(where: { 
@@ -446,7 +422,7 @@ struct ScaleDrillSession: View {
                 })
                 
                 VStack(spacing: 1) {
-                    Text(displayNoteName(note, for: question.scale))
+                    Text(viewModel.displayNoteName(note, for: question.scale))
                         .font(.subheadline)
                         .fontWeight(.semibold)
                     if isOctaveNote {
@@ -456,20 +432,20 @@ struct ScaleDrillSession: View {
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, isOctaveNote ? 4 : 6)
-                .background(noteBackgroundColor(isCorrect: isNoteCorrect, isHighlighted: isHighlighted, isAllCorrect: isCorrect))
+                .background(viewModel.noteBackgroundColor(isCorrect: isNoteCorrect, isHighlighted: isHighlighted, isAllCorrect: viewModel.isCorrect))
                 .foregroundColor(.white)
                 .cornerRadius(6)
                 .scaleEffect(isHighlighted ? 1.1 : 1.0)
-                .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
+                .animation(.easeInOut(duration: 0.1), value: viewModel.highlightedNoteIndex)
             }
             
             // Ghosted 8va note at the end
             if sortedNotes.count == question.correctNotes.count {
-                let isOctaveHighlighted = highlightedNoteIndex == sortedNotes.count
+                let isOctaveHighlighted = viewModel.highlightedNoteIndex == sortedNotes.count
                 let rootNote = sortedNotes.first ?? question.scale.root
                 
                 VStack(spacing: 1) {
-                    Text(displayNoteName(rootNote, for: question.scale))
+                    Text(viewModel.displayNoteName(rootNote, for: question.scale))
                         .font(.subheadline)
                         .fontWeight(.semibold)
                     Text("8va")
@@ -481,14 +457,14 @@ struct ScaleDrillSession: View {
                 .foregroundColor(isOctaveHighlighted ? .white : .white.opacity(0.5))
                 .cornerRadius(6)
                 .scaleEffect(isOctaveHighlighted ? 1.1 : 1.0)
-                .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
+                .animation(.easeInOut(duration: 0.1), value: viewModel.highlightedNoteIndex)
             }
         }
         .padding(.horizontal)
         
         // Show missing notes
-        if !isCorrect && feedbackPhase == .showingUserAnswer {
-            let userPitchClasses = Set(userAnswerNotes.map { $0.pitchClass })
+        if !viewModel.isCorrect && viewModel.feedbackPhase == .showingUserAnswer {
+            let userPitchClasses = Set(viewModel.userAnswerNotes.map { $0.pitchClass })
             let missingNotes = question.correctNotes.filter { !userPitchClasses.contains($0.pitchClass) }
             
             if !missingNotes.isEmpty {
@@ -500,7 +476,7 @@ struct ScaleDrillSession: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 6) {
                             ForEach(missingNotes.sorted { $0.midiNumber < $1.midiNumber }, id: \.midiNumber) { note in
-                                Text(displayNoteName(note, for: question.scale))
+                                Text(viewModel.displayNoteName(note, for: question.scale))
                                     .font(.subheadline)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 6)
@@ -519,15 +495,15 @@ struct ScaleDrillSession: View {
     @ViewBuilder
     private func correctNotesDisplay(question: ScaleQuestion) -> some View {
         let rootPitchClass = question.scale.root.pitchClass
-        let sortedNotes = sortNotesForScale(question.correctNotes, rootPitchClass: rootPitchClass)
+        let sortedNotes = viewModel.sortNotesForScale(question.correctNotes, rootPitchClass: rootPitchClass)
         
         // Use FlowLayout for wrapping on smaller screens
         FlowLayout(spacing: 6) {
             // Display the scale notes
             ForEach(Array(sortedNotes.enumerated()), id: \.offset) { index, note in
-                let isHighlighted = highlightedNoteIndex == index
+                let isHighlighted = viewModel.highlightedNoteIndex == index
                 
-                Text(displayNoteName(note, for: question.scale))
+                Text(viewModel.displayNoteName(note, for: question.scale))
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .padding(.horizontal, 10)
@@ -536,14 +512,14 @@ struct ScaleDrillSession: View {
                     .foregroundColor(.white)
                     .cornerRadius(6)
                     .scaleEffect(isHighlighted ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
+                    .animation(.easeInOut(duration: 0.1), value: viewModel.highlightedNoteIndex)
             }
             
             // Ghosted 8va note at the end
-            let isOctaveHighlighted = highlightedNoteIndex == sortedNotes.count
+            let isOctaveHighlighted = viewModel.highlightedNoteIndex == sortedNotes.count
             
             VStack(spacing: 1) {
-                Text(displayNoteName(sortedNotes.first ?? question.scale.root, for: question.scale))
+                Text(viewModel.displayNoteName(sortedNotes.first ?? question.scale.root, for: question.scale))
                     .font(.subheadline)
                     .fontWeight(.semibold)
                 Text("8va")
@@ -555,7 +531,7 @@ struct ScaleDrillSession: View {
             .foregroundColor(isOctaveHighlighted ? .white : .white.opacity(0.5))
             .cornerRadius(6)
             .scaleEffect(isOctaveHighlighted ? 1.1 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: highlightedNoteIndex)
+            .animation(.easeInOut(duration: 0.1), value: viewModel.highlightedNoteIndex)
         }
         .padding(.horizontal)
     }
@@ -563,23 +539,25 @@ struct ScaleDrillSession: View {
     @ViewBuilder
     private func actionButtonsView(question: ScaleQuestion) -> some View {
         HStack(spacing: 16) {
-            if !hasSubmitted {
+            if !viewModel.hasSubmitted {
                 // For ear training
                 if question.questionType == .earTraining {
-                    Button(action: submitAnswer) {
+                    Button(action: {
+                        viewModel.submitAnswer(question: question, gameSubmit: scaleGame.submitAnswer)
+                    }) {
                         Text("Submit")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(selectedScaleType != nil ? ShedTheme.Colors.brass : Color.gray)
+                            .background(viewModel.selectedScaleType != nil ? ShedTheme.Colors.brass : Color.gray)
                             .cornerRadius(12)
                     }
-                    .disabled(selectedScaleType == nil)
+                    .disabled(viewModel.selectedScaleType == nil)
                 } else {
                     // Visual questions - Clear and Submit
                     Button(action: {
-                        selectedNotes.removeAll()
+                        viewModel.selectedNotes.removeAll()
                         ScaleDrillHaptics.light()
                     }) {
                         Text("Clear")
@@ -592,14 +570,21 @@ struct ScaleDrillSession: View {
                     }
                     
                     let requiredCount = question.correctNotes.count
-                    let hasCorrectCount = selectedNotes.count == requiredCount
+                    let hasCorrectCount = viewModel.selectedNotes.count == requiredCount
                     
-                    Button(action: submitAnswer) {
+                    Button(action: {
+                        viewModel.submitAnswer(question: question, gameSubmit: scaleGame.submitAnswer)
+                        if viewModel.isCorrect {
+                            ScaleDrillHaptics.success()
+                        } else {
+                            ScaleDrillHaptics.error()
+                        }
+                    }) {
                         VStack(spacing: 2) {
                             Text("Submit")
                                 .font(.headline)
-                            if !hasCorrectCount && !selectedNotes.isEmpty {
-                                Text("\(selectedNotes.count)/\(requiredCount) notes")
+                            if !hasCorrectCount && !viewModel.selectedNotes.isEmpty {
+                                Text("\(viewModel.selectedNotes.count)/\(requiredCount) notes")
                                     .font(.caption)
                             }
                         }
@@ -612,10 +597,10 @@ struct ScaleDrillSession: View {
                     .disabled(!hasCorrectCount)
                 }
                 
-            } else if isCorrect || feedbackPhase == .showingCorrectAnswer || (question.questionType == .earTraining && hasSubmitted) {
+            } else if viewModel.isCorrect || viewModel.feedbackPhase == .showingCorrectAnswer || (question.questionType == .earTraining && viewModel.hasSubmitted) {
                 // Play Scale Button
                 Button(action: {
-                    playScaleWithHighlight(notes: question.correctNotes)
+                    viewModel.playScaleWithHighlight(notes: question.correctNotes, question: question)
                 }) {
                     HStack {
                         Image(systemName: "play.fill")
@@ -630,7 +615,10 @@ struct ScaleDrillSession: View {
                 }
                 
                 // Next Button
-                Button(action: moveToNext) {
+                Button(action: {
+                    viewModel.resetForNextQuestion()
+                    scaleGame.moveToNextQuestion()
+                }) {
                     Text(scaleGame.currentQuestionIndex < scaleGame.totalQuestions - 1 ? "Next" : "Finish")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -650,284 +638,25 @@ struct ScaleDrillSession: View {
     /// Creates a binding that limits the number of selected notes
     private func limitedSelectedNotes(maxNotes: Int) -> Binding<Set<Note>> {
         Binding(
-            get: { selectedNotes },
+            get: { viewModel.selectedNotes },
             set: { newValue in
                 if newValue.count > maxNotes {
                     withAnimation(.easeInOut(duration: 0.2)) {
-                        showMaxNotesWarning = true
+                        viewModel.showMaxNotesWarning = true
                     }
                     ScaleDrillHaptics.error()
-                    audioManager.playNote(50, velocity: 60)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        audioManager.stopNote(50)
-                    }
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                         withAnimation {
-                            showMaxNotesWarning = false
+                            viewModel.showMaxNotesWarning = false
                         }
                     }
                 } else {
-                    showMaxNotesWarning = false
-                    selectedNotes = newValue
+                    viewModel.showMaxNotesWarning = false
+                    viewModel.selectedNotes = newValue
                 }
             }
         )
-    }
-    
-    private func noteBackgroundColor(isCorrect: Bool, isHighlighted: Bool, isAllCorrect: Bool) -> Color {
-        if isAllCorrect {
-            return isHighlighted ? ShedTheme.Colors.success : ShedTheme.Colors.success.opacity(0.7)
-        }
-        if isHighlighted {
-            return isCorrect ? ShedTheme.Colors.success : ShedTheme.Colors.danger
-        }
-        return isCorrect ? ShedTheme.Colors.success.opacity(0.7) : ShedTheme.Colors.danger.opacity(0.7)
-    }
-    
-    private func displayNoteName(_ note: Note, for scale: Scale) -> String {
-        if let scaleNote = scale.scaleNotes.first(where: { $0.pitchClass == note.pitchClass }) {
-            return scaleNote.name
-        }
-        
-        let preferSharps = scale.root.isSharp || ["B", "E", "A", "D", "G"].contains(scale.root.name)
-        if let displayNote = Note.noteFromMidi(note.midiNumber, preferSharps: preferSharps) {
-            return displayNote.name
-        }
-        return note.name
-    }
-    
-    /// Sort notes in scale order starting from the root
-    private func sortNotesForScale(_ notes: [Note], rootPitchClass: Int) -> [Note] {
-        let rootNotes = notes.filter { $0.pitchClass == rootPitchClass }
-        let baseRootMidi = rootNotes.map { $0.midiNumber }.min() ?? 60
-        
-        return notes.sorted { note1, note2 in
-            let isNote1OctaveRoot = note1.pitchClass == rootPitchClass && note1.midiNumber > baseRootMidi
-            let isNote2OctaveRoot = note2.pitchClass == rootPitchClass && note2.midiNumber > baseRootMidi
-            
-            if isNote1OctaveRoot && !isNote2OctaveRoot {
-                return false
-            }
-            if isNote2OctaveRoot && !isNote1OctaveRoot {
-                return true
-            }
-            
-            if isNote1OctaveRoot && isNote2OctaveRoot {
-                return note1.midiNumber < note2.midiNumber
-            }
-            
-            let interval1 = (note1.pitchClass - rootPitchClass + 12) % 12
-            let interval2 = (note2.pitchClass - rootPitchClass + 12) % 12
-            
-            if interval1 == interval2 {
-                return note1.midiNumber < note2.midiNumber
-            }
-            return interval1 < interval2
-        }
-    }
-    
-    private func submitAnswer() {
-        guard let question = scaleGame.currentQuestion else { return }
-        
-        if question.questionType == .earTraining {
-            submitEarTrainingAnswer()
-            return
-        }
-        
-        userAnswerNotes = Array(selectedNotes)
-        highlightedNoteIndex = nil
-        showContinueButton = false
-        
-        isCorrect = scaleGame.submitAnswer(selectedNotes)
-        hasSubmitted = true
-        showingFeedback = true
-        
-        // For single degree, show both answers immediately without playback
-        if question.questionType == .singleDegree {
-            feedbackPhase = .showingCorrectAnswer
-            if isCorrect {
-                feedbackMessage = "Correct! 🎉"
-                ScaleDrillHaptics.success()
-            } else {
-                feedbackMessage = "Incorrect"
-                ScaleDrillHaptics.error()
-            }
-        } else {
-            // For all degrees, use the original flow with playback
-            feedbackPhase = .showingUserAnswer
-            if isCorrect {
-                feedbackMessage = "Correct! 🎉"
-                ScaleDrillHaptics.success()
-                playScaleWithHighlight(notes: question.correctNotes)
-            } else {
-                feedbackMessage = "Incorrect"
-                ScaleDrillHaptics.error()
-                playUserAnswerWithHighlight()
-            }
-        }
-    }
-    
-    private func submitEarTrainingAnswer() {
-        guard let question = scaleGame.currentQuestion,
-              let selected = selectedScaleType else { return }
-        
-        let correctScaleType = question.scale.scaleType
-        isCorrect = selected.id == correctScaleType.id
-        hasSubmitted = true
-        showingFeedback = true
-        
-        if isCorrect {
-            feedbackMessage = "Correct! 🎉"
-            ScaleDrillHaptics.success()
-            scaleGame.recordEarTrainingAnswer(correct: true)
-        } else {
-            feedbackMessage = "Incorrect - \(correctScaleType.name)"
-            ScaleDrillHaptics.error()
-            scaleGame.recordEarTrainingAnswer(correct: false)
-            
-            let concept = ConceptualExplanations.shared.scaleExplanation(for: correctScaleType)
-            feedbackMessage += "\n\n" + concept.sound
-        }
-    }
-    
-    private func playUserAnswerWithHighlight() {
-        guard let question = scaleGame.currentQuestion else { return }
-        
-        let rootPitchClass = question.scale.root.pitchClass
-        let rootMidi = question.scale.root.midiNumber
-        let sortedNotes = sortNotesForScale(userAnswerNotes, rootPitchClass: rootPitchClass)
-        
-        // Build note sequence for MusicSequence playback
-        var noteSequence: [Note] = []
-        for note in sortedNotes {
-            let interval = (note.pitchClass - rootPitchClass + 12) % 12
-            let midi = rootMidi + interval
-            noteSequence.append(Note(name: note.name, midiNumber: midi, isSharp: note.isSharp))
-        }
-        
-        // If user entered all notes, play ascending-descending
-        if sortedNotes.count == question.correctNotes.count {
-            // Add octave
-            noteSequence.append(Note(name: sortedNotes[0].name, midiNumber: rootMidi + 12, isSharp: sortedNotes[0].isSharp))
-            // Descending (skip octave at top)
-            for i in stride(from: sortedNotes.count - 1, through: 0, by: -1) {
-                let note = sortedNotes[i]
-                let interval = (note.pitchClass - rootPitchClass + 12) % 12
-                let midi = rootMidi + interval
-                noteSequence.append(Note(name: note.name, midiNumber: midi, isSharp: note.isSharp))
-            }
-        }
-        
-        // Use sample-accurate MusicSequence playback (same as correct answer)
-        audioManager.playScale(noteSequence, bpm: 200, direction: .ascending)
-        
-        // Handle highlighting with proper timing (200 BPM = 0.3s per beat)
-        let beatDuration: TimeInterval = 0.3
-        let baseTime = DispatchTime.now()
-        
-        // Build display index sequence
-        var displaySequence: [Int] = []
-        for i in 0..<sortedNotes.count {
-            displaySequence.append(i)
-        }
-        if sortedNotes.count == question.correctNotes.count {
-            displaySequence.append(sortedNotes.count) // octave
-            for i in stride(from: sortedNotes.count - 1, through: 0, by: -1) {
-                displaySequence.append(i)
-            }
-        }
-        
-        // Schedule highlighting
-        for (index, displayIndex) in displaySequence.enumerated() {
-            let delay = baseTime + .milliseconds(Int(Double(index) * beatDuration * 1000))
-            DispatchQueue.main.asyncAfter(deadline: delay) { [self] in
-                self.highlightedNoteIndex = displayIndex
-            }
-        }
-        
-        // Clear highlight and show continue button
-        let endTime = baseTime + .milliseconds(Int(Double(displaySequence.count) * beatDuration * 1000 + 200))
-        DispatchQueue.main.asyncAfter(deadline: endTime) { [self] in
-            self.highlightedNoteIndex = nil
-            self.showContinueButton = true
-        }
-    }
-    
-    private func showCorrectAnswer() {
-        guard let question = scaleGame.currentQuestion else { return }
-        
-        feedbackPhase = .showingCorrectAnswer
-        highlightedNoteIndex = nil
-        
-        playScaleWithHighlight(notes: question.correctNotes)
-    }
-    
-    private func playScaleWithHighlight(notes: [Note]) {
-        guard let question = scaleGame.currentQuestion else { return }
-        
-        let rootPitchClass = question.scale.root.pitchClass
-        let rootMidi = question.scale.root.midiNumber
-        let sortedNotes = sortNotesForScale(notes, rootPitchClass: rootPitchClass)
-        
-        // Build ascending then descending sequence
-        var noteSequence: [Note] = []
-        for note in sortedNotes {
-            let interval = (note.pitchClass - rootPitchClass + 12) % 12
-            let midi = rootMidi + interval
-            noteSequence.append(Note(name: note.name, midiNumber: midi, isSharp: note.isSharp))
-        }
-        // Add octave
-        noteSequence.append(Note(name: sortedNotes[0].name, midiNumber: rootMidi + 12, isSharp: sortedNotes[0].isSharp))
-        // Descending (skip octave at top)
-        for i in stride(from: sortedNotes.count - 1, through: 0, by: -1) {
-            let note = sortedNotes[i]
-            let interval = (note.pitchClass - rootPitchClass + 12) % 12
-            let midi = rootMidi + interval
-            noteSequence.append(Note(name: note.name, midiNumber: midi, isSharp: note.isSharp))
-        }
-        
-        // Use sample-accurate playback instead of DispatchQueue timing
-        audioManager.playScale(noteSequence, bpm: 200, direction: .ascending)
-        
-        // Handle highlighting with proper timing (200 BPM = 0.3s per beat)
-        let beatDuration: TimeInterval = 0.3
-        let baseTime = DispatchTime.now()
-        
-        // Build display index sequence
-        var displaySequence: [Int] = []
-        for i in 0..<sortedNotes.count {
-            displaySequence.append(i)
-        }
-        displaySequence.append(sortedNotes.count) // octave
-        for i in stride(from: sortedNotes.count - 1, through: 0, by: -1) {
-            displaySequence.append(i)
-        }
-        
-        for (index, displayIndex) in displaySequence.enumerated() {
-            let highlightTime = baseTime + .milliseconds(Int(Double(index) * beatDuration * 1000))
-            DispatchQueue.main.asyncAfter(deadline: highlightTime) { [self] in
-                self.highlightedNoteIndex = displayIndex
-            }
-        }
-        
-        let endTime = baseTime + .milliseconds(Int(Double(displaySequence.count) * beatDuration * 1000 + 200))
-        DispatchQueue.main.asyncAfter(deadline: endTime) { [self] in
-            self.highlightedNoteIndex = nil
-        }
-    }
-    
-    private func moveToNext() {
-        selectedNotes.removeAll()
-        selectedScaleType = nil
-        userAnswerNotes = []
-        showingFeedback = false
-        hasSubmitted = false
-        feedbackMessage = ""
-        feedbackPhase = .showingUserAnswer
-        highlightedNoteIndex = nil
-        showContinueButton = false
-        scaleGame.moveToNextQuestion()
     }
 }
 
@@ -936,8 +665,6 @@ struct ScaleDrillSession: View {
 #Preview {
     NavigationStack {
         ScaleDrillSession(
-            selectedNotes: .constant([]),
-            showingFeedback: .constant(false),
             viewState: .constant(.active)
         )
         .environmentObject(ScaleGame())

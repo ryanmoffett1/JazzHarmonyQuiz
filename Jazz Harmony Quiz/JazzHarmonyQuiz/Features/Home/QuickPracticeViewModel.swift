@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import Foundation
 
 /// ViewModel for Quick Practice Session - contains all testable business logic
 /// Extracted from QuickPracticeSession for unit testing

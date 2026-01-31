@@ -13,15 +13,12 @@ import UIKit
 struct ChordDrillView: View {
     @EnvironmentObject var quizGame: QuizGame
     @EnvironmentObject var settings: SettingsManager
-    @State private var selectedNotes: Set<Note> = []
-    @State private var selectedChordType: ChordType? = nil
     @State private var viewState: DrillState = .setup
     @State private var numberOfQuestions: Int
     @State private var selectedDifficulty: ChordType.ChordDifficulty
     @State private var selectedQuestionTypes: Set<QuestionType>
     @State private var selectedKeyDifficulty: KeyDifficulty = .all
     @State private var selectedChordSymbols: Set<String> = []
-    @State private var showingFeedback = false
     
     /// The launch mode determines UI behavior and config locking
     let launchMode: DrillLaunchMode
@@ -71,9 +68,6 @@ struct ChordDrillView: View {
                     }
                     
                     ChordDrillSessionView(
-                        selectedNotes: $selectedNotes,
-                        selectedChordType: $selectedChordType,
-                        showingFeedback: $showingFeedback,
                         viewState: $viewState
                     )
                 }
@@ -82,8 +76,6 @@ struct ChordDrillView: View {
                     // Reset quiz and show setup
                     quizGame.resetQuizState()
                     viewState = .setup
-                    selectedNotes = []
-                    showingFeedback = false
                 })
             }
         }
@@ -249,8 +241,6 @@ struct ChordDrillView: View {
     
     private func startQuiz() {
         // Clear all previous state
-        selectedNotes = []
-        showingFeedback = false
         viewState = .active
         
         // Set filtering options before starting
@@ -268,8 +258,6 @@ struct ChordDrillView: View {
     private func quitQuiz() {
         viewState = .setup
         quizGame.resetQuizState()
-        selectedNotes = []
-        showingFeedback = false
     }
 }
 

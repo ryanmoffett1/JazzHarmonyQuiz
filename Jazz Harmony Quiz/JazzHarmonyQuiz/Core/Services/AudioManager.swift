@@ -1,6 +1,9 @@
 import Foundation
 import AVFoundation
 import AudioToolbox
+#if os(iOS)
+import AVKit
+#endif
 
 /// Manages audio playback using AUGraph and MusicSequence for professional MIDI timing
 class AudioManager: ObservableObject {
@@ -38,6 +41,7 @@ class AudioManager: ObservableObject {
     }
     
     private func setupAudioSession() {
+        #if os(iOS)
         // Configure audio session for playback
         do {
             let audioSession = AVAudioSession.sharedInstance()
@@ -47,6 +51,7 @@ class AudioManager: ObservableObject {
         } catch {
             print("Failed to configure audio session: \(error)")
         }
+        #endif
     }
     
     private func loadSoundFont() {
@@ -72,9 +77,15 @@ class AudioManager: ObservableObject {
         }
         
         // Add output node
+        #if os(iOS)
+        let outputSubType = kAudioUnitSubType_RemoteIO
+        #else
+        let outputSubType = kAudioUnitSubType_DefaultOutput
+        #endif
+        
         var outputDescription = AudioComponentDescription(
             componentType: kAudioUnitType_Output,
-            componentSubType: kAudioUnitSubType_RemoteIO,
+            componentSubType: outputSubType,
             componentManufacturer: kAudioUnitManufacturer_Apple,
             componentFlags: 0,
             componentFlagsMask: 0
@@ -202,13 +213,13 @@ class AudioManager: ObservableObject {
     /// Send MIDI Note On to AudioUnit
     private func sendMIDINoteOn(unit: AudioUnit, note: UInt8, velocity: UInt8, channel: UInt8 = 0) {
         let noteCommand: UInt8 = 0x90 | channel
-        var status = MusicDeviceMIDIEvent(unit, UInt32(noteCommand), UInt32(note), UInt32(velocity), 0)
+        _ = MusicDeviceMIDIEvent(unit, UInt32(noteCommand), UInt32(note), UInt32(velocity), 0)
     }
     
     /// Send MIDI Note Off to AudioUnit
     private func sendMIDINoteOff(unit: AudioUnit, note: UInt8, channel: UInt8 = 0) {
         let noteCommand: UInt8 = 0x80 | channel
-        var status = MusicDeviceMIDIEvent(unit, UInt32(noteCommand), UInt32(note), 0, 0)
+        _ = MusicDeviceMIDIEvent(unit, UInt32(noteCommand), UInt32(note), 0, 0)
     }
     
     /// Get the current playback generation (for checking if playback was canceled)
