@@ -282,6 +282,7 @@ enum KeyDifficulty: String, CaseIterable, Codable, Equatable {
     case hard = "Hard"
     case expert = "Expert"
     case all = "All Keys"
+    case custom = "Custom"
     
     var description: String {
         switch self {
@@ -290,10 +291,12 @@ enum KeyDifficulty: String, CaseIterable, Codable, Equatable {
         case .hard: return "Ab, Db, E, B (4-5 accidentals)"
         case .expert: return "F#/Gb (6 accidentals)"
         case .all: return "All 12 keys"
+        case .custom: return "Custom"
         }
     }
     
     /// Returns the root notes available for this difficulty tier
+    /// For .custom, returns empty array - custom keys should be provided separately
     var availableRoots: [Note] {
         switch self {
         case .easy:
@@ -335,6 +338,8 @@ enum KeyDifficulty: String, CaseIterable, Codable, Equatable {
                 Note(name: "Bb", midiNumber: 70, isSharp: false),
                 Note(name: "B", midiNumber: 71, isSharp: false)
             ]
+        case .custom:
+            return []  // Custom keys provided separately via ChordDrillConfig.customKeys
         }
     }
 }

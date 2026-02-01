@@ -21,5 +21,10 @@ struct ChordType: Identifiable, Hashable, Codable {
         case intermediate = "Intermediate"
         case advanced = "Advanced"
         case expert = "Expert"
+        case custom = "Custom"
+        
+        var displayName: String {
+            rawValue
+        }
     }
 }

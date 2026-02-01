@@ -46,8 +46,8 @@ final class ChordDrillGameTests: XCTestCase {
         XCTAssertEqual(config.questionCount, 10)
     }
     
-    func testSeventhChordsPreset() {
-        let config = ChordDrillConfig.fromPreset(.seventhChords)
+    func testSeventhAndSixthChordsPreset() {
+        let config = ChordDrillConfig.fromPreset(.seventhAndSixthChords)
         XCTAssertEqual(Set(config.chordTypes), Set(["7", "maj7", "m7", "m7b5", "dim7", "m(maj7)", "7#5", "maj6", "m6"]))  // All 7th/6th chords
         XCTAssertEqual(config.keyDifficulty, .medium)
         XCTAssertEqual(config.difficulty, .intermediate)  // Intermediate since it includes more advanced chords
@@ -75,20 +75,20 @@ final class ChordDrillGameTests: XCTestCase {
         }
     }
     
-    func testSeventhChordsPresetOnlyUsesExistingChordTypes() {
-        let config = ChordDrillConfig.fromPreset(.seventhChords)
+    func testSeventhAndSixthChordsPresetOnlyUsesExistingChordTypes() {
+        let config = ChordDrillConfig.fromPreset(.seventhAndSixthChords)
         let database = JazzChordDatabase.shared
         let availableSymbols = Set(database.chordTypes.map { $0.symbol })
         
         for symbol in config.chordTypes {
             XCTAssertTrue(availableSymbols.contains(symbol),
-                         "Chord symbol '\(symbol)' from seventhChords preset doesn't exist in database")
+                         "Chord symbol '\(symbol)' from seventhAndSixthChords preset doesn't exist in database")
         }
     }
     
-    func testSeventhChordsPresetGeneratesCorrectChords() {
-        // Start a drill with the 7th chords preset
-        game.startDrill(preset: .seventhChords)
+    func testSeventhAndSixthChordsPresetGeneratesCorrectChords() {
+        // Start a drill with the 7th and 6th chords preset
+        game.startDrill(preset: .seventhAndSixthChords)
         
         // Verify all generated questions use only the specified chord types
         let expectedSymbols = Set(["7", "maj7", "m7", "m7b5", "dim7", "m(maj7)", "7#5", "maj6", "m6"])
@@ -902,7 +902,7 @@ final class ChordDrillGameFlowTests: XCTestCase {
         XCTAssertTrue(game.results.isEmpty)
         
         // Start new session
-        game.startDrill(preset: .seventhChords)
+        game.startDrill(preset: .seventhAndSixthChords)
         XCTAssertEqual(game.state, .active)
         XCTAssertFalse(game.questions.isEmpty)
         XCTAssertEqual(game.currentIndex, 0)

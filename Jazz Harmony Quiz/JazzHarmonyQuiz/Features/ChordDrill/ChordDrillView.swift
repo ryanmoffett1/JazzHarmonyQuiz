@@ -13,6 +13,7 @@ import UIKit
 struct ChordDrillView: View {
     @EnvironmentObject var quizGame: QuizGame
     @EnvironmentObject var settings: SettingsManager
+    @Environment(\.dismiss) private var dismiss
     @State private var viewState: DrillState = .setup
     @State private var numberOfQuestions: Int
     @State private var selectedDifficulty: ChordType.ChordDifficulty
@@ -41,6 +42,18 @@ struct ChordDrillView: View {
         self._numberOfQuestions = State(initialValue: numberOfQuestions)
         self._selectedDifficulty = State(initialValue: selectedDifficulty)
         self._selectedQuestionTypes = State(initialValue: selectedQuestionTypes)
+    }
+    
+    /// Initialize with a ChordDrillConfig directly (used by preset selection)
+    init(config: ChordDrillConfig) {
+        self.launchMode = .presetLaunch
+        self._numberOfQuestions = State(initialValue: config.questionCount)
+        self._selectedDifficulty = State(initialValue: config.difficulty)
+        self._selectedQuestionTypes = State(initialValue: config.questionTypes)
+        self._selectedKeyDifficulty = State(initialValue: config.keyDifficulty)
+        self._selectedChordSymbols = State(initialValue: config.chordTypes)
+        // presetLaunch mode skips setup - will auto-start on appear
+        self._viewState = State(initialValue: .setup)
     }
     
     var body: some View {
@@ -73,9 +86,15 @@ struct ChordDrillView: View {
                 }
             case .results:
                 ChordDrillResults(onNewQuiz: {
-                    // Reset quiz and show setup
-                    quizGame.resetQuizState()
-                    viewState = .setup
+                    // For preset launch mode, dismiss back to preset selection
+                    // instead of showing the old setup screen
+                    if case .presetLaunch = launchMode {
+                        dismiss()
+                    } else {
+                        // Reset quiz and show setup for other modes
+                        quizGame.resetQuizState()
+                        viewState = .setup
+                    }
                 })
             }
         }
@@ -109,6 +128,10 @@ struct ChordDrillView: View {
             // Auto-start for curriculum mode
             if case .curriculum = launchMode {
                 applyModuleConfig()
+            }
+            // Auto-start for preset launch mode (from preset selection)
+            if case .presetLaunch = launchMode {
+                startQuiz()
             }
         }
     }
@@ -256,7 +279,12 @@ struct ChordDrillView: View {
     }
     
     private func quitQuiz() {
-        viewState = .setup
+        // For preset launch mode, dismiss back to preset selection
+        if case .presetLaunch = launchMode {
+            dismiss()
+        } else {
+            viewState = .setup
+        }
         quizGame.resetQuizState()
     }
 }

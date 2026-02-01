@@ -4,13 +4,32 @@ import SwiftUI
 // MARK: - Chord Drill Configuration
 
 /// Configuration for a chord drill session
-struct ChordDrillConfig: Equatable {
+struct ChordDrillConfig: Equatable, Codable, Hashable {
     var chordTypes: Set<String>          // Empty = all types
     var keyDifficulty: KeyDifficulty
     var questionTypes: Set<QuestionType>
     var difficulty: ChordType.ChordDifficulty
     var questionCount: Int
     var audioEnabled: Bool
+    var customKeys: Set<String>?         // Used when keyDifficulty == .custom (key names like "C", "G", etc.)
+    
+    init(
+        chordTypes: Set<String> = [],
+        keyDifficulty: KeyDifficulty = .all,
+        questionTypes: Set<QuestionType> = [.singleTone, .allTones],
+        difficulty: ChordType.ChordDifficulty = .beginner,
+        questionCount: Int = 10,
+        audioEnabled: Bool = true,
+        customKeys: Set<String>? = nil
+    ) {
+        self.chordTypes = chordTypes
+        self.keyDifficulty = keyDifficulty
+        self.questionTypes = questionTypes
+        self.difficulty = difficulty
+        self.questionCount = questionCount
+        self.audioEnabled = audioEnabled
+        self.customKeys = customKeys
+    }
     
     static let `default` = ChordDrillConfig(
         chordTypes: [],
@@ -32,7 +51,7 @@ struct ChordDrillConfig: Equatable {
                 questionCount: 10,
                 audioEnabled: true
             )
-        case .seventhChords:
+        case .seventhAndSixthChords:
             return ChordDrillConfig(
                 chordTypes: ["7", "maj7", "m7", "m7b5", "dim7", "m(maj7)", "7#5", "maj6", "m6"],  // All 7th/6th chords
                 keyDifficulty: .medium,
@@ -45,7 +64,7 @@ struct ChordDrillConfig: Equatable {
             return ChordDrillConfig(
                 chordTypes: [],  // All types
                 keyDifficulty: .all,
-                questionTypes: [.singleTone, .allTones, .auralSpelling],
+                questionTypes: [.singleTone, .allTones, .auralQuality, .auralSpelling],
                 difficulty: .advanced,
                 questionCount: 15,
                 audioEnabled: true
@@ -371,6 +390,13 @@ class ChordDrillGame: ObservableObject {
             filteredNames = ["F#"]  // 6 accidentals
         case .all:
             filteredNames = Set(allRoots.map { $0.0 })
+        case .custom:
+            // For custom, use customKeys from config if available, otherwise fall back to all
+            if let customKeys = config.customKeys, !customKeys.isEmpty {
+                filteredNames = customKeys
+            } else {
+                filteredNames = Set(allRoots.map { $0.0 })
+            }
         }
         
         return allRoots

@@ -341,6 +341,8 @@ class CadenceGame: ObservableObject {
             keyMultiplier = 1.5
         case .all:
             keyMultiplier = 1.1
+        case .custom:
+            keyMultiplier = 1.0  // Default for custom
         }
         
         // Question count bonus (more questions = more reliable score)

@@ -14,9 +14,12 @@ enum DrillLaunchMode: Equatable {
     /// Launched from Practice tab - full customization allowed
     case freePractice
     
+    /// Launched from preset selection - config is pre-set, skip setup
+    case presetLaunch
+    
     var isConfigLocked: Bool {
         switch self {
-        case .curriculum, .quickPractice:
+        case .curriculum, .quickPractice, .presetLaunch:
             return true
         case .freePractice:
             return false
@@ -29,6 +32,8 @@ enum DrillLaunchMode: Equatable {
             return false  // Skip directly to drill with module config
         case .quickPractice:
             return false  // Skip directly to mixed session
+        case .presetLaunch:
+            return true   // Show setup on quit/newQuiz (no module to fall back to)
         case .freePractice:
             return true   // Show full setup
         }
@@ -38,7 +43,7 @@ enum DrillLaunchMode: Equatable {
         switch self {
         case .curriculum(let id):
             return id
-        case .quickPractice, .freePractice:
+        case .quickPractice, .freePractice, .presetLaunch:
             return nil
         }
     }
@@ -110,7 +115,7 @@ protocol DrillPreset {
 
 enum ChordDrillPreset: String, CaseIterable, DrillPreset {
     case basicTriads = "Basic Triads"
-    case seventhChords = "7th Chords"
+    case seventhAndSixthChords = "7th & 6th Chords"
     case fullWorkout = "Full Workout"
     
     var name: String { rawValue }
@@ -118,11 +123,11 @@ enum ChordDrillPreset: String, CaseIterable, DrillPreset {
     var description: String {
         switch self {
         case .basicTriads:
-            return "All triads: maj, min, dim, aug, sus"
-        case .seventhChords:
-            return "All 7th chords"
+            return "Major, minor, dim, aug, sus chords"
+        case .seventhAndSixthChords:
+            return "Seventh and sixth chord voicings"
         case .fullWorkout:
-            return "All chord types, random keys"
+            return "All chord types, all keys, all question types"
         }
     }
     
@@ -130,7 +135,7 @@ enum ChordDrillPreset: String, CaseIterable, DrillPreset {
         switch self {
         case .basicTriads:
             return "1.circle"
-        case .seventhChords:
+        case .seventhAndSixthChords:
             return "7.circle"
         case .fullWorkout:
             return "flame"

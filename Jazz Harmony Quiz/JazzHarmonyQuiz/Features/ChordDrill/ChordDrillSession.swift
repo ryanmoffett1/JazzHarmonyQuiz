@@ -291,7 +291,7 @@ struct ChordDrillSessionView: View {
         .frame(height: 140)
         
         // Selected Notes Display
-        if !viewModel.selectedNotes.isEmpty {
+        if !viewModel.selectedNotes.isEmpty, let question = quizGame.currentQuestion {
             VStack(spacing: 8) {
                 Text("Selected Notes:")
                     .font(.headline)
@@ -299,7 +299,7 @@ struct ChordDrillSessionView: View {
 
                 FlowLayout(spacing: 8) {
                     ForEach(Array(viewModel.selectedNotes.sorted(by: { $0.midiNumber < $1.midiNumber })), id: \.midiNumber) { note in
-                        Text(note.name)
+                        Text(spelledNoteName(note, basedOn: question.chord.root))
                             .font(settings.chordDisplayFont(size: viewModel.selectedNotes.count > 5 ? 18 : 22, weight: .semibold))
                             .foregroundColor(.white)
                             .padding(.horizontal, viewModel.selectedNotes.count > 5 ? 12 : 16)
@@ -679,6 +679,30 @@ struct ChordDrillSessionView: View {
         } else {
             ChordDrillHaptics.error()
         }
+    }
+    
+    // MARK: - Helper Methods
+    
+    /// Get the correctly spelled note name based on the chord's root key
+    private func spelledNoteName(_ note: Note, basedOn root: Note) -> String {
+        // If it's the same pitch class, just use the note's name
+        if note.name == root.name {
+            return note.name
+        }
+        
+        // For enharmonic notes, match the root's preference (sharps vs flats)
+        if let enharmonic = note.enharmonicEquivalent {
+            // If root uses flats (like Ab), prefer flats
+            // If root uses sharps (like F#), prefer sharps
+            if root.name.contains("b") && enharmonic.name.contains("b") {
+                return enharmonic.name
+            } else if root.name.contains("#") && enharmonic.name.contains("#") {
+                return enharmonic.name
+            }
+        }
+        
+        // Default to the note's current name
+        return note.name
     }
     
     private func continueToNextQuestion() {

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		50D081DD15174045962DE9EF /* QuickPracticeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF493D838B94315B19952FC /* QuickPracticeViewModel.swift */; };
 		5A634891227C479190B2BAC9 /* PracticeDueCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */; };
 		9400DEB42F2515E100BDBF25 /* ProgressionDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB32F2515E100BDBF25 /* ProgressionDrillView.swift */; };
 		9400DEB82F2516A900BDBF25 /* ProgressionProgression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9400DEB72F2516A900BDBF25 /* ProgressionProgression.swift */; };
@@ -68,6 +69,18 @@
 		94C941BE2F2D989F00632327 /* IntervalDrillViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941BD2F2D989F00632327 /* IntervalDrillViewModel.swift */; };
 		94C941C02F2D98AA00632327 /* IntervalDrillViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941BF2F2D98AA00632327 /* IntervalDrillViewModelTests.swift */; };
 		94C941C22F2D9F0600632327 /* CadenceDrillViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941C12F2D9F0600632327 /* CadenceDrillViewModel.swift */; };
+		94C941C52F2E5BAB00632327 /* ChordDrillPresetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941C32F2E5BAB00632327 /* ChordDrillPresetTests.swift */; };
+		94C941C62F2E5BAB00632327 /* ChordDrillSetupViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941C42F2E5BAB00632327 /* ChordDrillSetupViewModelTests.swift */; };
+		94C941C92F2E5D7F00632327 /* CustomChordDrillPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941C82F2E5D7F00632327 /* CustomChordDrillPreset.swift */; };
+		94C941CA2F2E5D7F00632327 /* ChordDrillSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941C72F2E5D7F00632327 /* ChordDrillSetupViewModel.swift */; };
+		94C941D02F2E6E7E00632327 /* ChordDrillPresetModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941CB2F2E6E7E00632327 /* ChordDrillPresetModels.swift */; };
+		94C941D12F2E6E7E00632327 /* ChordDrillPresetSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941CC2F2E6E7E00632327 /* ChordDrillPresetSelectionView.swift */; };
+		94C941D22F2E6E7E00632327 /* ChordDrillPresetSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941CD2F2E6E7E00632327 /* ChordDrillPresetSelectionViewModel.swift */; };
+		94C941D32F2E6E7E00632327 /* ChordDrillSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941CE2F2E6E7E00632327 /* ChordDrillSetupView.swift */; };
+		94C941D42F2E6E7E00632327 /* NewChordDrillSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941CF2F2E6E7E00632327 /* NewChordDrillSetupViewModel.swift */; };
+		94C941D82F2E6E9400632327 /* ChordDrillPresetSelectionViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941D62F2E6E9400632327 /* ChordDrillPresetSelectionViewTests.swift */; };
+		94C941D92F2E6E9400632327 /* ChordDrillSetupViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941D72F2E6E9400632327 /* ChordDrillSetupViewTests.swift */; };
+		94C941DA2F2E6E9400632327 /* ChordDrillEndToEndTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C941D52F2E6E9400632327 /* ChordDrillEndToEndTests.swift */; };
 		94CADGT012F29100000000001 /* CadenceGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADGT022F29100000000002 /* CadenceGameTests.swift */; };
 		94CADNC012F29000000000001 /* CadenceDrillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC022F29000000000002 /* CadenceDrillView.swift */; };
 		94CADNC032F29000000000003 /* CadenceDrillSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CADNC042F29000000000004 /* CadenceDrillSetup.swift */; };
@@ -128,6 +141,8 @@
 
 /* Begin PBXFileReference section */
 		0C8E17FD37E54169B0B32006 /* PracticeDueCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeDueCard.swift; sourceTree = "<group>"; };
+		7F9A7D96DD8847438527768A /* QuickPracticeViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeViewModelTests.swift; sourceTree = "<group>"; };
+		8BF493D838B94315B19952FC /* QuickPracticeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPracticeViewModel.swift; sourceTree = "<group>"; };
 		9400DEB32F2515E100BDBF25 /* ProgressionDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionDrillView.swift; sourceTree = "<group>"; };
 		9400DEB62F2516A900BDBF25 /* ProgressionGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionGame.swift; sourceTree = "<group>"; };
 		9400DEB72F2516A900BDBF25 /* ProgressionProgression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressionProgression.swift; sourceTree = "<group>"; };
@@ -188,6 +203,18 @@
 		94C941BD2F2D989F00632327 /* IntervalDrillViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillViewModel.swift; sourceTree = "<group>"; };
 		94C941BF2F2D98AA00632327 /* IntervalDrillViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntervalDrillViewModelTests.swift; sourceTree = "<group>"; };
 		94C941C12F2D9F0600632327 /* CadenceDrillViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillViewModel.swift; sourceTree = "<group>"; };
+		94C941C32F2E5BAB00632327 /* ChordDrillPresetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillPresetTests.swift; sourceTree = "<group>"; };
+		94C941C42F2E5BAB00632327 /* ChordDrillSetupViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillSetupViewModelTests.swift; sourceTree = "<group>"; };
+		94C941C72F2E5D7F00632327 /* ChordDrillSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillSetupViewModel.swift; sourceTree = "<group>"; };
+		94C941C82F2E5D7F00632327 /* CustomChordDrillPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomChordDrillPreset.swift; sourceTree = "<group>"; };
+		94C941CB2F2E6E7E00632327 /* ChordDrillPresetModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillPresetModels.swift; sourceTree = "<group>"; };
+		94C941CC2F2E6E7E00632327 /* ChordDrillPresetSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillPresetSelectionView.swift; sourceTree = "<group>"; };
+		94C941CD2F2E6E7E00632327 /* ChordDrillPresetSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillPresetSelectionViewModel.swift; sourceTree = "<group>"; };
+		94C941CE2F2E6E7E00632327 /* ChordDrillSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillSetupView.swift; sourceTree = "<group>"; };
+		94C941CF2F2E6E7E00632327 /* NewChordDrillSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewChordDrillSetupViewModel.swift; sourceTree = "<group>"; };
+		94C941D52F2E6E9400632327 /* ChordDrillEndToEndTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillEndToEndTests.swift; sourceTree = "<group>"; };
+		94C941D62F2E6E9400632327 /* ChordDrillPresetSelectionViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillPresetSelectionViewTests.swift; sourceTree = "<group>"; };
+		94C941D72F2E6E9400632327 /* ChordDrillSetupViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordDrillSetupViewTests.swift; sourceTree = "<group>"; };
 		94CADGT022F29100000000002 /* CadenceGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceGameTests.swift; sourceTree = "<group>"; };
 		94CADNC022F29000000000002 /* CadenceDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillView.swift; sourceTree = "<group>"; };
 		94CADNC042F29000000000004 /* CadenceDrillSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceDrillSetup.swift; sourceTree = "<group>"; };
@@ -311,12 +338,14 @@
 		9463521B2F26786500ABD609 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				7F9A7D96DD8847438527768A /* QuickPracticeViewModelTests.swift */,
 				94C941AD2F2D7B7500632327 /* QuickPracticeViewModel.swift */,
 				946352152F26786500ABD609 /* ContinueLearningCard.swift */,
 				946352162F26786500ABD609 /* DailyFocusCard.swift */,
 				946352172F26786500ABD609 /* HomeView.swift */,
 				946352182F26786500ABD609 /* QuickPracticeCard.swift */,
 				94QKPRS22F30000000000004 /* QuickPracticeSession.swift */,
+				8BF493D838B94315B19952FC /* QuickPracticeViewModel.swift */,
 				94QKPRV22F30000000000002 /* QuickPracticeView.swift */,
 				946352192F26786500ABD609 /* QuickStatsView.swift */,
 				9463521A2F26786500ABD609 /* WeeklyStreakView.swift */,
@@ -481,6 +510,13 @@
 		94DRILL072F27000000000007 /* ChordDrill */ = {
 			isa = PBXGroup;
 			children = (
+				94C941CB2F2E6E7E00632327 /* ChordDrillPresetModels.swift */,
+				94C941CC2F2E6E7E00632327 /* ChordDrillPresetSelectionView.swift */,
+				94C941CD2F2E6E7E00632327 /* ChordDrillPresetSelectionViewModel.swift */,
+				94C941CE2F2E6E7E00632327 /* ChordDrillSetupView.swift */,
+				94C941CF2F2E6E7E00632327 /* NewChordDrillSetupViewModel.swift */,
+				94C941C72F2E5D7F00632327 /* ChordDrillSetupViewModel.swift */,
+				94C941C82F2E5D7F00632327 /* CustomChordDrillPreset.swift */,
 				94C941B32F2D7FCB00632327 /* ChordDrillViewModel.swift */,
 				94DRILL022F27000000000002 /* ChordDrillGame.swift */,
 				94DRILL0A2F28000000000001 /* ChordDrillView.swift */,
@@ -507,6 +543,11 @@
 		94DRILL092F27000000000009 /* ChordDrill */ = {
 			isa = PBXGroup;
 			children = (
+				94C941D52F2E6E9400632327 /* ChordDrillEndToEndTests.swift */,
+				94C941D62F2E6E9400632327 /* ChordDrillPresetSelectionViewTests.swift */,
+				94C941D72F2E6E9400632327 /* ChordDrillSetupViewTests.swift */,
+				94C941C32F2E5BAB00632327 /* ChordDrillPresetTests.swift */,
+				94C941C42F2E5BAB00632327 /* ChordDrillSetupViewModelTests.swift */,
 				94C941B52F2D7FE700632327 /* ChordDrillViewModelTests.swift */,
 				94DRILL062F27000000000006 /* ChordDrillGameTests.swift */,
 			);
@@ -749,6 +790,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				946352592F26792600ABD609 /* SettingsManagerTests.swift in Sources */,
+				94C941D82F2E6E9400632327 /* ChordDrillPresetSelectionViewTests.swift in Sources */,
+				94C941D92F2E6E9400632327 /* ChordDrillSetupViewTests.swift in Sources */,
+				94C941DA2F2E6E9400632327 /* ChordDrillEndToEndTests.swift in Sources */,
 				9463525A2F26792600ABD609 /* ChordTests.swift in Sources */,
 				9463525B2F26792600ABD609 /* SpacedRepetitionStoreTests.swift in Sources */,
 				9463525C2F26792600ABD609 /* NoteTests.swift in Sources */,
@@ -759,6 +803,8 @@
 				94C941BC2F2D854100632327 /* ScaleDrillViewModelTests.swift in Sources */,
 				946352602F26792600ABD609 /* ScaleTests.swift in Sources */,
 				94DRILL052F27000000000005 /* ChordDrillGameTests.swift in Sources */,
+				94C941C52F2E5BAB00632327 /* ChordDrillPresetTests.swift in Sources */,
+				94C941C62F2E5BAB00632327 /* ChordDrillSetupViewModelTests.swift in Sources */,
 				94CADGT012F29100000000001 /* CadenceGameTests.swift in Sources */,
 				94SCALEGT12F2B000000000001 /* ScaleGameTests.swift in Sources */,
 				94INTRVLGT2F2C00000000001 /* IntervalGameTests.swift in Sources */,
@@ -793,6 +839,11 @@
 				94629FCC2F1BD9CB0029B7F7 /* QuizGame.swift in Sources */,
 				9434133B2F1EDD1D009235D1 /* PlayerProfile.swift in Sources */,
 				944280252F12A0230035FE8B /* CadenceGame.swift in Sources */,
+				94C941D02F2E6E7E00632327 /* ChordDrillPresetModels.swift in Sources */,
+				94C941D12F2E6E7E00632327 /* ChordDrillPresetSelectionView.swift in Sources */,
+				94C941D22F2E6E7E00632327 /* ChordDrillPresetSelectionViewModel.swift in Sources */,
+				94C941D32F2E6E7E00632327 /* ChordDrillSetupView.swift in Sources */,
+				94C941D42F2E6E7E00632327 /* NewChordDrillSetupViewModel.swift in Sources */,
 				94DRILL0E2F28000000000005 /* ChordDrillView.swift in Sources */,
 				94DRILL0F2F28000000000006 /* ChordDrillSetup.swift in Sources */,
 				94DRILL102F28000000000007 /* ChordDrillSession.swift in Sources */,
@@ -812,7 +863,10 @@
 				94C941B42F2D7FCB00632327 /* ChordDrillViewModel.swift in Sources */,
 				946352282F26786500ABD609 /* QuickPracticeCard.swift in Sources */,
 				94QKPRV12F30000000000001 /* QuickPracticeView.swift in Sources */,
+				94C941C92F2E5D7F00632327 /* CustomChordDrillPreset.swift in Sources */,
+				94C941CA2F2E5D7F00632327 /* ChordDrillSetupViewModel.swift in Sources */,
 				94QKPRS12F30000000000003 /* QuickPracticeSession.swift in Sources */,
+				50D081DD15174045962DE9EF /* QuickPracticeViewModel.swift in Sources */,
 				9400DEB42F2515E100BDBF25 /* ProgressionDrillView.swift in Sources */,
 				9463523D2F26789900ABD609 /* ChordType.swift in Sources */,
 				9463523E2F26789900ABD609 /* SpacedRepetitionStore.swift in Sources */,

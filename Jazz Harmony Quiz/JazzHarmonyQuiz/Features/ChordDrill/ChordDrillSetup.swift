@@ -130,12 +130,12 @@ struct ChordDrillSetup: View {
                 }
                 
                 ChordQuickStartButton(
-                    title: "7th Chords",
-                    subtitle: "7, maj7, m7, etc.",
+                    title: "7th & 6th Chords",
+                    subtitle: "7, maj7, m7, maj6, etc.",
                     icon: "music.note.list",
                     color: ShedTheme.Colors.brass
                 ) {
-                    applyPreset(.seventhChords)
+                    applyPreset(.seventhAndSixthChords)
                     onStartQuiz()
                 }
                 

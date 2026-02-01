@@ -10,9 +10,9 @@ struct PracticeView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: ShedTheme.Space.m) {
-                    // Chord Drill
+                    // Chord Drill - Now goes to preset selection screen first
                     NavigationLink {
-                        ChordDrillView()
+                        ChordDrillPresetSelectionView()
                             .environmentObject(quizGame)
                             .environmentObject(settings)
                     } label: {

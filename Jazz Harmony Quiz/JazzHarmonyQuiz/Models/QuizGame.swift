@@ -815,6 +815,8 @@ class QuizGame: ObservableObject {
             difficultyMultiplier = 1.5
         case .expert:
             difficultyMultiplier = 2.0
+        case .custom:
+            difficultyMultiplier = 1.0  // Default for custom
         }
         
         // Question count bonus (more questions = more reliable score)
