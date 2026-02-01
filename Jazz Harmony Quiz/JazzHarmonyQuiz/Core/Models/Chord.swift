@@ -19,20 +19,147 @@ struct Chord: Identifiable, Hashable, Codable {
         self.root = root
         self.chordType = chordType
         
-        // Determine tonality preference based on root note
-        // Sharp roots (C#, D#, F#, G#, A#) and sharp-friendly keys (B, E, A, D, G) prefer sharps
-        // Flat roots (Db, Eb, Gb, Ab, Bb) and flat-friendly keys (F, C) prefer flats
-        let preferSharps = root.isSharp || ["B", "E", "A", "D", "G"].contains(root.name)
+        // Build the major scale of the root to get proper note spellings
+        // This ensures chords spell correctly (e.g., Gdim = G Bb Db, not G A# C#)
+        let majorScaleDegrees = Chord.buildMajorScale(from: root)
         
-        // Calculate chord tones based on root and chord type
+        // Calculate chord tones based on scale degrees and chord type alterations
         var tones: [Note] = []
         for chordTone in chordType.chordTones {
             let midiNumber = root.midiNumber + chordTone.semitonesFromRoot
-            if let note = Note.noteFromMidi(midiNumber, preferSharps: preferSharps) {
-                tones.append(note)
-            }
+            
+            // Get the spelled note based on the scale degree
+            let spelledNote = Chord.spellNoteFromScaleDegree(
+                midiNumber: midiNumber,
+                chordTone: chordTone,
+                majorScale: majorScaleDegrees,
+                root: root
+            )
+            
+            tones.append(spelledNote)
         }
         self.chordTones = tones
+    }
+    
+    /// Build a major scale from a root note with correct spellings
+    /// Returns the 7 scale degrees (1-7) as properly spelled notes
+    private static func buildMajorScale(from root: Note) -> [Note] {
+        // Major scale intervals: W W H W W W H (2 2 1 2 2 2 1 semitones)
+        let intervals = [0, 2, 4, 5, 7, 9, 11] // Semitones from root
+        
+        // Determine if we should prefer sharps or flats based on circle of fifths
+        // Sharp keys: G D A E B F# C# (and their sharps)
+        // Flat keys: F Bb Eb Ab Db Gb Cb (and their flats)
+        let preferSharps = root.isSharp || ["C", "G", "D", "A", "E", "B"].contains(root.name)
+        
+        // Build the scale with proper letter names
+        var scale: [Note] = []
+        var currentLetter = getLetterName(root.name)
+        
+        for interval in intervals {
+            let midiNumber = root.midiNumber + interval
+            
+            // Get the note with the correct letter name
+            let spelledNote = Note.allNotes.first { note in
+                note.midiNumber == midiNumber && getLetterName(note.name) == currentLetter
+            } ?? Note.noteFromMidi(midiNumber, preferSharps: preferSharps)!
+            
+            scale.append(spelledNote)
+            currentLetter = nextLetter(currentLetter)
+        }
+        
+        return scale
+    }
+    
+    /// Spell a note based on its chord tone role and the major scale
+    private static func spellNoteFromScaleDegree(
+        midiNumber: Int,
+        chordTone: ChordTone,
+        majorScale: [Note],
+        root: Note
+    ) -> Note {
+        // Get the base scale degree (1-7, accounting for extensions like 9=2, 11=4, 13=6)
+        let baseDegree = ((chordTone.degree - 1) % 7) + 1
+        
+        // Get the major scale note for this degree (1-indexed, so subtract 1 for array)
+        let scaleNote = majorScale[baseDegree - 1]
+        
+        // Calculate the expected MIDI number for this scale degree
+        let octaveAdjustment = (chordTone.degree - 1) / 7 * 12
+        let expectedScaleNoteMidi = scaleNote.midiNumber + octaveAdjustment
+        
+        // Calculate how many semitones different our chord tone is from the major scale
+        let alteration = (midiNumber - expectedScaleNoteMidi)
+        
+        // If it matches the major scale note, use it
+        if alteration == 0 {
+            return Note(name: scaleNote.name, midiNumber: midiNumber, isSharp: scaleNote.isSharp)
+        }
+        
+        // Apply the alteration to the scale note's letter name
+        if alteration == -1 {
+            // Flatten the note (e.g., B → Bb in Gdim)
+            return flattenNote(scaleNote, targetMidi: midiNumber)
+        } else if alteration == 1 {
+            // Sharpen the note (e.g., C → C# in Gaug)
+            return sharpenNote(scaleNote, targetMidi: midiNumber)
+        } else if alteration == -2 {
+            // Double flat (rare, but possible)
+            return doubleFlatNote(scaleNote, targetMidi: midiNumber)
+        } else {
+            // Fallback: use simple preferSharps logic
+            let preferSharps = root.isSharp || ["C", "G", "D", "A", "E", "B"].contains(root.name)
+            return Note.noteFromMidi(midiNumber, preferSharps: preferSharps) ?? root
+        }
+    }
+    
+    /// Get the letter name (A-G) from a note name
+    private static func getLetterName(_ noteName: String) -> String {
+        return String(noteName.prefix(1))
+    }
+    
+    /// Get the next letter in the musical alphabet
+    private static func nextLetter(_ letter: String) -> String {
+        let letters = ["C", "D", "E", "F", "G", "A", "B"]
+        guard let index = letters.firstIndex(of: letter) else { return "C" }
+        return letters[(index + 1) % 7]
+    }
+    
+    /// Flatten a note (e.g., B → Bb)
+    private static func flattenNote(_ note: Note, targetMidi: Int) -> Note {
+        let letter = getLetterName(note.name)
+        let flatName = "\(letter)b"
+        
+        // Find the note with this name and MIDI number
+        if let flatNote = Note.allNotes.first(where: { $0.name == flatName && $0.midiNumber == targetMidi }) {
+            return flatNote
+        }
+        
+        // Fallback
+        return Note(name: flatName, midiNumber: targetMidi, isSharp: false)
+    }
+    
+    /// Sharpen a note (e.g., C → C#)
+    private static func sharpenNote(_ note: Note, targetMidi: Int) -> Note {
+        let letter = getLetterName(note.name)
+        let sharpName = "\(letter)#"
+        
+        // Find the note with this name and MIDI number
+        if let sharpNote = Note.allNotes.first(where: { $0.name == sharpName && $0.midiNumber == targetMidi }) {
+            return sharpNote
+        }
+        
+        // Fallback
+        return Note(name: sharpName, midiNumber: targetMidi, isSharp: true)
+    }
+    
+    /// Double flatten a note (e.g., for diminished 7th in certain keys)
+    private static func doubleFlatNote(_ note: Note, targetMidi: Int) -> Note {
+        let letter = getLetterName(note.name)
+        let doubleFlatName = "\(letter)bb"
+        
+        // Fallback to single flat for display purposes
+        return Note(name: "\(letter)b", midiNumber: targetMidi, isSharp: false)
     }
     
     func getChordTone(by degree: Int, isAltered: Bool = false) -> Note? {
